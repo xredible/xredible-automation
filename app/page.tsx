@@ -184,21 +184,27 @@ export default function XredibleAutomationWebsite() {
               };
 
               try {
-                await fetch(
-                  "https://n8n.xredible.in/webhook/contact-form",
-                  {
-                    method: "POST",
-                    headers: {
-                      "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify(data),
-                  }
-                );
+  const response = await fetch(
+    "https://n8n.xredible.in/webhook/contact-form",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    }
+  );
 
-                alert("Inquiry submitted successfully!");
-              } catch (error) {
-                alert("Something went wrong.");
-              }
+  const result = await response.text();
+
+  console.log(result);
+
+  alert("Inquiry submitted successfully!");
+} catch (error) {
+  console.error(error);
+
+  alert("Submission failed.");
+}
             }}
           >
             <input
