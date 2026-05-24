@@ -153,6 +153,123 @@ export default function XredibleAutomationWebsite() {
         </div>
       </section>
 
+      {/* Pricing Section */}
+      <section className="border-t border-white/10 border-b border-white/10 bg-white/5">
+        <div className="max-w-7xl mx-auto px-6 py-24">
+          <div className="text-center">
+            <h2 className="text-4xl lg:text-5xl font-bold">
+              Automation Packages
+            </h2>
+
+            <p className="mt-6 text-zinc-400 text-lg">
+              Scalable AI automation systems built for modern businesses.
+            </p>
+          </div>
+
+          <div className="grid lg:grid-cols-3 gap-8 mt-16">
+            <div className="rounded-3xl border border-white/10 bg-black/40 p-8 backdrop-blur-xl">
+              <h3 className="text-3xl font-bold">Starter Automation</h3>
+
+              <div className="text-5xl font-black mt-6 text-cyan-400">
+                ₹9,999
+              </div>
+
+              <ul className="space-y-4 mt-10 text-zinc-300">
+                <li>✔ Lead Capture Automation</li>
+                <li>✔ Contact Form Integration</li>
+                <li>✔ WhatsApp Notifications</li>
+                <li>✔ Basic CRM Setup</li>
+              </ul>
+            </div>
+
+            <div className="rounded-3xl border border-cyan-400/30 bg-cyan-500/10 p-8 backdrop-blur-xl shadow-2xl shadow-cyan-500/10">
+              <div className="inline-block rounded-full bg-cyan-400 text-black text-xs font-bold px-4 py-2 mb-4">
+                MOST POPULAR
+              </div>
+
+              <h3 className="text-3xl font-bold">Growth Automation</h3>
+
+              <div className="text-5xl font-black mt-6 text-cyan-400">
+                ₹24,999
+              </div>
+
+              <ul className="space-y-4 mt-10 text-zinc-300">
+                <li>✔ AI Workflow Systems</li>
+                <li>✔ n8n Automations</li>
+                <li>✔ WhatsApp Automation</li>
+                <li>✔ AI Content Systems</li>
+                <li>✔ CRM + Lead Pipelines</li>
+              </ul>
+            </div>
+
+            <div className="rounded-3xl border border-white/10 bg-black/40 p-8 backdrop-blur-xl">
+              <h3 className="text-3xl font-bold">AI Business System</h3>
+
+              <div className="text-5xl font-black mt-6 text-cyan-400">
+                Custom
+              </div>
+
+              <ul className="space-y-4 mt-10 text-zinc-300">
+                <li>✔ Full Business Automation</li>
+                <li>✔ AI Agents</li>
+                <li>✔ Custom Dashboards</li>
+                <li>✔ Advanced Integrations</li>
+                <li>✔ Ongoing Optimization</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Portfolio Section */}
+      <section className="max-w-7xl mx-auto px-6 py-24">
+        <div className="text-center max-w-3xl mx-auto">
+          <h2 className="text-4xl lg:text-5xl font-bold">
+            Automation Projects
+          </h2>
+
+          <p className="mt-6 text-zinc-400 text-lg">
+            Real automation systems designed to save time, increase efficiency,
+            and grow businesses using AI and n8n.
+          </p>
+        </div>
+
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mt-16">
+          <div className="rounded-3xl border border-white/10 bg-white/5 p-8">
+            <h3 className="text-2xl font-bold text-cyan-300">
+              WhatsApp Lead Automation
+            </h3>
+
+            <p className="mt-4 text-zinc-400">
+              Automated lead capture and instant WhatsApp notifications for
+              faster customer response times.
+            </p>
+          </div>
+
+          <div className="rounded-3xl border border-white/10 bg-white/5 p-8">
+            <h3 className="text-2xl font-bold text-cyan-300">
+              AI Content Workflow
+            </h3>
+
+            <p className="mt-4 text-zinc-400">
+              AI-powered social media content generation and automated posting
+              systems.
+            </p>
+          </div>
+
+          <div className="rounded-3xl border border-white/10 bg-white/5 p-8">
+            <h3 className="text-2xl font-bold text-cyan-300">
+              CRM Pipeline Automation
+            </h3>
+
+            <p className="mt-4 text-zinc-400">
+              Connected forms, emails, sheets, and automation workflows into a
+              centralized lead management system.
+            </p>
+          </div>
+        </div>
+      </section>
+
       {/* Contact Form */}
       <section id="contact" className="max-w-4xl mx-auto px-6 py-24">
         <div className="rounded-3xl border border-white/10 bg-white/5 p-10 backdrop-blur-xl">
@@ -269,7 +386,6 @@ export default function XredibleAutomationWebsite() {
           `,
         }}
       />
-
     </div>
   );
 }
