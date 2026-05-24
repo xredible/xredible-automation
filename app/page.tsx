@@ -1,5 +1,3 @@
-"use client";
-
 export default function XredibleAutomationWebsite() {
   const whatsappNumber = "918085946384";
   const calendlyLink = "https://wa.me/918085949384";
@@ -186,7 +184,7 @@ export default function XredibleAutomationWebsite() {
 
               try {
                 const response = await fetch(
-                  "https://n8n.xredible.in/webhook/contact-form",
+                  "https://n8n.xredible.in/webhook-test/contact-form",
                   {
                     method: "POST",
                     headers: {
