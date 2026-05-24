@@ -1,3 +1,5 @@
+"use client";
+
 export default function XredibleAutomationWebsite() {
   const whatsappNumber = "918085946384";
   const calendlyLink = "https://wa.me/918085949384";
