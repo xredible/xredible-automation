@@ -1,6 +1,8 @@
+"use client";
+
 export default function XredibleAutomationWebsite() {
   const whatsappNumber = "918085946384";
-  const calendlyLink = "https://wa.me/918085946384";
+  const calendlyLink = "https://wa.me/918085949384";
 
   const services = [
     {
@@ -152,10 +154,7 @@ export default function XredibleAutomationWebsite() {
       </section>
 
       {/* Contact Form */}
-      <section
-        id="contact"
-        className="max-w-4xl mx-auto px-6 py-24"
-      >
+      <section id="contact" className="max-w-4xl mx-auto px-6 py-24">
         <div className="rounded-3xl border border-white/10 bg-white/5 p-10 backdrop-blur-xl">
           <div className="text-center">
             <h2 className="text-4xl font-bold">
@@ -173,6 +172,8 @@ export default function XredibleAutomationWebsite() {
             onSubmit={async (e) => {
               e.preventDefault();
 
+              alert("Form started");
+
               const formData = new FormData(e.currentTarget);
 
               const data = {
@@ -184,27 +185,27 @@ export default function XredibleAutomationWebsite() {
               };
 
               try {
-  const response = await fetch(
-    "https://n8n.xredible.in/webhook/contact-form",
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
-    }
-  );
+                const response = await fetch(
+                  "https://n8n.xredible.in/webhook/contact-form",
+                  {
+                    method: "POST",
+                    headers: {
+                      "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify(data),
+                  }
+                );
 
-  const result = await response.text();
+                const result = await response.text();
 
-  console.log(result);
+                console.log(result);
 
-  alert("Inquiry submitted successfully!");
-} catch (error) {
-  console.error(error);
+                alert("Inquiry submitted successfully!");
+              } catch (error) {
+                console.error(error);
 
-  alert("Submission failed.");
-}
+                alert("Submission failed.");
+              }
             }}
           >
             <input
