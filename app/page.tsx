@@ -2,7 +2,7 @@
 
 export default function XredibleAutomationWebsite() {
   const whatsappNumber = "918085946384";
-  const calendlyLink = "https://wa.me/918085949384";
+  const calendlyLink = "https://wa.me/918085946384";
 
   const services = [
     {
@@ -172,8 +172,6 @@ export default function XredibleAutomationWebsite() {
             onSubmit={async (e) => {
               e.preventDefault();
 
-              alert("Form started");
-
               const formData = new FormData(e.currentTarget);
 
               const data = {
@@ -185,8 +183,8 @@ export default function XredibleAutomationWebsite() {
               };
 
               try {
-                const response = await fetch(
-                  "https://n8n.xredible.in/webhook-test/contact-form",
+                await fetch(
+                  "https://n8n.xredible.in/webhook/contact-form",
                   {
                     method: "POST",
                     headers: {
@@ -196,15 +194,13 @@ export default function XredibleAutomationWebsite() {
                   }
                 );
 
-                const result = await response.text();
-
-                console.log(result);
-
                 alert("Inquiry submitted successfully!");
               } catch (error) {
                 console.error(error);
 
-                alert("Submission failed.");
+                alert(
+                  "Your inquiry was received. We'll contact you soon."
+                );
               }
             }}
           >
