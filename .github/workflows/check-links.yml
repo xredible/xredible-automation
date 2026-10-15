@@ -1,0 +1,26 @@
+name: Check public media links
+# Push check/<name>.txt with one URL per line; results land in check-results/<name>.log
+on:
+  push:
+    branches: [media]
+    paths: ['check/**.txt']
+permissions:
+  contents: write
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { ref: media }
+      - run: |
+          mkdir -p check-results
+          for f in check/*.txt; do
+            out="check-results/$(basename "$f" .txt).log"; : > "$out"
+            while read -r u; do [ -z "$u" ] && continue
+              echo "== $u" >> "$out"
+              curl -sSL -o /dev/null -w "status:%{http_code} type:%{content_type} bytes:%{size_download} final:%{url_effective}\n" "$u" >> "$out" 2>&1 || true
+            done < "$f"
+            git rm -q "$f"
+          done
+          git config user.name "media-bot"; git config user.email "media-bot@users.noreply.github.com"
+          git add -A && git commit -m "Link check results" && git push
