@@ -1,0 +1,30 @@
+name: Fetch media into this branch
+# Push a file named fetch/<anything>.txt containing two lines:
+#   line 1: source HTTPS URL   line 2: destination path in this branch
+on:
+  push:
+    branches: [media]
+    paths: ['fetch/**.txt']
+permissions:
+  contents: write
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { ref: media }
+      - name: Download requested files
+        run: |
+          set -e
+          for f in fetch/*.txt; do
+            url=$(sed -n 1p "$f"); dest=$(sed -n 2p "$f")
+            case "$dest" in *..*|/*) echo "bad dest $dest"; exit 1;; esac
+            mkdir -p "$(dirname "$dest")"
+            curl -fsSL --retry 3 -o "$dest" "$url"
+            ls -la "$dest"
+            git rm -q "$f"
+          done
+      - name: Commit
+        run: |
+          git config user.name "media-bot"; git config user.email "media-bot@users.noreply.github.com"
+          git add -A && git commit -m "Fetch media files" && git push
