@@ -179,6 +179,7 @@ async function queue(email: string): Promise<QueueData & { tools: ToolSummary[] 
     return {
       product: k,
       name: PRODUCTS[k].name,
+      ready: k === "linkedin" ? !!String(profile?.about || "").trim() : !!String(ch[k]?.settings.about || "").trim(),
       connected: k === "linkedin" ? profile?.connected === true : ch[k]?.connected === true,
       plan: !sub ? "Not started" : sub.status === "trial" ? "Free trial" : lapsed(sub) ? "Expired" : sub.status === "active" ? `${sub.plan === "pro" ? "Pro" : "Starter"}` : sub.status,
       left: sub ? remaining(sub) : PRODUCTS[k].trial,

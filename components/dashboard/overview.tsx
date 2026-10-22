@@ -14,6 +14,7 @@ import { QueueRow } from "./schedule-view"
 import { useItems } from "./actions"
 import { limited, loadKey, sectionKey, type View } from "./state"
 import { BUSINESSES, type BusinessKey } from "@/lib/dashboard/businesses"
+import { GettingStarted } from "@/components/autopilot/account-views"
 
 // The Blog page's own sections: "blogpost" needs a post id, and the overview shows neither.
 const BLOG_SECTIONS = ["blog", "blogpost"]
@@ -87,6 +88,7 @@ export function Overview({ biz, start, end, cmp, compareLabel, go, refreshTick }
 
   return (
     <div className="space-y-6">
+      {biz === "autopilot" && rawQueue?.tools ? <GettingStarted tools={rawQueue.tools} go={go} /> : null}
       {biz === "autopilot" ? <Automations tools={rawQueue?.tools ?? null} go={go} /> : null}
       <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-4">
         {business.picks.map((p) => {

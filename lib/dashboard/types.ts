@@ -111,7 +111,7 @@ export type QueueItem = {
 }
 
 /** Autopilot only: each tool's plan and state, for the Overview. */
-export type ToolSummary = { product: "linkedin" | "meta" | "blog" | "newsletter"; name: string; connected: boolean; plan: string; left: number; limit: number; live: boolean; drafts: number; scheduled: number }
+export type ToolSummary = { product: "linkedin" | "meta" | "blog" | "newsletter"; name: string; ready: boolean; connected: boolean; plan: string; left: number; limit: number; live: boolean; drafts: number; scheduled: number }
 
 export type QueueData = { ok: true; section: "queue"; generatedAt: string; items: QueueItem[]; notes?: string[]; tools?: ToolSummary[] }
 

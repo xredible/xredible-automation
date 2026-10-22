@@ -355,23 +355,36 @@ export function PasswordPanel({ onClose }: { onClose: () => void }) {
 }
 
 type CustomerRow = {
-  sub: { id: number; email: string; product: string; plan: string; status: string; postLimit: number; used: number; periodEnd: string | null; note: string; rzpSubId: string }
+  sub: { id: number; email: string; product: string; plan: string; cycle?: string; status: string; postLimit: number; used: number; periodEnd: string | null; note: string; rzpSubId: string }
   name: string
   liName: string
   connected: boolean
+  upi: { plan: string; utr: string; at: string; cycle: string; coupon: string; amount: number | null } | null
 }
+type Stats = { mrr: number; activePaid: number; trials: number; customers: number; conversion: number; revenue30: number; revenueAll: number; churn30: number; pending: number; byProduct: Record<string, number> }
+type CouponRow = { id: number; code: string; percent: number; products: string; maxUses: number; used: number; expires: string | null; active: boolean }
 
-/** Admin: Autopilot customers, their plans, and UPI payments waiting to be checked. */
+const inr = (paise: number) => `₹${Math.round(paise / 100).toLocaleString("en-IN")}`
+const pct = (n: number) => `${Math.round(n * 100)}%`
+
+/** Admin: Autopilot revenue, customers, UPI payments waiting to be checked, and coupon codes. */
 export function CustomersPanel({ onClose }: { onClose: () => void }) {
   const [list, setList] = useState<CustomerRow[] | null>(null)
+  const [stats, setStats] = useState<Stats | null>(null)
+  const [coupons, setCoupons] = useState<CouponRow[]>([])
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState<number | null>(null)
+  const [tab, setTab] = useState<"customers" | "coupons">("customers")
+  const [q, setQ] = useState("")
+  const [c, setC] = useState({ code: "", percent: "20", products: "", maxUses: "", expires: "" })
   const load = useCallback(async () => {
     try {
       const r = await fetch("/dashboard/customers", { cache: "no-store" })
-      const j = (await r.json()) as { ok?: boolean; customers?: CustomerRow[]; error?: string }
+      const j = (await r.json()) as { ok?: boolean; customers?: CustomerRow[]; stats?: Stats; coupons?: CouponRow[]; error?: string }
       if (j.ok && j.customers) {
         setList(j.customers)
+        setStats(j.stats || null)
+        setCoupons(j.coupons || [])
         setError(null)
       } else setError(j.error || "Could not load customers.")
     } catch {
@@ -382,77 +395,156 @@ export function CustomersPanel({ onClose }: { onClose: () => void }) {
     load()
   }, [load])
   const run = async (body: Record<string, unknown>) => {
-    setBusy(Number(body.id))
+    setBusy(Number(body.id ?? body.couponId ?? -1))
+    let ok = false
     try {
       const r = await fetch("/dashboard/customers", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) })
       const j = (await r.json()) as { ok?: boolean; error?: string }
+      ok = !!j.ok
       if (!j.ok) setError(j.error || "That didn't work.")
+      else setError(null)
     } catch {
       setError("No connection. Try again.")
     }
     setBusy(null)
     load()
+    return ok
   }
-  const upi = (note: string) => /^upi:(starter|pro):([A-Za-z0-9]+):(.+)$/.exec(note)
+  const shown = (list || []).filter((x) => !q || `${x.name} ${x.sub.email} ${x.sub.product}`.toLowerCase().includes(q.toLowerCase()))
+  const tile = (label: string, value: string, sub?: string) => (
+    <div className="rounded-lg border border-[var(--line)] px-3 py-2">
+      <div className="text-[11px] font-medium uppercase tracking-[0.05em] text-[var(--faint)]">{label}</div>
+      <div className="text-lg font-semibold tabular-nums">{value}</div>
+      {sub ? <div className="text-[11px] text-[var(--muted)]">{sub}</div> : null}
+    </div>
+  )
   return (
-    <Modal title="Customers" onClose={onClose} wide>
-      <p className="text-sm text-[var(--muted)]">People who signed up for an automation. UPI payments waiting for you are at the top: check the UTR in your bank or UPI app, then activate.</p>
+    <Modal title="Customers & revenue" onClose={onClose} wide>
+      {stats ? (
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+          {tile("Monthly recurring", inr(stats.mrr), `${stats.activePaid} paid plans`)}
+          {tile("Revenue, 30 days", inr(stats.revenue30), `${inr(stats.revenueAll)} all time`)}
+          {tile("Trial → paid", pct(stats.conversion), `${stats.customers} customers · ${stats.trials} on trial`)}
+          {tile("Churn, 30 days", pct(stats.churn30), stats.pending ? `${stats.pending} UPI payments to check` : "No UPI payments waiting")}
+        </div>
+      ) : null}
+      <div className="mt-4 flex flex-wrap items-center gap-2">
+        {(["customers", "coupons"] as const).map((t) => (
+          <button key={t} type="button" onClick={() => setTab(t)} className={`rounded-lg px-3 py-1.5 text-[13px] font-medium ${tab === t ? "bg-[var(--brand-soft)] text-[var(--brand)]" : "text-[var(--muted)] hover:bg-[var(--chip)]"}`}>
+            {t === "customers" ? "Customers" : "Coupon codes"}
+          </button>
+        ))}
+        {tab === "customers" ? <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search name, email or tool" className="ml-auto w-56 rounded-lg border border-[var(--line)] bg-[var(--panel)] px-3 py-1.5 text-sm" /> : null}
+      </div>
       {error ? <div className="mt-3 rounded-lg bg-[var(--bad-bg)] px-3 py-2 text-sm text-[var(--bad)]">{error}</div> : null}
-      <ul className="mt-4 divide-y divide-[var(--line-soft)] rounded-xl border border-[var(--line)]">
-        {!list ? <li className="px-4 py-6 text-sm text-[var(--faint)]">Loading customers…</li> : null}
-        {list && !list.length ? <li className="px-4 py-6 text-sm text-[var(--faint)]">No customers yet. Share xredible.in/dashboard?signup to get the first ones.</li> : null}
-        {list?.map(({ sub, name, liName, connected }) => {
-          const u = upi(sub.note)
-          return (
-            <li key={sub.id} className="px-4 py-3">
-              <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-                <div className="min-w-0 flex-1">
-                  <div className="truncate text-sm font-semibold">{name || sub.email}</div>
-                  <div className="truncate text-[12px] text-[var(--muted)]">
-                    {sub.email} · {PRODUCTS[sub.product as ProductKey]?.name || sub.product} · {connected ? `connected (${liName})` : "not connected"}
-                  </div>
-                </div>
-                <div className="text-right text-[12.5px]">
-                  <div className="font-semibold capitalize">
-                    {sub.plan} · {sub.status}
-                  </div>
-                  <div className="text-[var(--muted)]">
-                    {sub.used}/{sub.postLimit} used{sub.periodEnd ? ` · until ${when(sub.periodEnd)}` : ""}
-                  </div>
-                </div>
-              </div>
-              {u ? (
-                <div className="mt-2 rounded-lg bg-[var(--brand-soft)] px-3 py-2 text-[13px]">
-                  UPI payment for <b className="capitalize">{u[1]}</b> · UTR <b className="font-mono">{u[2]}</b> · sent {when(u[3])}
-                </div>
-              ) : sub.note ? (
-                <div className="mt-2 text-[12.5px] text-[var(--muted)]">{sub.note}</div>
-              ) : null}
-              <div className="mt-2 flex flex-wrap gap-1.5">
-                <button type="button" className={ghost} disabled={busy === sub.id} onClick={() => run({ op: "activate", id: sub.id, plan: "starter" })}>
-                  {sub.status === "active" ? "+30 days Starter" : "Activate Starter"}
+      {tab === "coupons" ? (
+        <div className="mt-3 space-y-3">
+          <form
+            className="grid gap-2 rounded-xl border border-[var(--line)] p-3 sm:grid-cols-6"
+            onSubmit={async (e) => {
+              e.preventDefault()
+              if (await run({ op: "coupon", ...c })) setC({ code: "", percent: "20", products: "", maxUses: "", expires: "" })
+            }}
+          >
+            <input required value={c.code} onChange={(e) => setC({ ...c, code: e.target.value.toUpperCase() })} placeholder="CODE" className="rounded-lg border border-[var(--line)] bg-[var(--panel)] px-2.5 py-1.5 text-sm uppercase sm:col-span-2" />
+            <input required type="number" min={1} max={100} value={c.percent} onChange={(e) => setC({ ...c, percent: e.target.value })} placeholder="% off" className="rounded-lg border border-[var(--line)] bg-[var(--panel)] px-2.5 py-1.5 text-sm" />
+            <input type="number" min={0} value={c.maxUses} onChange={(e) => setC({ ...c, maxUses: e.target.value })} placeholder="Max uses" className="rounded-lg border border-[var(--line)] bg-[var(--panel)] px-2.5 py-1.5 text-sm" />
+            <input type="date" value={c.expires} onChange={(e) => setC({ ...c, expires: e.target.value })} className="rounded-lg border border-[var(--line)] bg-[var(--panel)] px-2.5 py-1.5 text-sm" title="Expires (optional)" />
+            <button type="submit" className="rounded-lg bg-[var(--brand)] px-3 py-1.5 text-sm font-semibold text-white dark:text-[var(--nav)]">
+              Create
+            </button>
+            <select value={c.products} onChange={(e) => setC({ ...c, products: e.target.value })} className="rounded-lg border border-[var(--line)] bg-[var(--panel)] px-2.5 py-1.5 text-sm sm:col-span-6">
+              <option value="">All automations</option>
+              {Object.values(PRODUCTS).map((p) => (
+                <option key={p.key} value={p.key}>
+                  Only {p.name}
+                </option>
+              ))}
+            </select>
+          </form>
+          <p className="text-xs text-[var(--muted)]">Customers type the code when paying by UPI. The discount is shown to them and to you when you activate.</p>
+          <ul className="divide-y divide-[var(--line-soft)] rounded-xl border border-[var(--line)]">
+            {!coupons.length ? <li className="px-4 py-4 text-sm text-[var(--faint)]">No coupon codes yet.</li> : null}
+            {coupons.map((x) => (
+              <li key={x.id} className="flex flex-wrap items-center gap-3 px-4 py-2.5 text-sm">
+                <span className="font-mono font-semibold">{x.code}</span>
+                <span>{x.percent}% off</span>
+                <span className="text-[var(--muted)]">
+                  {x.products ? PRODUCTS[x.products as ProductKey]?.name || x.products : "all automations"} · used {x.used}
+                  {x.maxUses ? ` of ${x.maxUses}` : ""}
+                  {x.expires ? ` · until ${when(x.expires)}` : ""}
+                </span>
+                <button type="button" className={ghost + " ml-auto"} disabled={busy === x.id} onClick={() => run({ op: "coupon-active", couponId: x.id, active: !x.active })}>
+                  {x.active ? "Turn off" : "Turn on"}
                 </button>
-                <button type="button" className={ghost} disabled={busy === sub.id} onClick={() => run({ op: "activate", id: sub.id, plan: "pro" })}>
-                  {sub.status === "active" ? "+30 days Pro" : "Activate Pro"}
-                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : (
+        <ul className="mt-3 divide-y divide-[var(--line-soft)] rounded-xl border border-[var(--line)]">
+          {!list ? <li className="px-4 py-6 text-sm text-[var(--faint)]">Loading customers…</li> : null}
+          {list && !list.length ? <li className="px-4 py-6 text-sm text-[var(--faint)]">No customers yet. Share xredible.in/dashboard?signup to get the first ones.</li> : null}
+          {shown.map(({ sub, name, liName, connected, upi: u }) => {
+            const brand = sub.email.includes("::") ? ` · brand ${sub.email.split("::")[1]}` : ""
+            return (
+              <li key={sub.id} className="px-4 py-3">
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                  <div className="min-w-0 flex-1">
+                    <div className="truncate text-sm font-semibold">{name || sub.email}</div>
+                    <div className="truncate text-[12px] text-[var(--muted)]">
+                      {sub.email.split("::")[0]}
+                      {brand} · {PRODUCTS[sub.product as ProductKey]?.name || sub.product} · {connected ? `connected (${liName})` : "not connected"}
+                    </div>
+                  </div>
+                  <div className="text-right text-[12.5px]">
+                    <div className="font-semibold capitalize">
+                      {sub.plan}
+                      {sub.cycle === "yearly" ? " · yearly" : ""} · {sub.status}
+                    </div>
+                    <div className="text-[var(--muted)]">
+                      {sub.used}/{sub.postLimit} used{sub.periodEnd ? ` · until ${when(sub.periodEnd)}` : ""}
+                    </div>
+                  </div>
+                </div>
                 {u ? (
-                  <button type="button" className={ghost + " text-[var(--bad)]"} disabled={busy === sub.id} onClick={() => run({ op: "reject", id: sub.id })}>
-                    Payment not found
-                  </button>
+                  <div className="mt-2 rounded-lg bg-[var(--brand-soft)] px-3 py-2 text-[13px]">
+                    UPI payment{u.amount ? ` of ${inr(u.amount)}` : ""} for <b className="capitalize">{u.plan}</b> ({u.cycle}){u.coupon ? ` with coupon ${u.coupon}` : ""} · UTR <b className="font-mono">{u.utr}</b> · sent {when(u.at)}
+                  </div>
+                ) : sub.note ? (
+                  <div className="mt-2 text-[12.5px] text-[var(--muted)]">{sub.note}</div>
                 ) : null}
-                {sub.status === "active" ? (
-                  <button type="button" className={ghost} disabled={busy === sub.id} onClick={() => run({ op: "stop", id: sub.id })}>
-                    Stop plan
+                <div className="mt-2 flex flex-wrap gap-1.5">
+                  {u ? (
+                    <button type="button" className={ghost + " border-[var(--brand)] text-[var(--brand)]"} disabled={busy === sub.id} onClick={() => run({ op: "activate", id: sub.id })}>
+                      Payment received: activate {u.plan} ({u.cycle})
+                    </button>
+                  ) : null}
+                  <button type="button" className={ghost} disabled={busy === sub.id} onClick={() => window.confirm("Record a manual payment and start Starter (monthly) for this customer?") && run({ op: "activate", id: sub.id, plan: "starter", cycle: "monthly" })}>
+                    {sub.status === "active" ? "+30 days Starter" : "Activate Starter"}
                   </button>
-                ) : null}
-                <button type="button" className={ghost} disabled={busy === sub.id} onClick={() => run({ op: "trial", id: sub.id })}>
-                  Reset free trial
-                </button>
-              </div>
-            </li>
-          )
-        })}
-      </ul>
+                  <button type="button" className={ghost} disabled={busy === sub.id} onClick={() => window.confirm("Record a manual payment and start Pro (monthly) for this customer?") && run({ op: "activate", id: sub.id, plan: "pro", cycle: "monthly" })}>
+                    {sub.status === "active" ? "+30 days Pro" : "Activate Pro"}
+                  </button>
+                  {u ? (
+                    <button type="button" className={ghost + " text-[var(--bad)]"} disabled={busy === sub.id} onClick={() => run({ op: "reject", id: sub.id })}>
+                      Payment not found
+                    </button>
+                  ) : null}
+                  {sub.status === "active" ? (
+                    <button type="button" className={ghost} disabled={busy === sub.id} onClick={() => run({ op: "stop", id: sub.id })}>
+                      Stop plan
+                    </button>
+                  ) : null}
+                  <button type="button" className={ghost} disabled={busy === sub.id} onClick={() => run({ op: "trial", id: sub.id })}>
+                    Reset free trial
+                  </button>
+                </div>
+              </li>
+            )
+          })}
+        </ul>
+      )}
     </Modal>
   )
 }

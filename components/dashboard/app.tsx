@@ -5,14 +5,15 @@
 
 import { useEffect, useMemo, useRef, useState } from "react"
 import { BadgeIndianRupee, CalendarRange, Check, ChevronDown, ChevronsUpDown, KeyRound, LogOut, Menu, RefreshCw, Users, X } from "lucide-react"
-import type { BlogData, QueueData, SectionData } from "@/lib/dashboard/types"
-import { BUSINESSES, TOOL_VIEW, type BusinessKey } from "@/lib/dashboard/businesses"
+import type { BlogData, QueueData, SectionData, ToolSummary } from "@/lib/dashboard/types"
+import { ACCOUNT_VIEWS, BUSINESSES, TOOL_VIEW, type BusinessKey } from "@/lib/dashboard/businesses"
+import { BillingView, BrandSwitcher, ChatWidget, HelpView, SettingsView, VerifyBanner } from "@/components/autopilot/account-views"
 import { LinkedInAutopilot } from "@/components/autopilot/customer-app"
 import { ToolApp } from "@/components/autopilot/tool-app"
 import { CSS as TOOL_CSS } from "@/components/autopilot/ui"
 import { signOut } from "@/app/dashboard/actions"
 import { addDays, dateTime, daysBetween, rangeLabel, todayIST } from "./format"
-import { COMPARE, PRESETS, presetDates, readUrl, sectionKey, useSection, writeUrl, type Cmp, type DashState, type Filters, type Preset, type View } from "./state"
+import { COMPARE, loadKey, PRESETS, presetDates, readUrl, sectionKey, useSection, writeUrl, type Cmp, type DashState, type Filters, type Preset, type View } from "./state"
 import { PLATFORM } from "./brand"
 import { FilterBar, SectionView } from "./section-view"
 import { ScheduleView } from "./schedule-view"
@@ -61,7 +62,9 @@ export function DashboardApp({ allowed, me }: { allowed: BusinessKey[]; me: Me }
   const view = state?.view ?? "overview"
   const filters = state?.filters[view] || {}
   const tool = TOOL_VIEW[view]
-  const key = state && view !== "overview" && !tool ? (view === "schedule" ? sectionKey(biz, "queue", state.start, state.end, state.cmp) : sectionKey(biz, view, state.start, state.end, state.cmp, filters)) : null
+  const account = ACCOUNT_VIEWS.includes(view)
+  const page = !!tool || account
+  const key = state && view !== "overview" && !page ? (view === "schedule" ? sectionKey(biz, "queue", state.start, state.end, state.cmp) : sectionKey(biz, view, state.start, state.end, state.cmp, filters)) : null
   const { data, loading, refresh } = useSection(key)
   const compareLabel = state?.cmp === "prev" ? "previous period" : state?.cmp === "yoy" ? "last year" : null
 
@@ -77,7 +80,7 @@ export function DashboardApp({ allowed, me }: { allowed: BusinessKey[]; me: Me }
     window.scrollTo({ top: 0 })
   }
   const setFilters = (f: Filters) => setState((s) => (s ? { ...s, filters: { ...s.filters, [s.view]: Object.fromEntries(Object.entries(f).filter(([, v]) => v)) } } : s))
-  const doRefresh = () => (view === "overview" || tool ? setTick((t) => t + 1) : refresh())
+  const doRefresh = () => (view === "overview" || page ? setTick((t) => t + 1) : refresh())
   const meta = PLATFORM[view]
   const sectionData = data && data.ok && "kpis" in data ? (data as SectionData) : null
   const updated = data && data.ok ? (data as SectionData | QueueData).generatedAt : null
@@ -85,6 +88,7 @@ export function DashboardApp({ allowed, me }: { allowed: BusinessKey[]; me: Me }
   return (
     <div className="dash-root min-h-[100dvh] font-[family-name:var(--font-dash),system-ui,sans-serif] antialiased">
       <style>{CSS}</style>
+      {biz === "autopilot" && me.role === "customer" ? <ChatWidget /> : null}
       {panel === "accounts" ? <AccountsPanel me={me} onClose={() => setPanel(null)} /> : null}
       {panel === "password" ? <PasswordPanel onClose={() => setPanel(null)} /> : null}
       {panel === "customers" ? <CustomersPanel onClose={() => setPanel(null)} /> : null}
@@ -96,7 +100,7 @@ export function DashboardApp({ allowed, me }: { allowed: BusinessKey[]; me: Me }
         >
           <div className="flex h-full flex-col">
             <div className="flex items-center gap-1 px-3 pb-5 pt-6">
-              <BusinessSwitcher current={biz} allowed={allowed} onPick={switchTo} />
+              {biz === "autopilot" && allowed.length === 1 ? <BrandSwitcher /> : <BusinessSwitcher current={biz} allowed={allowed} onPick={switchTo} />}
               <button type="button" onClick={() => setMenu(false)} className="ml-auto shrink-0 rounded-md p-1.5 text-white/70 hover:bg-white/10 lg:hidden" aria-label="Close menu">
                 <X className="h-4 w-4" />
               </button>
@@ -178,8 +182,8 @@ export function DashboardApp({ allowed, me }: { allowed: BusinessKey[]; me: Me }
                   <span className="truncate">{meta.label}</span>
                 </h1>
                 <div className="ml-auto flex items-center gap-2">
-                  {state && view !== "blog" && !tool ? <RangePicker state={state} onChange={(p) => set(p)} /> : null}
-                  {state && view !== "schedule" && view !== "blog" && !tool ? (
+                  {state && view !== "blog" && !page ? <RangePicker state={state} onChange={(p) => set(p)} /> : null}
+                  {state && view !== "schedule" && view !== "blog" && !page ? (
                     <label className="relative hidden sm:block">
                       <span className="sr-only">Compare with</span>
                       <select
@@ -208,7 +212,7 @@ export function DashboardApp({ allowed, me }: { allowed: BusinessKey[]; me: Me }
                   </button>
                 </div>
               </div>
-              {state && (sectionData || PLATFORM[view]) && view !== "overview" && view !== "schedule" && view !== "blog" && !tool ? (
+              {state && (sectionData || PLATFORM[view]) && view !== "overview" && view !== "schedule" && view !== "blog" && !page ? (
                 <div className="mt-2.5 flex flex-wrap items-center gap-2">
                   <label className="relative sm:hidden">
                     <span className="sr-only">Compare with</span>
@@ -232,8 +236,19 @@ export function DashboardApp({ allowed, me }: { allowed: BusinessKey[]; me: Me }
           <QueueActionsProvider biz={biz} onChanged={() => (view === "schedule" ? refresh() : window.dispatchEvent(new Event("ec-queue-changed")))} dataStamp={biz + view + (view === "schedule" ? updated || "" : "")}>
           <main className="mx-auto max-w-[1280px] px-4 pb-[max(2.5rem,env(safe-area-inset-bottom))] pt-5 sm:px-6 lg:px-8">
             <ViewBoundary key={view + (state ? sectionKey(biz, view, state.start, state.end, state.cmp, filters) : "")}>
+            {biz === "autopilot" && state ? (
+              <div className="mb-4">
+                <VerifyBanner />
+              </div>
+            ) : null}
             {!state ? (
               <SectionSkeleton />
+            ) : view === "settings" ? (
+              <SettingsView me={me} />
+            ) : view === "help" ? (
+              <HelpView />
+            ) : view === "billing" ? (
+              <BillingPage key={tick} start={state.start} end={state.end} go={go} />
             ) : tool ? (
               <div key={tick} className="xd space-y-5 !bg-transparent">
                 <style>{TOOL_CSS}</style>
@@ -430,4 +445,13 @@ function RangePicker({ state, onChange }: { state: DashState; onChange: (p: Part
       ) : null}
     </div>
   )
+}
+
+/** Billing needs each tool's plan summary, which comes with the calendar data. */
+function BillingPage({ start, end, go }: { start: string; end: string; go: (v: View) => void }) {
+  const [tools, setTools] = useState<ToolSummary[] | null>(null)
+  useEffect(() => {
+    loadKey(sectionKey("autopilot", "queue", start, end, "none"), true).then((d) => setTools(d.ok && "tools" in d ? ((d as QueueData).tools ?? []) : []))
+  }, [start, end])
+  return <BillingView tools={tools} go={go} />
 }

@@ -24,7 +24,8 @@ export default function Terms() {
       <ul>
         <li>Each automation starts with a free trial (3 published posts, articles or newsletter issues). After that, publishing pauses until you subscribe.</li>
         <li>Plans are billed monthly in Indian rupees, by UPI or through Razorpay, starting on the day your payment is confirmed. Prices include any applicable taxes unless stated otherwise.</li>
-        <li>Each plan includes a number of published posts, articles or issues per month (and, for newsletters, a maximum number of subscribers). Unused posts don&rsquo;t carry over.</li>
+        <li>Each plan includes a number of published posts, articles or issues per month (and, for newsletters, a maximum number of subscribers). Unused posts don&rsquo;t carry over. Yearly plans cost 10 months&rsquo; price and include the whole year&rsquo;s posts up front.</li>
+        <li>Coupon codes and referral rewards (one free month for you and the friend you invite, once they subscribe) can&rsquo;t be exchanged for cash and may be withdrawn if they are misused.</li>
         <li>You can cancel any time from your dashboard; your plan keeps working until the end of the month you&rsquo;ve paid for. We don&rsquo;t refund partial months, except where the law requires it or a fault on our side stopped the service.</li>
         <li>If a payment fails, publishing pauses until it goes through.</li>
       </ul>

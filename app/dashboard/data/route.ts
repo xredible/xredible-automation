@@ -4,6 +4,7 @@
 
 import { NextResponse } from "next/server"
 import { canSee, currentUser, loadSection, sectionAllowed } from "@/lib/dashboard/server"
+import { ownerKey } from "@/lib/autopilot/brands"
 import { DEFAULT_BUSINESS, isBusiness } from "@/lib/dashboard/businesses"
 import { loadAutopilotSection } from "@/lib/autopilot/report"
 
@@ -27,6 +28,6 @@ export async function GET(request: Request) {
     return NextResponse.json({ ok: false, error: "Unknown section." }, { status: 400 })
   }
   // A customer's own automations are computed here, from their data and connected accounts.
-  const result = biz === "autopilot" ? await loadAutopilotSection(me.email, section, search) : await loadSection(biz, section, search, search.get("fresh") === "1")
+  const result = biz === "autopilot" ? await loadAutopilotSection(await ownerKey(me.email), section, search) : await loadSection(biz, section, search, search.get("fresh") === "1")
   return NextResponse.json(result.body, { status: result.status, headers: { "Cache-Control": "private, no-store" } })
 }

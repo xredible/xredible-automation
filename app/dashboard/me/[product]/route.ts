@@ -29,6 +29,7 @@ import {
   viewChannel,
   type ToolKey,
 } from "@/lib/autopilot/tools"
+import { ownerKey } from "@/lib/autopilot/brands"
 
 export const runtime = "nodejs"
 export const dynamic = "force-dynamic"
@@ -66,8 +67,9 @@ export async function GET(request: Request, ctx: Ctx) {
   if (!isTool(product)) return json({ ok: false, error: "Unknown tool." }, 404)
   const me = await signedIn(request)
   if (me instanceof NextResponse) return me
+  const owner = await ownerKey(me.email)
   try {
-    return json(await state(me.email, product))
+    return json(await state(owner, product))
   } catch (e) {
     return json({ ok: false, error: errText(e) }, 502)
   }
@@ -78,6 +80,7 @@ export async function POST(request: Request, ctx: Ctx) {
   if (!isTool(product)) return json({ ok: false, error: "Unknown tool." }, 404)
   const me = await signedIn(request)
   if (me instanceof NextResponse) return me
+  const owner = await ownerKey(me.email)
   let b: Record<string, unknown> = {}
   try {
     b = (await request.json()) as Record<string, unknown>
@@ -86,39 +89,39 @@ export async function POST(request: Request, ctx: Ctx) {
     const op = String(b.op || "")
     let extra: Record<string, unknown> = {}
     if (op === "settings") {
-      const before = await channelFor(me.email, product)
-      const saved = await saveSettings(me.email, product, b)
-      const items = await itemsFor(me.email, product)
+      const before = await channelFor(owner, product)
+      const saved = await saveSettings(owner, product, b)
+      const items = await itemsFor(owner, product)
       // First time "About" is filled in and the account is already connected: write the first drafts.
-      if (!before?.settings.about && saved.settings.about && saved.connected && !items.some((i) => i.status === "draft" || i.status === "approved")) await requestToolDrafts(me.email, product, 3).catch(() => {})
+      if (!before?.settings.about && saved.settings.about && saved.connected && !items.some((i) => i.status === "draft" || i.status === "approved")) await requestToolDrafts(owner, product, 3).catch(() => {})
     } else if (op === "connect" && product !== "meta") {
       if (!tokenKeySet()) throw new Error("Connecting is being switched on. Please try again soon.")
-      if (product === "blog") await connectWordPress(me.email, b)
-      else await connectSmtp(me.email, b)
-      const ch = await channelFor(me.email, product)
-      const items = await itemsFor(me.email, product)
-      if (ch?.settings.about && !items.length) await requestToolDrafts(me.email, product, 3).catch(() => {})
+      if (product === "blog") await connectWordPress(owner, b)
+      else await connectSmtp(owner, b)
+      const ch = await channelFor(owner, product)
+      const items = await itemsFor(owner, product)
+      if (ch?.settings.about && !items.length) await requestToolDrafts(owner, product, 3).catch(() => {})
     } else if (op === "page" && product === "meta") {
-      await pickPage(me.email, String(b.pageId || ""))
-      const ch = await channelFor(me.email, product)
-      const items = await itemsFor(me.email, product)
-      if (ch?.settings.about && !items.length) await requestToolDrafts(me.email, product, 3).catch(() => {})
+      await pickPage(owner, String(b.pageId || ""))
+      const ch = await channelFor(owner, product)
+      const items = await itemsFor(owner, product)
+      if (ch?.settings.about && !items.length) await requestToolDrafts(owner, product, 3).catch(() => {})
     } else if (op === "disconnect") {
-      await disconnect(me.email, product)
+      await disconnect(owner, product)
     } else if (op === "generate") {
-      const ch = await channelFor(me.email, product)
+      const ch = await channelFor(owner, product)
       if (!ch?.settings.about) return json({ ok: false, error: "Fill in 'About' first so the drafts fit you." }, 400)
       if (!ch.connected) return json({ ok: false, error: "Connect your account first." }, 400)
-      await requestToolDrafts(me.email, product, Math.min(5, Math.max(1, Number(b.count) || 3)))
+      await requestToolDrafts(owner, product, Math.min(5, Math.max(1, Number(b.count) || 3)))
     } else if (op === "contacts-add" && product === "newsletter") {
-      extra = { added: await addContacts(me.email, String(b.text || "")) }
+      extra = { added: await addContacts(owner, String(b.text || "")) }
     } else if (op === "contact-remove" && product === "newsletter") {
-      await removeContact(me.email, Number(b.id))
+      await removeContact(owner, Number(b.id))
     } else {
-      await itemAction(me.email, product, b)
+      await itemAction(owner, product, b)
       if (op === "test") extra = { tested: true }
     }
-    return json({ ...(await state(me.email, product)), ...extra })
+    return json({ ...(await state(owner, product)), ...extra })
   } catch (e) {
     return json({ ok: false, error: errText(e) }, 400)
   }
