@@ -373,13 +373,20 @@ function MetaConnect({ ch, busy, act }: { ch: Channel | null; busy: boolean; act
     <>
       {choose.length ? (
         <>
-          <p className="mt-2 text-sm">Which Facebook Page should we post to?</p>
+          <p className="mt-2 text-sm">
+            <b>One more step:</b> pick the Facebook Page to post to. Posting is paused until you pick one.
+          </p>
           <div className="mt-3 space-y-2">
             {choose.map((p) => (
-              <button key={p.id} type="button" className={ghost + " w-full justify-between"} disabled={busy} onClick={() => act({ op: "page", pageId: p.id })}>
-                <span className="font-semibold">{p.name}</span>
-                <span className="text-[var(--muted)]">{p.igUser ? `@${p.igUser}` : "no Instagram linked"}</span>
-              </button>
+              <div key={p.id} className={`flex flex-wrap items-center gap-3 rounded-lg border px-3 py-2.5 ${p.igUser ? "border-[var(--brand)]" : "border-[var(--line)]"}`}>
+                <div className="min-w-0 flex-1">
+                  <div className="text-sm font-semibold">{p.name}</div>
+                  <div className="text-[12.5px] text-[var(--muted)]">{p.igUser ? `Facebook + Instagram @${p.igUser}` : "Facebook only (no Instagram linked)"}</div>
+                </div>
+                <button type="button" className={p.igUser ? primary : ghost} disabled={busy} onClick={() => act({ op: "page", pageId: p.id })}>
+                  {busy ? "Saving…" : "Use this Page"}
+                </button>
+              </div>
             ))}
           </div>
         </>
