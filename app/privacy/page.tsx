@@ -14,6 +14,7 @@ export default function Privacy() {
         <li><b>Posts:</b> drafts, your edits, approval times, and links to published posts.</li>
         <li><b>Connected accounts:</b> the name of what you connect (LinkedIn profile, Facebook Page and Instagram account, WordPress site, or sending email address) and the access key or password that lets us publish what you approve. These are stored encrypted. LinkedIn keys expire after about 60 days.</li>
         <li><b>Newsletter subscribers:</b> the email addresses and names you add, and who unsubscribed. You own this list; we use it only to send your approved newsletters and never email these people for ourselves.</li>
+        <li><b>Emails we send you:</b> confirmation, password reset, drafts ready, plan reminders, failed posts and receipts. You can turn off the daily drafts email in Settings.</li>
         <li><b>Billing:</b> your plan, and the UPI reference number or Razorpay subscription ID of your payment. Card and bank details stay with your bank or Razorpay; we never receive them.</li>
       </ul>
       <h2>How we use it</h2>

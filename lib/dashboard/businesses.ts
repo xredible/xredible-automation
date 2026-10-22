@@ -29,6 +29,9 @@ export type ViewName =
   | "ap-meta"
   | "ap-blog"
   | "ap-newsletter"
+  | "settings"
+  | "billing"
+  | "help"
 
 export type Business = {
   key: BusinessKey
@@ -153,6 +156,7 @@ export const BUSINESSES: Record<BusinessKey, Business> = {
       { group: "", items: ["overview", "schedule"] },
       { group: "Results", items: ["instagram", "facebook", "linkedin", "articles", "newsletter"] },
       { group: "Automations", items: ["ap-linkedin", "ap-meta", "ap-blog", "ap-newsletter"] },
+      { group: "Account", items: ["billing", "settings", "help"] },
     ],
     sections: ["queue", "instagram", "facebook", "linkedin", "articles", "newsletter"],
     picks: [
@@ -179,6 +183,9 @@ export const BUSINESSES: Record<BusinessKey, Business> = {
 export const BUSINESS_KEYS = (Object.keys(BUSINESSES) as BusinessKey[]).filter((k) => k !== "autopilot")
 
 /** Autopilot views that open a tool's own page (settings, connection, review queue) instead of a report. */
+/** Autopilot account pages (not reports). */
+export const ACCOUNT_VIEWS: ViewName[] = ["settings", "billing", "help"]
+
 export const TOOL_VIEW: Partial<Record<ViewName, "linkedin" | "meta" | "blog" | "newsletter">> = { "ap-linkedin": "linkedin", "ap-meta": "meta", "ap-blog": "blog", "ap-newsletter": "newsletter" }
 
 export const isBusiness = (v: unknown): v is BusinessKey => typeof v === "string" && v in BUSINESSES

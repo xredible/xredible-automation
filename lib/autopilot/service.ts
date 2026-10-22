@@ -43,12 +43,13 @@ export type LiProfileView = Omit<LiProfile, "tokenEnc" | "liSub"> & { tokenExpir
 
 const num = (v: unknown, d = 0) => (Number.isFinite(Number(v)) ? Number(v) : d)
 
-function asSub(r: Record<string, unknown>): Subscription {
+export function asSub(r: Record<string, unknown>): Subscription {
   return {
     id: num(r.id),
     email: String(r.email || ""),
     product: (isProduct(r.product) ? r.product : "linkedin") as ProductKey,
     plan: (r.plan === "starter" || r.plan === "pro" ? r.plan : "trial") as Subscription["plan"],
+    cycle: r.cycle === "yearly" ? "yearly" : "monthly",
     status: (["trial", "pending", "active", "halted", "cancelled"].includes(String(r.status)) ? r.status : "trial") as Subscription["status"],
     postLimit: num(r.postLimit),
     used: num(r.used),

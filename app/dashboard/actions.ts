@@ -5,6 +5,9 @@ import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
 import { BUSINESS_KEYS } from "@/lib/dashboard/businesses"
 import { gatewaySecret } from "@/lib/dashboard/gateway"
+import { EMAILS, makeToken, readToken, send, verifyUrl } from "@/lib/autopilot/account"
+import { noteReferral } from "@/lib/autopilot/billing"
+import { SITE } from "@/lib/autopilot/linkedin"
 import {
   COOKIE,
   clearFailures,
@@ -139,5 +142,56 @@ export async function signUp(_prev: FormState, formData: FormData): Promise<Form
   const err = await saveUser(u)
   if (err) return { error: err }
   await startSession(u)
-  redirect("/dashboard?p=linkedin")
+  await Promise.all([send(email, EMAILS.welcome(name, verifyUrl(email))), noteReferral(email, String(formData.get("ref") ?? ""))]).catch(() => {})
+  redirect("/dashboard?biz=autopilot")
+}
+
+// ---------- forgot password ----------
+
+const resets = new Map<string, number>()
+
+/** Emails a reset link. Always answers the same, so nobody can test which emails have accounts. */
+export async function requestReset(_prev: FormState, formData: FormData): Promise<FormState> {
+  const email = normEmail(formData.get("email"))
+  const done: FormState = { error: null, ok: "If that email has an account, a reset link is on its way. Check your inbox (and spam) in a minute." }
+  if (!validEmail(email)) return { error: "Enter your email." }
+  const last = resets.get(email) || 0
+  if (Date.now() - last < 120_000) return done
+  resets.set(email, Date.now())
+  const u = await findUser(email, true)
+  if (u && u.active) {
+    const t = makeToken("reset", email, 1, u.passHash.slice(-16))
+    await send(email, EMAILS.reset(u.name, `${SITE}/dashboard/reset?t=${encodeURIComponent(t)}`))
+  } else await slow()
+  return done
+}
+
+/** Sets a new password from an emailed link (the link stops working once the password changes). */
+export async function resetPassword(_prev: FormState, formData: FormData): Promise<FormState> {
+  const token = String(formData.get("t") ?? "")
+  const next = String(formData.get("password") ?? "")
+  const email = await readToken("reset", token, async (e) => (await findUser(e, true))?.passHash.slice(-16) || "none")
+  if (!email) return { error: "This link has expired or was already used. Ask for a new one from the sign-in page." }
+  const bad = passwordProblem(next)
+  if (bad) return { error: bad }
+  const fresh = await findUser(email, true)
+  if (!fresh || !fresh.active) return { error: "This account isn't active." }
+  const u = { ...fresh, passHash: await hashPassword(next), sessionVersion: fresh.sessionVersion + 1, lastLogin: new Date().toISOString() }
+  const err = await saveUser(u)
+  if (err) return { error: err }
+  clearFailures(email)
+  await startSession(u)
+  redirect("/dashboard")
+}
+
+/** Changes the signed-in person's display name. */
+export async function changeMyName(_prev: FormState, formData: FormData): Promise<FormState> {
+  const me = await currentUser()
+  if (!me) return { error: "You're signed out. Reload the page." }
+  const name = String(formData.get("name") ?? "").trim().slice(0, 80)
+  if (!name) return { error: "Enter your name." }
+  const fresh = await findUser(me.email, true)
+  if (!fresh) return { error: "Account not found." }
+  const err = await saveUser({ ...fresh, name })
+  return err ? { error: err } : { error: null, ok: "Saved." }
 }

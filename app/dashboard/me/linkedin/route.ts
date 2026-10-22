@@ -11,6 +11,7 @@ import { linkedinConfigured } from "@/lib/autopilot/linkedin"
 import { razorpayConfigured, razorpayKeyId } from "@/lib/autopilot/razorpay"
 import { tokenKeySet } from "@/lib/autopilot/crypto"
 import { upiOptions } from "@/lib/autopilot/upi"
+import { ownerKey } from "@/lib/autopilot/brands"
 
 export const runtime = "nodejs"
 export const dynamic = "force-dynamic"
@@ -30,8 +31,9 @@ async function state(email: string) {
 export async function GET(request: Request) {
   const me = await signedIn(request)
   if (me instanceof NextResponse) return me
+  const owner = await ownerKey(me.email)
   try {
-    return json(await state(me.email))
+    return json(await state(owner))
   } catch (e) {
     return json({ ok: false, error: errText(e) }, 502)
   }
@@ -40,6 +42,7 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   const me = await signedIn(request)
   if (me instanceof NextResponse) return me
+  const owner = await ownerKey(me.email)
   let b: Record<string, unknown> = {}
   try {
     b = (await request.json()) as Record<string, unknown>
@@ -47,21 +50,21 @@ export async function POST(request: Request) {
   try {
     const op = String(b.op || "")
     if (op === "profile") {
-      const before = await profileFor(me.email)
-      const saved = await saveProfile(me.email, b)
+      const before = await profileFor(owner)
+      const saved = await saveProfile(owner, b)
       // First time the profile is filled in and LinkedIn is already connected: write the first drafts.
-      const posts = await postsFor(me.email)
-      if (!before?.about && saved.about && saved.connected && !posts.some((p) => p.status === "draft" || p.status === "approved")) await requestDrafts(me.email, 3).catch(() => {})
+      const posts = await postsFor(owner)
+      if (!before?.about && saved.about && saved.connected && !posts.some((p) => p.status === "draft" || p.status === "approved")) await requestDrafts(owner, 3).catch(() => {})
     } else if (op === "generate") {
-      const prof = await profileFor(me.email)
+      const prof = await profileFor(owner)
       if (!prof || !prof.about) return json({ ok: false, error: "Fill in 'About you' first so the drafts sound like you." }, 400)
-      await requestDrafts(me.email, Math.min(5, Math.max(1, Number(b.count) || 3)))
+      await requestDrafts(owner, Math.min(5, Math.max(1, Number(b.count) || 3)))
     } else if (op === "disconnect") {
-      await disconnectLinkedIn(me.email)
+      await disconnectLinkedIn(owner)
     } else {
-      await postAction(me.email, b)
+      await postAction(owner, b)
     }
-    return json(await state(me.email))
+    return json(await state(owner))
   } catch (e) {
     return json({ ok: false, error: errText(e) }, 400)
   }

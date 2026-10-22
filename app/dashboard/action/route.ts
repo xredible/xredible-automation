@@ -4,6 +4,7 @@
 
 import { NextResponse } from "next/server"
 import { canSee, currentUser, parseAction, runAction } from "@/lib/dashboard/server"
+import { ownerKey } from "@/lib/autopilot/brands"
 import { BUSINESSES, DEFAULT_BUSINESS, isBusiness } from "@/lib/dashboard/businesses"
 import { runAutopilotAction } from "@/lib/autopilot/queue-actions"
 
@@ -35,6 +36,6 @@ export async function POST(request: Request) {
   }
   const action = parseAction(input)
   if (!action) return NextResponse.json({ ok: false, error: "That change isn't valid." }, { status: 400 })
-  const result = biz === "autopilot" ? await runAutopilotAction(me.email, action) : await runAction(biz, action)
+  const result = biz === "autopilot" ? await runAutopilotAction(await ownerKey(me.email), action) : await runAction(biz, action)
   return NextResponse.json(result.body, { status: result.status, headers: { "Cache-Control": "private, no-store" } })
 }

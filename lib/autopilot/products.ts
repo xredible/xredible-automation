@@ -5,6 +5,8 @@
 
 export type ProductKey = "linkedin" | "meta" | "blog" | "newsletter"
 export type PlanKey = "starter" | "pro"
+/** Monthly, or yearly at the price of 10 months (2 months free) with the year's posts up front. */
+export type Cycle = "monthly" | "yearly"
 
 export type Plan = { key: PlanKey; name: string; price: number; posts: number; blurb: string; contacts?: number }
 
@@ -82,6 +84,7 @@ export type Subscription = {
   email: string
   product: ProductKey
   plan: "trial" | PlanKey
+  cycle: Cycle
   status: "trial" | "pending" | "active" | "halted" | "cancelled"
   postLimit: number
   used: number
@@ -97,10 +100,16 @@ export const lapsed = (s: Subscription | null) => !!s && s.status === "active" &
 /** Can this subscription publish one more? */
 export const canPublish = (s: Subscription | null) => !!s && (s.status === "trial" || s.status === "active") && !lapsed(s) && s.used < s.postLimit
 
-/** A UPI payment waiting for the admin to check: note "upi:<plan>:<utr>:<when>". */
-export function pendingUpi(s: Subscription | null): { plan: PlanKey; utr: string; at: string } | null {
-  const m = /^upi:(starter|pro):([A-Za-z0-9]+):(.+)$/.exec(s?.note || "")
-  return m ? { plan: m[1] as PlanKey, utr: m[2], at: m[3] } : null
+export const YEARLY_MONTHS = 10
+export const priceOf = (product: ProductKey, plan: PlanKey, cycle: Cycle) => (planOf(product, plan)?.price || 0) * (cycle === "yearly" ? YEARLY_MONTHS : 1)
+export const limitOf = (product: ProductKey, plan: PlanKey, cycle: Cycle) => (planOf(product, plan)?.posts || 0) * (cycle === "yearly" ? 12 : 1)
+export const daysOf = (cycle: Cycle) => (cycle === "yearly" ? 365 : 30)
+export const isCycle = (v: unknown): v is Cycle => v === "monthly" || v === "yearly"
+
+/** A UPI payment waiting for the admin to check: note "upi:<plan>:<utr>:<when>|<cycle>|<coupon>|<amount paise>". */
+export function pendingUpi(s: Subscription | null): { plan: PlanKey; utr: string; at: string; cycle: Cycle; coupon: string; amount: number | null } | null {
+  const m = /^upi:(starter|pro):([A-Za-z0-9]+):([^|]+)(?:\|(monthly|yearly)\|([A-Z0-9]*)\|(\d+))?$/.exec(s?.note || "")
+  return m ? { plan: m[1] as PlanKey, utr: m[2], at: m[3], cycle: (m[4] as Cycle) || "monthly", coupon: m[5] || "", amount: m[6] ? Number(m[6]) : null } : null
 }
 export const remaining = (s: Subscription | null) => (s ? Math.max(0, s.postLimit - s.used) : 0)
 

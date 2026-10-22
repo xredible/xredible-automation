@@ -1,7 +1,7 @@
 // Platform names, colours and icons used across the dashboard.
 
 import type { ReactNode } from "react"
-import { CalendarDays, FileText, Globe, LayoutDashboard, Mail, MailOpen, Newspaper, PenLine, Pin, Search, TrendingUp } from "lucide-react"
+import { CalendarDays, CircleQuestionMark, CreditCard, FileText, Globe, LayoutDashboard, Mail, MailOpen, Newspaper, PenLine, Pin, Search, Settings, TrendingUp } from "lucide-react"
 
 // lucide-react 1.x has no brand icons, so these are simple line glyphs in the same style.
 type IconProps = { className?: string; "aria-hidden"?: boolean }
@@ -44,6 +44,9 @@ export const PLATFORM: Record<string, PlatformMeta> = {
   "ap-meta": { label: "Instagram + Facebook", short: "Instagram + Facebook", color: "#c13584", ...i(Instagram) },
   "ap-blog": { label: "Blog Writer", short: "Blog Writer", color: "#21759b", ...i(PenLine) },
   "ap-newsletter": { label: "Newsletter Autopilot", short: "Newsletter", color: "#7c6bc4", ...i(Newspaper) },
+  billing: { label: "Billing", short: "Billing", color: "#10203f", ...i(CreditCard) },
+  settings: { label: "Settings", short: "Settings", color: "#10203f", ...i(Settings) },
+  help: { label: "Help", short: "Help", color: "#10203f", ...i(CircleQuestionMark) },
 }
 
 export const platformKey = (p: string) => (p || "").toLowerCase().replace(/[^a-z]/g, "")
