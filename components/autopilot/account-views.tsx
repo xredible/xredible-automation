@@ -11,6 +11,7 @@ import { Card, Notice, Skeleton } from "@/components/dashboard/ui"
 import { PLATFORM } from "@/components/dashboard/brand"
 import { PasswordPanel, type Me } from "@/components/dashboard/accounts"
 import { changeMyName, type FormState } from "@/app/dashboard/actions"
+import { useInApp } from "@/lib/dashboard/app-mode"
 
 type Brand = { n: number; name: string; key: string }
 export type AccountState = {
@@ -291,10 +292,11 @@ export function GettingStarted({ tools, go }: { tools: ToolSummary[]; go: (v: Vi
 export function BillingView({ tools, go }: { tools: ToolSummary[] | null; go: (v: View) => void }) {
   const { s, error } = useAccount()
   const [copied, setCopied] = useState(false)
+  const inApp = useInApp()
   if (!s) return error ? <Notice tone="error">{error}</Notice> : <Skeleton className="h-64" />
   return (
     <div className="space-y-5">
-      <Card title="Your plans" sub={`For ${s.brands.current.name}. Open a tool to subscribe, change plan, pay by UPI or use a coupon.`}>
+      <Card title="Your plans" sub={inApp ? `For ${s.brands.current.name}. Plans can't be bought or changed in the app.` : `For ${s.brands.current.name}. Open a tool to subscribe, change plan, pay by UPI or use a coupon.`}>
         {!tools ? (
           <Skeleton className="h-24" />
         ) : (
@@ -543,6 +545,7 @@ const FAQ: [string, string][] = [
 ]
 
 export function HelpView() {
+  const inApp = useInApp()
   return (
     <div className="max-w-3xl space-y-5">
       <Card title="Talk to us" sub="We reply within one working day (Mon–Sat, 10 am–7 pm IST).">
@@ -573,7 +576,7 @@ export function HelpView() {
       </Card>
       <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-[var(--muted)]">
         {[
-          ["Pricing", "/pricing"],
+          ...(inApp ? [] : [["Pricing", "/pricing"]]),
           ["Terms", "/terms"],
           ["Privacy", "/privacy"],
           ["Cancellation & Refunds", "/refund-policy"],

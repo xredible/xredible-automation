@@ -1,0 +1,45 @@
+# Builds the Xredible Android app (Trusted Web Activity in android/) when it changes, or on demand.
+# Output: an unsigned release APK + AAB attached to a GitHub release "android-v<run>".
+# They are signed afterwards with the Xredible upload key (kept outside this public repo).
+name: Android app
+
+on:
+  push:
+    branches: [main]
+    paths: ["android/**", ".github/workflows/android.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      VERSION_CODE: ${{ github.run_number }}
+      VERSION_NAME: 1.0.${{ github.run_number }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: android-actions/setup-android@v3
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.14.3"
+      - name: Build APK and AAB
+        working-directory: android
+        run: |
+          yes | sdkmanager --licenses > /dev/null || true
+          gradle --no-daemon assembleRelease bundleRelease
+          mkdir -p ../out
+          cp app/build/outputs/apk/release/*.apk ../out/xredible-unsigned.apk
+          cp app/build/outputs/bundle/release/*.aab ../out/xredible-unsigned.aab
+      - name: Publish build
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "android-v${{ github.run_number }}" out/xredible-unsigned.apk out/xredible-unsigned.aab \
+            --prerelease --title "Android build ${{ github.run_number }} (unsigned)" \
+            --notes "Unsigned build ${VERSION_NAME} (versionCode ${VERSION_CODE}). Sign before installing or uploading."

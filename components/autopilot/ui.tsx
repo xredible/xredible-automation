@@ -4,6 +4,7 @@
 // used by every Autopilot tool.
 
 import { useEffect, useState, type ReactNode } from "react"
+import { useInApp } from "@/lib/dashboard/app-mode"
 import { lapsed, limitOf, pendingUpi, priceOf, PRODUCTS, remaining, rupees, type Cycle, type PlanKey, type ProductKey, type Subscription } from "@/lib/autopilot/products"
 
 export type Upi = { id: string; plans: { key: PlanKey; link: string; qr: string }[] }
@@ -45,7 +46,8 @@ export function PlanCard({ product, s, onChanged }: { product: ProductKey; s: Pl
   const trial = sub.status === "trial"
   const active = sub.status === "active" && !lapsed(sub)
   const pend = pendingUpi(sub)
-  const showPlans = !active || renewSoon(sub) || changing
+  const inApp = useInApp()
+  const showPlans = !inApp && (!active || renewSoon(sub) || changing)
 
   const subscribe = async (plan: PlanKey) => {
     setBusy(plan)
@@ -110,12 +112,12 @@ export function PlanCard({ product, s, onChanged }: { product: ProductKey; s: Pl
           </div>
         ) : null}
         <div className="ml-auto flex flex-wrap gap-2">
-          {active && !changing ? (
+          {active && !changing && !inApp ? (
             <button type="button" className={ghost} onClick={() => setChanging(true)}>
               Change plan
             </button>
           ) : null}
-          {active && sub.rzpSubId ? (
+          {active && sub.rzpSubId && !inApp ? (
             <button type="button" className={ghost} disabled={busy !== null} onClick={cancel}>
               Cancel plan
             </button>
@@ -123,7 +125,8 @@ export function PlanCard({ product, s, onChanged }: { product: ProductKey; s: Pl
         </div>
       </div>
       {sub.note && !sub.note.startsWith("checkout:") && !pend ? <div className="mt-3"><Notice tone="info">{sub.note}</Notice></div> : null}
-      {lapsed(sub) ? <div className="mt-3"><Notice tone="bad">Your paid period has ended. Renew to keep posting.</Notice></div> : null}
+      {lapsed(sub) ? <div className="mt-3"><Notice tone="bad">{inApp ? "Your paid period has ended." : "Your paid period has ended. Renew to keep posting."}</Notice></div> : null}
+      {inApp && (!active || renewSoon(sub)) ? <div className="mt-3"><Notice tone="info">Plans can&rsquo;t be bought or changed in the app.</Notice></div> : null}
       {pend ? (
         <div className="mt-3">
           <Notice tone="info">
