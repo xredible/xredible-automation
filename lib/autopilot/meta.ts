@@ -18,7 +18,7 @@ const G = `https://graph.facebook.com/${V}`
 
 export const metaConfigured = () => Boolean(process.env.META_APP_ID && process.env.META_APP_SECRET)
 
-const SCOPES = ["pages_show_list", "pages_read_engagement", "pages_manage_posts", "instagram_basic", "instagram_content_publish", "business_management"]
+const SCOPES = ["pages_show_list", "pages_read_engagement", "pages_manage_posts", "read_insights", "instagram_basic", "instagram_content_publish", "instagram_manage_insights", "business_management"]
 
 export function metaAuthorizeUrl(state: string): string {
   const config = process.env.META_CONFIG_ID?.trim()
@@ -26,7 +26,7 @@ export function metaAuthorizeUrl(state: string): string {
   return `https://www.facebook.com/${V}/dialog/oauth?${q}`
 }
 
-async function graph<T>(path: string, init?: RequestInit): Promise<T> {
+export async function graph<T>(path: string, init?: RequestInit): Promise<T> {
   const r = await fetch(path.startsWith("http") ? path : G + path, { ...init, cache: "no-store" })
   const j = (await r.json().catch(() => ({}))) as T & { error?: { message?: string; error_user_msg?: string } }
   if (!r.ok || j.error) throw new Error(j.error?.error_user_msg || j.error?.message || `Facebook answered ${r.status}.`)

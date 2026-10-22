@@ -28,7 +28,7 @@ export type LiProfile = {
 export type LiPost = {
   id: number
   email: string
-  status: "draft" | "approved" | "posted" | "failed" | "rejected" | "blocked"
+  status: "draft" | "approved" | "paused" | "posted" | "failed" | "rejected" | "blocked"
   text: string
   topic: string
   scheduledAt: string | null
@@ -188,7 +188,7 @@ function asPost(r: Record<string, unknown>): LiPost {
   return {
     id: num(r.id),
     email: String(r.email || ""),
-    status: (["draft", "approved", "posted", "failed", "rejected", "blocked"].includes(String(r.status)) ? r.status : "draft") as LiPost["status"],
+    status: (["draft", "approved", "paused", "posted", "failed", "rejected", "blocked"].includes(String(r.status)) ? r.status : "draft") as LiPost["status"],
     text: String(r.text || ""),
     topic: String(r.topic || ""),
     scheduledAt: (r.scheduledAt as string) || null,
@@ -220,6 +220,7 @@ export async function postAction(email: string, input: Record<string, unknown>) 
   if (post.status === "posted") throw new Error("This post is already live on LinkedIn.")
   if (op === "approve") return update("li_posts", id, { status: "approved", scheduledAt: inFuture(post.scheduledAt), error: "" })
   if (op === "unapprove") return update("li_posts", id, { status: "draft" })
+  if (op === "pause") return update("li_posts", id, { status: "paused" })
   if (op === "reject") return update("li_posts", id, { status: "rejected" })
   if (op === "edit") {
     const text = String(input.text ?? "").trim()

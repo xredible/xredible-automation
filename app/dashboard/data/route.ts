@@ -5,6 +5,7 @@
 import { NextResponse } from "next/server"
 import { canSee, currentUser, loadSection, sectionAllowed } from "@/lib/dashboard/server"
 import { DEFAULT_BUSINESS, isBusiness } from "@/lib/dashboard/businesses"
+import { loadAutopilotSection } from "@/lib/autopilot/report"
 
 export const runtime = "nodejs"
 export const dynamic = "force-dynamic"
@@ -12,7 +13,8 @@ export const dynamic = "force-dynamic"
 export const maxDuration = 60
 
 export async function GET(request: Request) {
-  if (!(await currentUser())) {
+  const me = await currentUser()
+  if (!me) {
     return NextResponse.json({ ok: false, error: "Signed out. Reload the page to sign in again." }, { status: 401 })
   }
   const search = new URL(request.url).searchParams
@@ -24,6 +26,7 @@ export async function GET(request: Request) {
   if (!sectionAllowed(biz, section)) {
     return NextResponse.json({ ok: false, error: "Unknown section." }, { status: 400 })
   }
-  const result = await loadSection(biz, section, search, search.get("fresh") === "1")
+  // A customer's own automations are computed here, from their data and connected accounts.
+  const result = biz === "autopilot" ? await loadAutopilotSection(me.email, section, search) : await loadSection(biz, section, search, search.get("fresh") === "1")
   return NextResponse.json(result.body, { status: result.status, headers: { "Cache-Control": "private, no-store" } })
 }

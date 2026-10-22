@@ -65,7 +65,7 @@ export function parseAction(input: unknown): QueueAction | null {
     for (const r of b.rows) {
       const row = Number((r as { row?: unknown })?.row)
       const expect = String((r as { expect?: unknown })?.expect ?? "").slice(0, 20)
-      if (!Number.isInteger(row) || row < 2 || row > 100000) return null
+      if (!Number.isInteger(row) || row < 2 || row > 1e9) return null
       out.push({ row, expect })
     }
     return out

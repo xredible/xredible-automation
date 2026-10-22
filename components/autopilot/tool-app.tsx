@@ -76,7 +76,7 @@ const Step = ({ n, children }: { n: number; children: ReactNode }) => (
   </h2>
 )
 
-export function ToolApp({ product }: { product: Tool }) {
+export function ToolApp({ product, bare = false }: { product: Tool; bare?: boolean }) {
   const [s, setS] = useState<State | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
@@ -121,7 +121,7 @@ export function ToolApp({ product }: { product: Tool }) {
   return (
     <>
       <div>
-        <h1 className="text-xl font-semibold">{p.name}</h1>
+        {bare ? null : <h1 className="text-xl font-semibold">{p.name}</h1>}
         <p className="mt-1 text-sm text-[var(--muted)]">{c.flow}</p>
       </div>
       {error ? <Notice tone="bad">{error}</Notice> : null}
@@ -657,7 +657,7 @@ function ItemCard({ it, product, busy, act }: { it: Item; product: Tool; busy: b
         </div>
       ) : product === "meta" ? (
         <div className="mt-2 flex flex-col gap-4 sm:flex-row">
-          {it.preview ? <img src={it.preview} alt={it.title} width={216} height={270} className="h-[270px] w-[216px] shrink-0 rounded-lg border border-[var(--line)] object-cover" loading="lazy" /> : null}
+          {it.preview ? <img src={it.preview} onError={(e) => { const el = e.currentTarget; if (!el.dataset.retried) { el.dataset.retried = "1"; el.src = it.preview + "&r=" + Date.now() } }} alt={it.title} width={216} height={270} className="h-[270px] w-[216px] shrink-0 rounded-lg border border-[var(--line)] object-cover" loading="lazy" /> : null}
           <div className="min-w-0 whitespace-pre-wrap text-sm leading-relaxed">{it.text}</div>
         </div>
       ) : (

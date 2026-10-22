@@ -41,10 +41,16 @@ export const toPublic = (u: StoredUser): PublicUser => ({
   email: u.email,
   name: u.name,
   role: u.role,
-  businesses: u.role === "admin" ? [...BUSINESS_KEYS] : u.role === "customer" ? [] : u.businesses.filter(isBusiness),
+  businesses: u.role === "admin" ? [...BUSINESS_KEYS, "autopilot"] : u.role === "customer" ? ["autopilot"] : memberBusinesses(u.businesses),
   active: u.active,
   lastLogin: u.lastLogin,
 })
+
+/** A member's businesses; one with none gets their own automations instead of an empty dashboard. */
+function memberBusinesses(list: string[]): BusinessKey[] {
+  const b = list.filter((x): x is BusinessKey => isBusiness(x) && x !== "autopilot")
+  return b.length ? b : ["autopilot"]
+}
 
 export const normEmail = (e: unknown) => String(e ?? "").trim().toLowerCase().slice(0, 190)
 export const validEmail = (e: string) => /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e)

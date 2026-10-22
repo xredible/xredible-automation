@@ -150,7 +150,7 @@ export function RowActions({ item }: { item: QueueItem }) {
   const pin = /pinterest/i.test(item.platform)
 
   const setStatus = (to: "ready" | "paused" | "draft", msg: string) => {
-    if (to === "ready" && past && s !== "failed" && !window.confirm("This post's time has already passed, so it will go out at the next hourly check. Post it then?")) return
+    if (to === "ready" && past && s !== "failed" && !window.confirm(ctx.biz === "autopilot" ? "This post's time has already passed, so it will go out in about 15 minutes. Post it then?" : "This post's time has already passed, so it will go out at the next hourly check. Post it then?")) return
     ctx.run({ action: "status", to, rows: one }, msg)
   }
   const copy = async () => {
@@ -197,8 +197,8 @@ export function RowActions({ item }: { item: QueueItem }) {
         {copied ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />} <span className="hidden sm:inline">{copied ? "Copied" : "Caption"}</span>
       </button>
       {item.editUrl || business.rowUrl ? (
-        <a href={item.editUrl || sheetRowUrl(ctx.biz, item.row)} target="_blank" rel="noreferrer" className={btn} title={item.readOnly ? "Open it in WordPress" : `Open it in ${business.sheetName}`} aria-label={item.readOnly ? "Open it in WordPress" : `Open it in ${business.sheetName}`}>
-          <FileSpreadsheet className="h-3 w-3" /> <span className="hidden sm:inline">{item.readOnly ? "Edit" : business.rowLabel}</span>
+        <a href={item.editUrl || sheetRowUrl(ctx.biz, item.row)} {...(item.editUrl?.startsWith("/") ? {} : { target: "_blank", rel: "noreferrer" })} className={btn} title={item.readOnly ? "Open it in WordPress" : item.editUrl?.startsWith("/") ? "Edit the text and picture" : `Open it in ${business.sheetName}`} aria-label={item.readOnly ? "Open it in WordPress" : item.editUrl?.startsWith("/") ? "Edit the text and picture" : `Open it in ${business.sheetName}`}>
+          <FileSpreadsheet className="h-3 w-3" /> <span className="hidden sm:inline">{item.readOnly ? "Edit" : item.editUrl?.startsWith("/") ? "Edit" : business.rowLabel}</span>
         </a>
       ) : null}
       {busy ? <span className="text-[11px] text-[var(--faint)]">Saving…</span> : null}

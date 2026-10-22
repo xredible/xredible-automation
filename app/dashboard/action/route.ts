@@ -5,13 +5,15 @@
 import { NextResponse } from "next/server"
 import { canSee, currentUser, parseAction, runAction } from "@/lib/dashboard/server"
 import { BUSINESSES, DEFAULT_BUSINESS, isBusiness } from "@/lib/dashboard/businesses"
+import { runAutopilotAction } from "@/lib/autopilot/queue-actions"
 
 export const runtime = "nodejs"
 export const dynamic = "force-dynamic"
 export const maxDuration = 60
 
 export async function POST(request: Request) {
-  if (!(await currentUser())) {
+  const me = await currentUser()
+  if (!me) {
     return NextResponse.json({ ok: false, error: "Signed out. Reload the page to sign in again." }, { status: 401 })
   }
   // Only this site's own pages may send changes.
@@ -33,6 +35,6 @@ export async function POST(request: Request) {
   }
   const action = parseAction(input)
   if (!action) return NextResponse.json({ ok: false, error: "That change isn't valid." }, { status: 400 })
-  const result = await runAction(biz, action)
+  const result = biz === "autopilot" ? await runAutopilotAction(me.email, action) : await runAction(biz, action)
   return NextResponse.json(result.body, { status: result.status, headers: { "Cache-Control": "private, no-store" } })
 }
