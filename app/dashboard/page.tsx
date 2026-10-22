@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next"
-import { Inter } from "@/stub/font"
+import { Inter } from "next/font/google"
 import { currentUser, isConfigured, listUsers, toPublic } from "@/lib/dashboard/auth"
 import { SetupForm, SignInForm } from "@/components/dashboard/sign-in"
 import { DashboardApp } from "@/components/dashboard/app"
