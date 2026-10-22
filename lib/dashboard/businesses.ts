@@ -6,9 +6,29 @@
 // Each business has its own n8n "Dashboard API" webhook. The website reaches them all
 // through one n8n gateway (XD-G), and each account only sees the businesses it was given.
 
-export type BusinessKey = "elevating-christ" | "nestoodle" | "linkedin-agency"
+export type BusinessKey = "elevating-christ" | "nestoodle" | "linkedin-agency" | "autopilot"
 
-export type ViewName = "overview" | "schedule" | "blog" | "instagram" | "facebook" | "youtube" | "pinterest" | "ga4" | "gsc" | "results" | "newsletters" | "email"
+export type ViewName =
+  | "overview"
+  | "schedule"
+  | "blog"
+  | "instagram"
+  | "facebook"
+  | "youtube"
+  | "pinterest"
+  | "ga4"
+  | "gsc"
+  | "results"
+  | "newsletters"
+  | "email"
+  // Xredible Autopilot (a customer's own automations; data computed on the website, not in n8n)
+  | "linkedin"
+  | "articles"
+  | "newsletter"
+  | "ap-linkedin"
+  | "ap-meta"
+  | "ap-blog"
+  | "ap-newsletter"
 
 export type Business = {
   key: BusinessKey
@@ -124,9 +144,42 @@ export const BUSINESSES: Record<BusinessKey, Business> = {
     site: "https://www.linkedin.com",
     platforms: ["linkedin"],
   },
+  autopilot: {
+    key: "autopilot",
+    name: "My automations",
+    subtitle: "Xredible Autopilot",
+    icon: "/dashboard/xredible.svg",
+    nav: [
+      { group: "", items: ["overview", "schedule"] },
+      { group: "Results", items: ["instagram", "facebook", "linkedin", "articles", "newsletter"] },
+      { group: "Automations", items: ["ap-linkedin", "ap-meta", "ap-blog", "ap-newsletter"] },
+    ],
+    sections: ["queue", "instagram", "facebook", "linkedin", "articles", "newsletter"],
+    picks: [
+      { section: "instagram", key: "reach", label: "Instagram accounts reached" },
+      { section: "instagram", key: "views", label: "Instagram views" },
+      { section: "facebook", key: "views", label: "Facebook views" },
+      { section: "facebook", key: "engagement", label: "Facebook engagements" },
+      { section: "linkedin", key: "posted", label: "LinkedIn posts published" },
+      { section: "articles", key: "published", label: "Blog articles published" },
+      { section: "newsletter", key: "sent", label: "Newsletter emails sent" },
+      { section: "newsletter", key: "openRate", label: "Newsletter open rate" },
+    ],
+    sheet: "",
+    sheetName: "content calendar",
+    rowUrl: "",
+    rowLabel: "Open",
+    actions: true,
+    site: "https://www.xredible.in",
+    platforms: ["instagram", "facebook", "linkedin", "wordpress", "email"],
+  },
 }
 
-export const BUSINESS_KEYS = Object.keys(BUSINESSES) as BusinessKey[]
+/** The client businesses run through n8n (assignable to member accounts). Autopilot is per customer. */
+export const BUSINESS_KEYS = (Object.keys(BUSINESSES) as BusinessKey[]).filter((k) => k !== "autopilot")
+
+/** Autopilot views that open a tool's own page (settings, connection, review queue) instead of a report. */
+export const TOOL_VIEW: Partial<Record<ViewName, "linkedin" | "meta" | "blog" | "newsletter">> = { "ap-linkedin": "linkedin", "ap-meta": "meta", "ap-blog": "blog", "ap-newsletter": "newsletter" }
 
 export const isBusiness = (v: unknown): v is BusinessKey => typeof v === "string" && v in BUSINESSES
 

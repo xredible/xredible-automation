@@ -39,7 +39,7 @@ export type Item = {
   id: number
   email: string
   product: ToolKey
-  status: "draft" | "approved" | "posted" | "failed" | "rejected" | "blocked"
+  status: "draft" | "approved" | "paused" | "posted" | "failed" | "rejected" | "blocked"
   title: string
   summary: string
   text: string
@@ -283,6 +283,28 @@ export async function removeContact(owner: string, id: number) {
 
 export const unsubUrl = (id: number) => `${SITE}/u?c=${id}&s=${sign(`u:${id}`)}`
 
+/** Open pixel and click links for one subscriber of one issue (signed, so they can't be forged). */
+export const openUrl = (item: number, contact: number) => `${SITE}/api/autopilot/m/o?i=${item}&c=${contact}&s=${sign(`mo:${item}:${contact}`)}`
+export const clickUrl = (item: number, contact: number, url: string) => `${SITE}/api/autopilot/m/c?i=${item}&c=${contact}&u=${encodeURIComponent(url)}&s=${sign(`mc:${item}:${contact}:${url}`)}`
+
+/** Counts an open or a click (best effort; never blocks the reader). */
+export async function recordMail(type: "open" | "click", item: number, contact: number, url = "") {
+  const it = await itemById(item)
+  if (!it || it.product !== "newsletter") return
+  await insert("ap_events", { owner: it.email, item, contact, type, url: url.slice(0, 500), at: new Date().toISOString() })
+}
+
+/** Adds the open pixel and wraps every link (except unsubscribe) in a click-tracking link. */
+function track(html: string, item: number, contact: number): string {
+  const unsub = unsubUrl(contact)
+  return html
+    .replace(/href="(https?:\/\/[^"]+)"/g, (m, raw: string) => {
+      const url = raw.replace(/&amp;/g, "&")
+      return url === unsub || url.startsWith(`${SITE}/u?`) ? m : `href="${clickUrl(item, contact, url).replace(/&/g, "&amp;")}"`
+    })
+    .replace("</body>", `<img src="${openUrl(item, contact).replace(/&/g, "&amp;")}" width="1" height="1" alt="" style="display:block;border:0;width:1px;height:1px">\n</body>`)
+}
+
 export async function unsubscribe(id: number): Promise<Contact | null> {
   const c = (await rows<Obj>("ap_contacts", { col: "id", val: id })).map(asContact)[0]
   if (!c) return null
@@ -297,7 +319,7 @@ function asItem(r: Obj): Item {
     id: num(r.id),
     email: lc(r.email),
     product: (isTool(r.product) ? r.product : "meta") as ToolKey,
-    status: (["draft", "approved", "posted", "failed", "rejected", "blocked"].includes(String(r.status)) ? r.status : "draft") as Item["status"],
+    status: (["draft", "approved", "paused", "posted", "failed", "rejected", "blocked"].includes(String(r.status)) ? r.status : "draft") as Item["status"],
     title: String(r.title || ""),
     summary: String(r.summary || ""),
     text: String(r.text || ""),
@@ -338,6 +360,7 @@ export async function itemAction(email: string, product: ToolKey, input: Obj) {
   if (it.progress > 0 && !(op === "approve" && it.status === "failed")) throw new Error("This newsletter is already being sent.")
   if (op === "approve") return update("ap_items", id, { status: "approved", scheduledAt: inFuture(it.scheduledAt), error: "" })
   if (op === "unapprove") return update("ap_items", id, { status: "draft" })
+  if (op === "pause") return update("ap_items", id, { status: "paused" })
   if (op === "reject") return update("ap_items", id, { status: "rejected" })
   if (op === "edit") {
     const L = LIMITS[product]
@@ -459,7 +482,9 @@ async function sendIssue(it: Item): Promise<Result> {
     for (const ct of queue) {
       if (Date.now() > deadline) break
       const u = unsubUrl(ct.id)
-      const { html, text } = buildIssue({ title: it.title, preheader: it.summary, md: it.text, newsletter: name, address: String(c.settings.address || ""), unsubUrl: u, toName: ct.name, color: String(c.settings.color || "") })
+      const built = buildIssue({ title: it.title, preheader: it.summary, md: it.text, newsletter: name, address: String(c.settings.address || ""), unsubUrl: u, toName: ct.name, color: String(c.settings.color || "") })
+      const html = track(built.html, it.id, ct.id)
+      const text = built.text
       try {
         await t.sendMail({
           from: { name: smtp.fromName || name, address: smtp.from },

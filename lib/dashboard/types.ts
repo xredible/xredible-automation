@@ -106,9 +106,14 @@ export type QueueItem = {
   editUrl?: string | null
   /** Shown in the calendar but can't be paused or rescheduled from here. */
   readOnly?: boolean
+  /** Replaces "Row N" under the title (Autopilot: which tool it belongs to). */
+  ref?: string
 }
 
-export type QueueData = { ok: true; section: "queue"; generatedAt: string; items: QueueItem[]; notes?: string[] }
+/** Autopilot only: each tool's plan and state, for the Overview. */
+export type ToolSummary = { product: "linkedin" | "meta" | "blog" | "newsletter"; name: string; connected: boolean; plan: string; left: number; limit: number; live: boolean; drafts: number; scheduled: number }
+
+export type QueueData = { ok: true; section: "queue"; generatedAt: string; items: QueueItem[]; notes?: string[]; tools?: ToolSummary[] }
 
 // ---------- Blog page (Nestoodle) ----------
 

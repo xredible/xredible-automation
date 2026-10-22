@@ -1,9 +1,8 @@
 import type { Metadata, Viewport } from "next"
-import { Inter } from "next/font/google"
+import { Inter } from "@/stub/font"
 import { currentUser, isConfigured, listUsers, toPublic } from "@/lib/dashboard/auth"
 import { SetupForm, SignInForm } from "@/components/dashboard/sign-in"
 import { DashboardApp } from "@/components/dashboard/app"
-import { CustomerApp } from "@/components/autopilot/customer-app"
 
 // Private page: never indexed, never cached for the public.
 export const metadata: Metadata = {
@@ -28,9 +27,8 @@ async function Screen({ signup }: { signup: boolean }) {
   if (me) {
     const pub = toPublic(me)
     const who = { name: pub.name, email: pub.email, role: pub.role }
-    // Customers (and anyone with no business dashboards) see their own automations.
-    if (pub.role === "customer" || !pub.businesses.length) return <CustomerApp me={who} />
-    return <DashboardApp allowed={pub.businesses} me={who} />
+    // Customers see their own automations ("autopilot"); admins see every business plus their own automations.
+    return <DashboardApp allowed={pub.businesses.length ? pub.businesses : ["autopilot"]} me={who} />
   }
   const { users, error } = await listUsers()
   if (users && users.length === 0) return <SetupForm />

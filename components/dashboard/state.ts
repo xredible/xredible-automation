@@ -61,9 +61,12 @@ const FILTER_KEYS = ["device", "country", "channel", "searchType", "contentType"
 /** Reads ?biz=&view=&range=&from=&to=&cmp=&device=… so a link opens the same view. */
 export function readUrl(allowed: BusinessKey[]): DashState {
   const q = new URLSearchParams(typeof window === "undefined" ? "" : window.location.search)
-  const asked = q.get("biz")
+  // "?p=meta" (back from connecting an account) opens that Autopilot tool's page.
+  const tool = q.get("p")
+  const asked = tool && allowed.includes("autopilot") ? "autopilot" : q.get("biz")
   const biz = isBusiness(asked) && allowed.includes(asked) ? asked : allowed.includes(DEFAULT_BUSINESS) ? DEFAULT_BUSINESS : allowed[0]
-  const view = (viewsOf(biz).includes(q.get("view") as View) ? q.get("view") : "overview") as View
+  const wanted = biz === "autopilot" && tool ? `ap-${tool}` : q.get("view")
+  const view = (viewsOf(biz).includes(wanted as View) ? wanted : "overview") as View
   const preset = (PRESETS.some((p) => p.id === q.get("range")) ? q.get("range") : "28d") as Preset
   const custom = { start: q.get("from") || "", end: q.get("to") || "" }
   const { start, end } = presetDates(preset, custom)

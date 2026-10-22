@@ -1,16 +1,13 @@
 "use client"
 
-// What a self-signed-up customer sees at xredible.in/dashboard: their automations,
-// and LinkedIn Autopilot (profile, Connect LinkedIn, plan + usage, the post calendar).
+// LinkedIn Autopilot's own page inside a customer's dashboard (Automations → LinkedIn Autopilot):
+// plan + usage, profile, Connect LinkedIn, and the posts to review.
 
 import { useCallback, useEffect, useMemo, useState } from "react"
-import { Check, ExternalLink, KeyRound, LogOut, PenLine, RefreshCw, Sparkles, X } from "lucide-react"
+import { Check, ExternalLink, PenLine, RefreshCw, Sparkles } from "lucide-react"
 import { Linkedin as LinkedinIcon } from "@/components/dashboard/brand"
-import { signOut } from "@/app/dashboard/actions"
-import { PasswordPanel, type Me } from "@/components/dashboard/accounts"
-import { PRODUCTS, PRODUCT_KEYS, rupees, type ProductKey, type Subscription } from "@/lib/autopilot/products"
-import { card, CSS, field, ghost, istTime, Notice, PlanCard, primary, small, toLocalInput, type Upi } from "./ui"
-import { ToolApp } from "./tool-app"
+import type { Subscription } from "@/lib/autopilot/products"
+import { card, field, ghost, istTime, Notice, PlanCard, primary, small, toLocalInput, type Upi } from "./ui"
 
 type Profile = {
   about: string
@@ -28,123 +25,6 @@ type Profile = {
 type Post = { id: number; status: "draft" | "approved" | "posted" | "failed" | "blocked"; text: string; topic: string; scheduledAt: string | null; postedAt: string | null; postUrn: string; error: string }
 type LiState = { ok: true; sub: Subscription; profile: Profile | null; posts: Post[]; ready: { linkedin: boolean; payments: boolean; razorpayKey: string; upi: Upi | null } }
 
-export function CustomerApp({ me }: { me: Me }) {
-  const [view, setView] = useState<"home" | ProductKey>("home")
-  const [pw, setPw] = useState(false)
-  const [flash, setFlash] = useState<{ tone: "good" | "bad" | "info"; text: string } | null>(null)
-
-  useEffect(() => {
-    const q = new URLSearchParams(window.location.search)
-    const p = q.get("p")
-    if (p && p in PRODUCTS) setView(p as ProductKey)
-    const li = q.get("li")
-    if (li === "connected") setFlash({ tone: "good", text: "LinkedIn connected. Your first drafts will appear here in a minute or two." })
-    else if (li === "cancelled") setFlash({ tone: "info", text: "LinkedIn connection was cancelled." })
-    else if (li === "expired") setFlash({ tone: "bad", text: "That LinkedIn sign-in took too long. Please try again." })
-    else if (li === "notready") setFlash({ tone: "info", text: "Connecting LinkedIn is being switched on. Please try again soon." })
-    else if (li === "error") setFlash({ tone: "bad", text: q.get("msg") || "LinkedIn sign-in failed." })
-    const c = q.get("c")
-    const who = p === "meta" ? "Facebook" : "Your account"
-    if (c === "connected") setFlash({ tone: "good", text: `${who} connected. Your first drafts will appear in a minute or two.` })
-    else if (c === "choose") setFlash({ tone: "info", text: "You manage more than one Facebook Page. Pick the one to post to." })
-    else if (c === "cancelled") setFlash({ tone: "info", text: "Connection was cancelled." })
-    else if (c === "expired") setFlash({ tone: "bad", text: "That sign-in took too long. Please try again." })
-    else if (c === "notready") setFlash({ tone: "info", text: "Connecting is being switched on. Please try again soon." })
-    else if (c === "error") setFlash({ tone: "bad", text: q.get("msg") || "Sign-in failed." })
-    if (li || c) window.history.replaceState(null, "", "/dashboard" + (p ? `?p=${p}` : ""))
-  }, [])
-
-  return (
-    <div className="xd min-h-[100dvh] font-[family-name:var(--font-dash),system-ui,sans-serif] antialiased">
-      <style>{CSS}</style>
-      <header className="bg-[var(--nav)] text-white">
-        <div className="mx-auto flex max-w-5xl items-center gap-3 px-4 py-3 sm:px-6">
-          <button type="button" onClick={() => setView("home")} className="flex items-center gap-2.5">
-            <img src="/dashboard/xredible.svg" alt="" width={32} height={32} className="h-8 w-8 rounded-lg" />
-            <span className="text-[15px] font-semibold">Xredible</span>
-          </button>
-          <div className="ml-auto flex items-center gap-1">
-            <span className="mr-2 hidden text-[13px] text-white/70 sm:inline">{me.name}</span>
-            <button type="button" onClick={() => setPw(true)} className="rounded-lg p-2 text-white/70 hover:bg-white/10 hover:text-white" title="My password">
-              <KeyRound className="h-4 w-4" />
-            </button>
-            <form action={signOut}>
-              <button type="submit" className="rounded-lg p-2 text-white/70 hover:bg-white/10 hover:text-white" title="Sign out">
-                <LogOut className="h-4 w-4" />
-              </button>
-            </form>
-          </div>
-        </div>
-      </header>
-      <main className="mx-auto max-w-5xl space-y-5 px-4 py-6 sm:px-6">
-        {flash ? (
-          <div className="flex items-start gap-2">
-            <div className="flex-1">
-              <Notice tone={flash.tone}>{flash.text}</Notice>
-            </div>
-            <button type="button" onClick={() => setFlash(null)} className="rounded p-1.5 text-[var(--faint)]" aria-label="Dismiss">
-              <X className="h-4 w-4" />
-            </button>
-          </div>
-        ) : null}
-        {view === "home" ? <Home me={me} open={setView} /> : view === "linkedin" ? <LinkedInAutopilot /> : PRODUCTS[view].live ? <ToolApp product={view} /> : <ComingSoon product={view} back={() => setView("home")} />}
-      </main>
-      {pw ? (
-        <div className="dash-root">
-          <PasswordPanel onClose={() => setPw(false)} />
-        </div>
-      ) : null}
-    </div>
-  )
-}
-
-function Home({ me, open }: { me: Me; open: (p: ProductKey) => void }) {
-  return (
-    <>
-      <div>
-        <h1 className="text-xl font-semibold">Hi {me.name.split(" ")[0]}</h1>
-        <p className="mt-1 text-sm text-[var(--muted)]">Pick an automation. Each one starts with a free trial; subscribe when you&rsquo;re happy with it.</p>
-      </div>
-      <div className="grid gap-4 sm:grid-cols-2">
-        {PRODUCT_KEYS.map((k) => {
-          const p = PRODUCTS[k]
-          return (
-            <div key={k} className={card + " flex flex-col"}>
-              <div className="flex items-center gap-2">
-                <h2 className="text-base font-semibold">{p.name}</h2>
-                {!p.live ? <span className="rounded bg-[var(--soft)] px-1.5 py-0.5 text-[11px] font-semibold text-[var(--muted)]">Coming soon</span> : null}
-              </div>
-              <p className="mt-1.5 flex-1 text-sm text-[var(--muted)]">{p.tagline}</p>
-              {p.live ? (
-                <div className="mt-3 text-[13px] text-[var(--ink2)]">
-                  {p.trial} free {p.unit}, then from {rupees(Math.min(...p.plans.map((x) => x.price)))}/month
-                </div>
-              ) : null}
-              <button type="button" onClick={() => open(k)} className={(p.live ? primary : ghost) + " mt-4 self-start"}>
-                {p.live ? "Open" : "Get notified"}
-              </button>
-            </div>
-          )
-        })}
-      </div>
-    </>
-  )
-}
-
-function ComingSoon({ product, back }: { product: ProductKey; back: () => void }) {
-  const p = PRODUCTS[product]
-  return (
-    <div className={card}>
-      <h1 className="text-lg font-semibold">{p.name}</h1>
-      <p className="mt-2 text-sm text-[var(--muted)]">{p.tagline}</p>
-      <p className="mt-4 text-sm">This automation opens soon. We&rsquo;ll email you when it&rsquo;s ready, with {p.trial} free {p.unit} to try it.</p>
-      <button type="button" className={ghost + " mt-4"} onClick={back}>
-        Back
-      </button>
-    </div>
-  )
-}
-
 // ---------- LinkedIn Autopilot ----------
 
 async function liCall(body?: Record<string, unknown>): Promise<LiState | { ok: false; error: string }> {
@@ -156,7 +36,7 @@ async function liCall(body?: Record<string, unknown>): Promise<LiState | { ok: f
   }
 }
 
-function LinkedInAutopilot() {
+export function LinkedInAutopilot({ bare = false }: { bare?: boolean }) {
   const [s, setS] = useState<LiState | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
@@ -196,7 +76,7 @@ function LinkedInAutopilot() {
     <>
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="text-xl font-semibold">LinkedIn Autopilot</h1>
+          {bare ? null : <h1 className="text-xl font-semibold">LinkedIn Autopilot</h1>}
           <p className="mt-1 text-sm text-[var(--muted)]">Drafts in your voice → you approve → they post to your LinkedIn on schedule.</p>
         </div>
       </div>

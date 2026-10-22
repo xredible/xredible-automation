@@ -6,7 +6,10 @@
 import { useEffect, useMemo, useRef, useState } from "react"
 import { BadgeIndianRupee, CalendarRange, Check, ChevronDown, ChevronsUpDown, KeyRound, LogOut, Menu, RefreshCw, Users, X } from "lucide-react"
 import type { BlogData, QueueData, SectionData } from "@/lib/dashboard/types"
-import { BUSINESSES, type BusinessKey } from "@/lib/dashboard/businesses"
+import { BUSINESSES, TOOL_VIEW, type BusinessKey } from "@/lib/dashboard/businesses"
+import { LinkedInAutopilot } from "@/components/autopilot/customer-app"
+import { ToolApp } from "@/components/autopilot/tool-app"
+import { CSS as TOOL_CSS } from "@/components/autopilot/ui"
 import { signOut } from "@/app/dashboard/actions"
 import { addDays, dateTime, daysBetween, rangeLabel, todayIST } from "./format"
 import { COMPARE, PRESETS, presetDates, readUrl, sectionKey, useSection, writeUrl, type Cmp, type DashState, type Filters, type Preset, type View } from "./state"
@@ -35,6 +38,19 @@ export function DashboardApp({ allowed, me }: { allowed: BusinessKey[]; me: Me }
   const [panel, setPanel] = useState<"accounts" | "customers" | "password" | null>(null)
   const [menu, setMenu] = useState(false)
   const [tick, setTick] = useState(0)
+  const [flash, setFlash] = useState<{ tone: "good" | "bad" | "info"; text: string } | null>(null)
+  // Back from connecting LinkedIn / Facebook: say how it went (read before the URL is rewritten).
+  useEffect(() => {
+    const q = new URLSearchParams(window.location.search)
+    const c = q.get("li") || q.get("c")
+    const who = q.get("p") === "meta" ? "Facebook" : q.get("p") === "linkedin" ? "LinkedIn" : "Your account"
+    if (c === "connected") setFlash({ tone: "good", text: `${who} connected. Your first drafts will appear here in a minute or two.` })
+    else if (c === "choose") setFlash({ tone: "info", text: "You manage more than one Facebook Page. Pick the one to post to." })
+    else if (c === "cancelled") setFlash({ tone: "info", text: "The connection was cancelled." })
+    else if (c === "expired") setFlash({ tone: "bad", text: "That sign-in took too long. Please try again." })
+    else if (c === "notready") setFlash({ tone: "info", text: "Connecting is being switched on. Please try again soon." })
+    else if (c === "error") setFlash({ tone: "bad", text: q.get("msg") || "Sign-in failed." })
+  }, [])
   useEffect(() => setState(readUrl(allowed)), [allowed])
   useEffect(() => {
     if (state) writeUrl(state)
@@ -44,7 +60,8 @@ export function DashboardApp({ allowed, me }: { allowed: BusinessKey[]; me: Me }
   const business = BUSINESSES[biz]
   const view = state?.view ?? "overview"
   const filters = state?.filters[view] || {}
-  const key = state && view !== "overview" ? (view === "schedule" ? sectionKey(biz, "queue", state.start, state.end, state.cmp) : sectionKey(biz, view, state.start, state.end, state.cmp, filters)) : null
+  const tool = TOOL_VIEW[view]
+  const key = state && view !== "overview" && !tool ? (view === "schedule" ? sectionKey(biz, "queue", state.start, state.end, state.cmp) : sectionKey(biz, view, state.start, state.end, state.cmp, filters)) : null
   const { data, loading, refresh } = useSection(key)
   const compareLabel = state?.cmp === "prev" ? "previous period" : state?.cmp === "yoy" ? "last year" : null
 
@@ -60,7 +77,7 @@ export function DashboardApp({ allowed, me }: { allowed: BusinessKey[]; me: Me }
     window.scrollTo({ top: 0 })
   }
   const setFilters = (f: Filters) => setState((s) => (s ? { ...s, filters: { ...s.filters, [s.view]: Object.fromEntries(Object.entries(f).filter(([, v]) => v)) } } : s))
-  const doRefresh = () => (view === "overview" ? setTick((t) => t + 1) : refresh())
+  const doRefresh = () => (view === "overview" || tool ? setTick((t) => t + 1) : refresh())
   const meta = PLATFORM[view]
   const sectionData = data && data.ok && "kpis" in data ? (data as SectionData) : null
   const updated = data && data.ok ? (data as SectionData | QueueData).generatedAt : null
@@ -161,8 +178,8 @@ export function DashboardApp({ allowed, me }: { allowed: BusinessKey[]; me: Me }
                   <span className="truncate">{meta.label}</span>
                 </h1>
                 <div className="ml-auto flex items-center gap-2">
-                  {state && view !== "blog" ? <RangePicker state={state} onChange={(p) => set(p)} /> : null}
-                  {state && view !== "schedule" && view !== "blog" ? (
+                  {state && view !== "blog" && !tool ? <RangePicker state={state} onChange={(p) => set(p)} /> : null}
+                  {state && view !== "schedule" && view !== "blog" && !tool ? (
                     <label className="relative hidden sm:block">
                       <span className="sr-only">Compare with</span>
                       <select
@@ -191,7 +208,7 @@ export function DashboardApp({ allowed, me }: { allowed: BusinessKey[]; me: Me }
                   </button>
                 </div>
               </div>
-              {state && (sectionData || PLATFORM[view]) && view !== "overview" && view !== "schedule" && view !== "blog" ? (
+              {state && (sectionData || PLATFORM[view]) && view !== "overview" && view !== "schedule" && view !== "blog" && !tool ? (
                 <div className="mt-2.5 flex flex-wrap items-center gap-2">
                   <label className="relative sm:hidden">
                     <span className="sr-only">Compare with</span>
@@ -217,6 +234,21 @@ export function DashboardApp({ allowed, me }: { allowed: BusinessKey[]; me: Me }
             <ViewBoundary key={view + (state ? sectionKey(biz, view, state.start, state.end, state.cmp, filters) : "")}>
             {!state ? (
               <SectionSkeleton />
+            ) : tool ? (
+              <div key={tick} className="xd space-y-5 !bg-transparent">
+                <style>{TOOL_CSS}</style>
+                {flash ? (
+                  <div className="flex items-start gap-2">
+                    <div className="flex-1">
+                      <Notice tone={flash.tone === "bad" ? "error" : "info"}>{flash.text}</Notice>
+                    </div>
+                    <button type="button" onClick={() => setFlash(null)} className="rounded p-1.5 text-[var(--faint)]" aria-label="Dismiss">
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+                ) : null}
+                {tool === "linkedin" ? <LinkedInAutopilot bare /> : <ToolApp product={tool} bare />}
+              </div>
             ) : view === "overview" ? (
               <Overview key={biz} biz={biz} start={state.start} end={state.end} cmp={state.cmp} compareLabel={compareLabel} go={go} refreshTick={tick} />
             ) : !data ? (

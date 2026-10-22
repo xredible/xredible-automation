@@ -11,8 +11,8 @@ import { PLATFORM, platformKey } from "./brand"
 import { BulkActions, RowActions, useItems } from "./actions"
 import { BUSINESSES, type BusinessKey } from "@/lib/dashboard/businesses"
 
-const FORMAT: Record<string, string> = { reel: "Reel", carousel: "Carousel", fb_post: "Post", pin: "Pin", youtube_short: "Short", text: "Text post", post: "Blog post" }
-const MODE: Record<string, string> = { auto: "Posts automatically", "pinterest csv": "Pinterest publishes it", manual: "Post by hand", wordpress: "Publishes on the website" }
+const FORMAT: Record<string, string> = { reel: "Reel", carousel: "Carousel", fb_post: "Post", pin: "Pin", youtube_short: "Short", text: "Text post", post: "Blog post", image: "Image post", newsletter: "Newsletter" }
+const MODE: Record<string, string> = { auto: "Posts automatically", "pinterest csv": "Pinterest publishes it", manual: "Post by hand", wordpress: "Publishes on the website", email: "Sends to your subscribers" }
 export const STATUS_STYLE: Record<string, string> = {
   posted: "bg-emerald-50 text-emerald-700 ring-emerald-600/20",
   ready: "bg-sky-50 text-sky-800 ring-sky-600/20",
@@ -61,13 +61,14 @@ export function QueueRow({ item, showDate, actions = true }: { item: QueueItem; 
           <span className="text-[var(--muted)]">
             {FORMAT[item.format] ?? item.format}
             {item.slides > 1 && item.format !== "reel" ? ` · ${item.slides} slides` : ""}
+            {item.postType && item.ref ? ` · ${item.postType}` : ""}
           </span>
           <StatusPill status={item.status} />
         </div>
         <div className="mt-1 line-clamp-2 text-sm font-medium leading-snug text-[var(--ink)]">{item.caption || item.title}</div>
         <div className="mt-0.5 flex flex-wrap items-center gap-x-3 text-xs text-[var(--muted)]">
           <span>{MODE[item.mode.toLowerCase()] ?? item.mode}</span>
-          <span className="text-[var(--faint)]">{item.platform === "WordPress" ? "Post" : "Row"} {Math.abs(item.row)}</span>
+          <span className="text-[var(--faint)]">{item.ref ?? `${item.platform === "WordPress" ? "Post" : "Row"} ${Math.abs(item.row)}`}</span>
           {item.url ? (
             <a href={item.url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-0.5 font-medium text-[var(--brand)] hover:underline">
               Open <ExternalLink className="h-3 w-3" />
@@ -192,7 +193,7 @@ export function ScheduleView({ biz, data: raw, start, end }: { biz: BusinessKey;
       {raw.notes?.map((n) => (
         <div key={n} className="rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-800 ring-1 ring-inset ring-amber-600/20">{n}</div>
       ))}
-      <div className="text-xs text-[var(--faint)]">From the {business.sheetName}{biz === "nestoodle" ? " and the website's blog posts" : ""}. Times are India time.</div>
+      <div className="text-xs text-[var(--faint)]">{biz === "autopilot" ? "Drafts from all your automations. Schedule a draft to approve it; nothing goes out until you do." : `From the ${business.sheetName}${biz === "nestoodle" ? " and the website's blog posts" : ""}.`} Times are India time.</div>
     </div>
   )
 }

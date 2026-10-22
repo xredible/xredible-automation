@@ -5,7 +5,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react"
 import { ArrowRight, TriangleAlert } from "lucide-react"
-import type { AnySection, Kpi, QueueData, SectionData } from "@/lib/dashboard/types"
+import type { AnySection, Kpi, QueueData, SectionData, ToolSummary } from "@/lib/dashboard/types"
 import { fillDays, fmt } from "./format"
 import { Card, Delta, Notice, Skeleton } from "./ui"
 import { Sparkline } from "./charts"
@@ -76,6 +76,9 @@ export function Overview({ biz, start, end, cmp, compareLabel, go, refreshTick }
     if (i) out.push({ platform: "instagram", title: i.title, url: i.url, thumb: i.thumb, metric: "accounts reached", value: i.reach as number })
     const f = top(fb, "views")
     if (f) out.push({ platform: "facebook", title: f.title, url: f.url, thumb: f.thumb, metric: "views", value: f.views as number })
+    const nl = data.newsletter && data.newsletter.ok ? (data.newsletter as SectionData) : null
+    const n = top(nl, "opens")
+    if (n && (n.opens as number) > 0) out.push({ platform: "newsletter", title: n.title, url: n.url, thumb: null, metric: "people opened", value: n.opens as number })
     const pages = ga?.tables.find((t) => t.key === "pages")?.rows || []
     const pg = pages.filter((r) => r.path !== "/").sort((a, b) => (b.views as number) - (a.views as number))[0]
     if (pg) out.push({ platform: "ga4", title: String(pg.title || pg.path).replace(/ \| (Elevating CHRIST|Nestoodle)$/, ""), url: business.site + pg.path, thumb: null, metric: "page views", value: pg.views as number })
@@ -84,6 +87,7 @@ export function Overview({ biz, start, end, cmp, compareLabel, go, refreshTick }
 
   return (
     <div className="space-y-6">
+      {biz === "autopilot" ? <Automations tools={rawQueue?.tools ?? null} go={go} /> : null}
       <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-4">
         {business.picks.map((p) => {
           const d = data[p.section]
@@ -179,5 +183,37 @@ function OverviewTile({ label, k, d, error, color, icon, onClick, compareLabel }
         <span className="mt-2 line-clamp-3 text-xs leading-snug text-[var(--muted)]">{error ? `Not loading: ${error}` : "No data for these dates yet."}</span>
       )}
     </button>
+  )
+}
+
+const TOOL_VIEWS: Record<ToolSummary["product"], View> = { linkedin: "ap-linkedin", meta: "ap-meta", blog: "ap-blog", newsletter: "ap-newsletter" }
+
+/** Autopilot: each tool's plan, posts left, and what's waiting, with a way in. */
+function Automations({ tools, go }: { tools: ToolSummary[] | null; go: (v: View) => void }) {
+  if (!tools) return <Skeleton className="h-[104px]" />
+  return (
+    <Card title="Your automations" sub="Every automation starts with 3 free posts. Approve drafts and they go out on schedule.">
+      <ul className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        {tools.map((t) => {
+          const v = TOOL_VIEWS[t.product]
+          const meta = PLATFORM[v]
+          const state = !t.connected ? "Not connected" : t.drafts ? `${t.drafts} to review` : t.scheduled ? `${t.scheduled} scheduled` : "Up to date"
+          return (
+            <li key={t.product}>
+              <button type="button" onClick={() => go(v)} className="flex h-full w-full flex-col rounded-lg border border-[var(--line)] p-3 text-left transition hover:border-[var(--line-strong)] hover:bg-[var(--hover)]">
+                <span className="flex items-center gap-1.5 text-[13px] font-semibold" style={{ color: meta.color }}>
+                  {meta.icon}
+                  {t.name}
+                </span>
+                <span className="mt-2 text-xs text-[var(--muted)]">
+                  {t.plan} · <span className="font-semibold tabular-nums text-[var(--ink)]">{t.left}</span> of {t.limit} left
+                </span>
+                <span className={`mt-1 text-xs font-medium ${!t.connected ? "text-[var(--faint)]" : t.drafts ? "text-[var(--brand)]" : "text-[var(--good)]"}`}>{t.live || !t.connected ? state : "Plan paused · subscribe to continue"}</span>
+              </button>
+            </li>
+          )
+        })}
+      </ul>
+    </Card>
   )
 }

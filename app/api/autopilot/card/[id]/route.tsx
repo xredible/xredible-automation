@@ -8,6 +8,7 @@ import { channelFor, itemById } from "@/lib/autopilot/tools"
 
 export const runtime = "nodejs"
 export const dynamic = "force-dynamic"
+export const maxDuration = 30
 
 type Font = { name: string; data: ArrayBuffer; weight: 700; style: "normal" }
 const cache = new Map<string, Promise<ArrayBuffer | null>>()
@@ -56,7 +57,16 @@ export async function GET(request: Request, ctx: { params: Promise<{ id: string 
     if (d) fonts.push({ name: "Deva", data: d, weight: 700, style: "normal" })
   }
   const size = headline.length > 60 ? 76 : headline.length > 35 ? 92 : 112
-  return new ImageResponse(
+  try {
+    return await draw(headline, brand, color, deva, size, fonts)
+  } catch {
+    // A font that didn't load (or a character it can't draw): fall back to the built-in font.
+    return draw(headline.replace(/[^\p{L}\p{N}\p{P}\p{Zs}]/gu, ""), brand, color, false, size, [])
+  }
+}
+
+async function draw(headline: string, brand: string, color: string, deva: boolean, size: number, fonts: Font[]) {
+  const res = new ImageResponse(
     (
       <div
         style={{
@@ -78,4 +88,7 @@ export async function GET(request: Request, ctx: { params: Promise<{ id: string 
     ),
     { width: 1080, height: 1350, fonts, headers: { "Cache-Control": "public, max-age=300" } },
   )
+  // Render now, so a drawing error is caught here instead of failing the response stream.
+  const body = await res.arrayBuffer()
+  return new Response(body, { headers: { "Content-Type": "image/png", "Cache-Control": "public, max-age=300" } })
 }

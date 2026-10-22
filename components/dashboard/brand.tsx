@@ -1,7 +1,7 @@
 // Platform names, colours and icons used across the dashboard.
 
 import type { ReactNode } from "react"
-import { CalendarDays, FileText, Globe, LayoutDashboard, Mail, Newspaper, PenLine, Pin, Search, TrendingUp } from "lucide-react"
+import { CalendarDays, FileText, Globe, LayoutDashboard, Mail, MailOpen, Newspaper, PenLine, Pin, Search, TrendingUp } from "lucide-react"
 
 // lucide-react 1.x has no brand icons, so these are simple line glyphs in the same style.
 type IconProps = { className?: string; "aria-hidden"?: boolean }
@@ -37,6 +37,13 @@ export const PLATFORM: Record<string, PlatformMeta> = {
   results: { label: "Results", short: "Results", color: "#0a66c2", ...i(TrendingUp) },
   email: { label: "Email list", short: "Email", color: "#86651a", ...i(Mail) },
   newsletters: { label: "Newsletters", short: "Newsletters", color: "#7c6bc4", ...i(Newspaper) },
+  // Xredible Autopilot
+  articles: { label: "Blog articles", short: "Blog", color: "#21759b", ...i(FileText) },
+  newsletter: { label: "Newsletter", short: "Newsletter", color: "#7c6bc4", ...i(MailOpen) },
+  "ap-linkedin": { label: "LinkedIn Autopilot", short: "LinkedIn", color: "#0a66c2", ...i(Linkedin) },
+  "ap-meta": { label: "Instagram + Facebook", short: "Instagram + Facebook", color: "#c13584", ...i(Instagram) },
+  "ap-blog": { label: "Blog Writer", short: "Blog Writer", color: "#21759b", ...i(PenLine) },
+  "ap-newsletter": { label: "Newsletter Autopilot", short: "Newsletter", color: "#7c6bc4", ...i(Newspaper) },
 }
 
 export const platformKey = (p: string) => (p || "").toLowerCase().replace(/[^a-z]/g, "")
