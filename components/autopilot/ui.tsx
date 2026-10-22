@@ -200,7 +200,7 @@ function UpiPay({ product, upi, plan, onDone }: { product: ProductKey; upi: Upi;
           setBusy(false)
         }}
       >
-        <input value={utr} onChange={(e) => setUtr(e.target.value)} placeholder="UTR / reference number" inputMode="numeric" className={field + " mt-0 w-56 font-mono"} required />
+        <input value={utr} onChange={(e) => setUtr(e.target.value)} placeholder="UTR / reference number" inputMode="numeric" maxLength={12} pattern="[0-9]{12}" title="The 12-digit UTR number from your UPI app" className={field + " mt-0 w-56 font-mono"} required />
         <button type="submit" className={primary} disabled={busy}>
           {busy ? "Sending…" : "I've paid"}
         </button>

@@ -26,7 +26,8 @@ export async function upiQr(link: string): Promise<string> {
 }
 
 export const upiId = () => process.env.XD_UPI_ID?.trim() || ""
-export const validUtr = (u: string) => /^[A-Za-z0-9]{10,22}$/.test(u)
+/** UPI reference (UTR / RRN) is 12 digits. */
+export const validUtr = (u: string) => /^\d{12}$/.test(u)
 
 /** The QR + link per plan, shown on a product's page (null until XD_UPI_ID is set). */
 export async function upiOptions(product: ProductKey, email: string) {
