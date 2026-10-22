@@ -4,6 +4,7 @@
 // professional account linked to it), and publishing an image post to both.
 //   META_APP_ID, META_APP_SECRET   from the Xredible app at developers.facebook.com
 //   META_GRAPH_VERSION             optional, e.g. "v24.0"
+//   META_CONFIG_ID                 optional: a "Facebook Login for Business" configuration ID (used instead of scopes)
 // Valid OAuth redirect URI to add in the app: https://www.xredible.in/dashboard/meta/callback
 //
 // Until Meta approves the app (App Review + Business Verification), only people
@@ -20,7 +21,8 @@ export const metaConfigured = () => Boolean(process.env.META_APP_ID && process.e
 const SCOPES = ["pages_show_list", "pages_read_engagement", "pages_manage_posts", "instagram_basic", "instagram_content_publish", "business_management"]
 
 export function metaAuthorizeUrl(state: string): string {
-  const q = new URLSearchParams({ client_id: process.env.META_APP_ID || "", redirect_uri: META_REDIRECT, state, scope: SCOPES.join(","), response_type: "code" })
+  const config = process.env.META_CONFIG_ID?.trim()
+  const q = new URLSearchParams({ client_id: process.env.META_APP_ID || "", redirect_uri: META_REDIRECT, state, response_type: "code", ...(config ? { config_id: config } : { scope: SCOPES.join(",") }) })
   return `https://www.facebook.com/${V}/dialog/oauth?${q}`
 }
 
