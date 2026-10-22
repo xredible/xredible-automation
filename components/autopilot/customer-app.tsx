@@ -8,6 +8,7 @@ import { Check, ExternalLink, PenLine, RefreshCw, Sparkles } from "lucide-react"
 import { Linkedin as LinkedinIcon } from "@/components/dashboard/brand"
 import type { Subscription } from "@/lib/autopilot/products"
 import { card, field, ghost, istTime, Notice, PlanCard, primary, small, toLocalInput, type Upi } from "./ui"
+import { RewriteMenu } from "./rewrite"
 
 type Profile = {
   about: string
@@ -301,6 +302,7 @@ function PostItem({ p, busy, act }: { p: Post; busy: boolean; act: (b: Record<st
               <button type="button" className={ghost} onClick={() => { setText(p.text); setEditing(false) }}>
                 Cancel
               </button>
+              <RewriteMenu endpoint="/dashboard/me/linkedin" id={p.id} text={text} onResult={(r) => setText(r.text)} />
             </>
           ) : (
             <>
@@ -316,6 +318,7 @@ function PostItem({ p, busy, act }: { p: Post; busy: boolean; act: (b: Record<st
               <button type="button" className={ghost} onClick={() => setEditing(true)}>
                 <PenLine className="h-3.5 w-3.5" /> Edit
               </button>
+              <RewriteMenu endpoint="/dashboard/me/linkedin" id={p.id} text={p.text} onResult={(r) => { setText(r.text); setEditing(true) }} />
               <button type="button" className={ghost} onClick={() => setMoving((m) => !m)}>
                 Change time
               </button>

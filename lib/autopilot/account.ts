@@ -150,7 +150,7 @@ export const EMAILS = {
   }),
   drafts: (name: string, lines: string[]) => ({
     subject: `${lines.length} new ${lines.length === 1 ? "draft is" : "drafts are"} waiting for your approval`,
-    md: `Hi ${first(name)},\n\nFresh drafts are ready. Nothing goes out until you approve it:\n\n${lines.map((l) => `- ${l}`).join("\n")}\n\nApprove, edit or discard them in your dashboard.`,
+    md: `Hi ${first(name)},\n\nFresh drafts are ready. Nothing goes out until you approve it. Tap **Approve** or **Skip** right here, no sign-in needed:\n\n${lines.map((l) => `- ${l}`).join("\n")}\n\nTo edit or rewrite one first, open your dashboard.`,
     cta: { label: "Review drafts", url: `${SITE}/dashboard?biz=autopilot&view=schedule` },
   }),
   trialUsed: (name: string, tool: string, view: string) => ({

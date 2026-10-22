@@ -12,10 +12,11 @@ import { razorpayConfigured, razorpayKeyId } from "@/lib/autopilot/razorpay"
 import { tokenKeySet } from "@/lib/autopilot/crypto"
 import { upiOptions } from "@/lib/autopilot/upi"
 import { ownerKey } from "@/lib/autopilot/brands"
+import { rememberVoice, rewrite, voiceOf } from "@/lib/autopilot/ai"
 
 export const runtime = "nodejs"
 export const dynamic = "force-dynamic"
-export const maxDuration = 60
+export const maxDuration = 120
 
 async function state(email: string) {
   const [sub, profile, posts, upi] = await Promise.all([ensureTrial(email, "linkedin"), profileFor(email), postsFor(email), upiOptions("linkedin", email)])
@@ -61,8 +62,15 @@ export async function POST(request: Request) {
       await requestDrafts(owner, Math.min(5, Math.max(1, Number(b.count) || 3)))
     } else if (op === "disconnect") {
       await disconnectLinkedIn(owner)
+    } else if (op === "rewrite") {
+      // A suggestion only: the dashboard shows it in the editor and nothing changes until they save.
+      const post = (await postsFor(owner)).find((p) => p.id === Number(b.id))
+      if (!post) throw new Error("That post isn't yours.")
+      const out = await rewrite({ kind: "LinkedIn post", text: String(b.text || post.text), how: String(b.how || ""), custom: String(b.custom || ""), samples: await voiceOf(owner, "linkedin"), limit: 2900 })
+      return json({ ok: true, rewrite: out })
     } else {
       await postAction(owner, b)
+      if (op === "edit") await rememberVoice(owner, "linkedin", String(b.text || "")).catch(() => {})
     }
     return json(await state(owner))
   } catch (e) {

@@ -6,8 +6,10 @@
 import { useEffect, useMemo, useRef, useState } from "react"
 import { BadgeIndianRupee, CalendarRange, Check, ChevronDown, ChevronsUpDown, KeyRound, LogOut, Menu, RefreshCw, Users, X } from "lucide-react"
 import type { BlogData, QueueData, SectionData, ToolSummary } from "@/lib/dashboard/types"
-import { ACCOUNT_VIEWS, BUSINESSES, TOOL_VIEW, type BusinessKey } from "@/lib/dashboard/businesses"
-import { BillingView, BrandSwitcher, ChatWidget, HelpView, SettingsView, VerifyBanner } from "@/components/autopilot/account-views"
+import { ACCOUNT_VIEWS, ADMIN_VIEWS, BUSINESSES, TOOL_VIEW, type BusinessKey } from "@/lib/dashboard/businesses"
+import { AnnouncementBanner, BillingView, BrandSwitcher, ChatWidget, HelpView, SettingsView, VerifyBanner, ViewAsBanner } from "@/components/autopilot/account-views"
+import { IdeasView } from "@/components/autopilot/ideas-view"
+import { AdminAnnounce, AdminCoupons, AdminCustomers, AdminHealth, AdminPayments, AdminRevenue } from "./admin-views"
 import { LinkedInAutopilot } from "@/components/autopilot/customer-app"
 import { ToolApp } from "@/components/autopilot/tool-app"
 import { CSS as TOOL_CSS } from "@/components/autopilot/ui"
@@ -59,10 +61,12 @@ export function DashboardApp({ allowed, me }: { allowed: BusinessKey[]; me: Me }
 
   const biz = state?.biz ?? allowed[0]
   const business = BUSINESSES[biz]
-  const view = state?.view ?? "overview"
+  const asked = state?.view ?? "overview"
+  // Admin pages only for admins (the API refuses everyone else too).
+  const view = ADMIN_VIEWS.includes(asked) && me.role !== "admin" ? "overview" : asked
   const filters = state?.filters[view] || {}
   const tool = TOOL_VIEW[view]
-  const account = ACCOUNT_VIEWS.includes(view)
+  const account = ACCOUNT_VIEWS.includes(view) || ADMIN_VIEWS.includes(view)
   const page = !!tool || account
   const key = state && view !== "overview" && !page ? (view === "schedule" ? sectionKey(biz, "queue", state.start, state.end, state.cmp) : sectionKey(biz, view, state.start, state.end, state.cmp, filters)) : null
   const { data, loading, refresh } = useSection(key)
@@ -106,7 +110,7 @@ export function DashboardApp({ allowed, me }: { allowed: BusinessKey[]; me: Me }
               </button>
             </div>
             <nav className="flex-1 space-y-5 overflow-y-auto px-3">
-              {business.nav.map((g) => (
+              {business.nav.filter((g) => g.group !== "Admin" || me.role === "admin").map((g) => (
                 <div key={g.group || "main"}>
                   {g.group ? <div className="px-2.5 pb-1.5 text-[10.5px] font-semibold uppercase tracking-[0.1em] text-white/40">{g.group}</div> : null}
                   <ul className="space-y-0.5">
@@ -149,7 +153,7 @@ export function DashboardApp({ allowed, me }: { allowed: BusinessKey[]; me: Me }
                 </button>
               ) : null}
               {me.role === "admin" ? (
-                <button type="button" onClick={() => { setPanel("customers"); setMenu(false) }} className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-[13px] font-medium text-white/70 hover:bg-white/5 hover:text-white">
+                <button type="button" onClick={() => { if (allowed.includes("autopilot")) { set({ biz: "autopilot", view: "admin-customers", filters: {} }); setMenu(false); window.scrollTo({ top: 0 }) } else { setPanel("customers"); setMenu(false) } }} className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-[13px] font-medium text-white/70 hover:bg-white/5 hover:text-white">
                   <BadgeIndianRupee className="h-4 w-4" />
                   Customers
                 </button>
@@ -237,12 +241,28 @@ export function DashboardApp({ allowed, me }: { allowed: BusinessKey[]; me: Me }
           <main className="mx-auto max-w-[1280px] px-4 pb-[max(2.5rem,env(safe-area-inset-bottom))] pt-5 sm:px-6 lg:px-8">
             <ViewBoundary key={view + (state ? sectionKey(biz, view, state.start, state.end, state.cmp, filters) : "")}>
             {biz === "autopilot" && state ? (
-              <div className="mb-4">
+              <div className="mb-4 space-y-3 empty:hidden">
+                <ViewAsBanner />
                 <VerifyBanner />
+                <AnnouncementBanner />
               </div>
             ) : null}
             {!state ? (
               <SectionSkeleton />
+            ) : view === "ap-ideas" ? (
+              <IdeasView key={tick} go={go} />
+            ) : view === "admin-revenue" ? (
+              <AdminRevenue key={tick} />
+            ) : view === "admin-customers" ? (
+              <AdminCustomers key={tick} />
+            ) : view === "admin-payments" ? (
+              <AdminPayments key={tick} />
+            ) : view === "admin-coupons" ? (
+              <AdminCoupons key={tick} />
+            ) : view === "admin-announce" ? (
+              <AdminAnnounce key={tick} />
+            ) : view === "admin-health" ? (
+              <AdminHealth key={tick} />
             ) : view === "settings" ? (
               <SettingsView me={me} />
             ) : view === "help" ? (
