@@ -409,7 +409,7 @@ export default function XredibleAutomationWebsite() {
                 className="rounded-3xl border border-white/10 bg-black/40 p-8"
               >
                 <p className="text-zinc-300 leading-relaxed">
-                  "{item.feedback}"
+                  &ldquo;{item.feedback}&rdquo;
                 </p>
 
                 <div className="mt-6 text-cyan-400 font-semibold">
@@ -582,6 +582,15 @@ export default function XredibleAutomationWebsite() {
               Contact
             </a>
           </div>
+        </div>
+        <div className="max-w-7xl mx-auto px-6 pb-8 flex flex-wrap justify-center md:justify-start gap-x-5 gap-y-2 text-sm text-zinc-500">
+          <a href="/pricing" className="hover:text-cyan-400">Autopilot Pricing</a>
+          <a href="/dashboard" className="hover:text-cyan-400">Sign in</a>
+          <a href="/terms" className="hover:text-cyan-400">Terms</a>
+          <a href="/privacy" className="hover:text-cyan-400">Privacy</a>
+          <a href="/refund-policy" className="hover:text-cyan-400">Cancellation &amp; Refunds</a>
+          <a href="/shipping-policy" className="hover:text-cyan-400">Delivery Policy</a>
+          <a href="/contact" className="hover:text-cyan-400">Contact Us</a>
         </div>
       </footer>
 
