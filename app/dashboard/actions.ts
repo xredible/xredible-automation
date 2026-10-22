@@ -116,3 +116,28 @@ export async function changeMyPassword(_prev: FormState, formData: FormData): Pr
   await startSession(u)
   return { error: null, ok: "Password changed. Other devices have been signed out." }
 }
+
+/** Self sign-up for Autopilot customers (role "customer": no business dashboards, only their own automations). */
+export async function signUp(_prev: FormState, formData: FormData): Promise<FormState> {
+  if (!isConfigured()) return { error: "Sign-up isn't open yet." }
+  if (String(formData.get("website") ?? "")) return { error: "Please try again." } // bots fill the hidden field
+  const name = String(formData.get("name") ?? "").trim().slice(0, 80)
+  const email = normEmail(formData.get("email"))
+  const password = String(formData.get("password") ?? "")
+  if (!name) return { error: "Enter your name." }
+  if (!validEmail(email)) return { error: "Enter a valid email." }
+  const bad = passwordProblem(password)
+  if (bad) return { error: bad }
+  if (formData.get("terms") !== "on") return { error: "Please accept the Terms and Privacy Policy." }
+  const { users, error } = await listUsers(true)
+  if (!users) return { error: error || "Sign-up is busy. Try again in a minute." }
+  if (users.some((u) => u.email === email)) {
+    await slow()
+    return { error: "An account with this email already exists. Sign in instead." }
+  }
+  const u: StoredUser = { email, name, passHash: await hashPassword(password), role: "customer", businesses: [], active: true, sessionVersion: 1, lastLogin: new Date().toISOString() }
+  const err = await saveUser(u)
+  if (err) return { error: err }
+  await startSession(u)
+  redirect("/dashboard?p=linkedin")
+}

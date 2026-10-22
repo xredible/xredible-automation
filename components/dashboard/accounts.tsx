@@ -8,7 +8,7 @@ import { Check, Copy, KeyRound, Plus, RefreshCw, Trash2, X } from "lucide-react"
 import { BUSINESSES, BUSINESS_KEYS, type BusinessKey } from "@/lib/dashboard/businesses"
 import { changeMyPassword, type FormState } from "@/app/dashboard/actions"
 
-export type Me = { name: string; email: string; role: "admin" | "member" }
+export type Me = { name: string; email: string; role: "admin" | "member" | "customer" }
 
 type Account = { email: string; name: string; role: "admin" | "member"; businesses: BusinessKey[]; active: boolean; lastLogin: string | null }
 
@@ -348,6 +348,109 @@ export function PasswordPanel({ onClose }: { onClose: () => void }) {
           </button>
         </div>
       </form>
+    </Modal>
+  )
+}
+
+type CustomerRow = {
+  sub: { id: number; email: string; product: string; plan: string; status: string; postLimit: number; used: number; periodEnd: string | null; note: string; rzpSubId: string }
+  name: string
+  liName: string
+  connected: boolean
+}
+
+/** Admin: Autopilot customers, their plans, and UPI payments waiting to be checked. */
+export function CustomersPanel({ onClose }: { onClose: () => void }) {
+  const [list, setList] = useState<CustomerRow[] | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  const [busy, setBusy] = useState<number | null>(null)
+  const load = useCallback(async () => {
+    try {
+      const r = await fetch("/dashboard/customers", { cache: "no-store" })
+      const j = (await r.json()) as { ok?: boolean; customers?: CustomerRow[]; error?: string }
+      if (j.ok && j.customers) {
+        setList(j.customers)
+        setError(null)
+      } else setError(j.error || "Could not load customers.")
+    } catch {
+      setError("No connection. Try again.")
+    }
+  }, [])
+  useEffect(() => {
+    load()
+  }, [load])
+  const run = async (body: Record<string, unknown>) => {
+    setBusy(Number(body.id))
+    try {
+      const r = await fetch("/dashboard/customers", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) })
+      const j = (await r.json()) as { ok?: boolean; error?: string }
+      if (!j.ok) setError(j.error || "That didn't work.")
+    } catch {
+      setError("No connection. Try again.")
+    }
+    setBusy(null)
+    load()
+  }
+  const upi = (note: string) => /^upi:(starter|pro):([A-Za-z0-9]+):(.+)$/.exec(note)
+  return (
+    <Modal title="Customers" onClose={onClose} wide>
+      <p className="text-sm text-[var(--muted)]">People who signed up for an automation. UPI payments waiting for you are at the top: check the UTR in your bank or UPI app, then activate.</p>
+      {error ? <div className="mt-3 rounded-lg bg-[var(--bad-bg)] px-3 py-2 text-sm text-[var(--bad)]">{error}</div> : null}
+      <ul className="mt-4 divide-y divide-[var(--line-soft)] rounded-xl border border-[var(--line)]">
+        {!list ? <li className="px-4 py-6 text-sm text-[var(--faint)]">Loading customers…</li> : null}
+        {list && !list.length ? <li className="px-4 py-6 text-sm text-[var(--faint)]">No customers yet. Share xredible.in/dashboard?signup to get the first ones.</li> : null}
+        {list?.map(({ sub, name, liName, connected }) => {
+          const u = upi(sub.note)
+          return (
+            <li key={sub.id} className="px-4 py-3">
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                <div className="min-w-0 flex-1">
+                  <div className="truncate text-sm font-semibold">{name || sub.email}</div>
+                  <div className="truncate text-[12px] text-[var(--muted)]">
+                    {sub.email} · {sub.product === "linkedin" ? "LinkedIn Autopilot" : sub.product} · LinkedIn {connected ? `connected (${liName})` : "not connected"}
+                  </div>
+                </div>
+                <div className="text-right text-[12.5px]">
+                  <div className="font-semibold capitalize">
+                    {sub.plan} · {sub.status}
+                  </div>
+                  <div className="text-[var(--muted)]">
+                    {sub.used}/{sub.postLimit} used{sub.periodEnd ? ` · until ${when(sub.periodEnd)}` : ""}
+                  </div>
+                </div>
+              </div>
+              {u ? (
+                <div className="mt-2 rounded-lg bg-[var(--brand-soft)] px-3 py-2 text-[13px]">
+                  UPI payment for <b className="capitalize">{u[1]}</b> · UTR <b className="font-mono">{u[2]}</b> · sent {when(u[3])}
+                </div>
+              ) : sub.note ? (
+                <div className="mt-2 text-[12.5px] text-[var(--muted)]">{sub.note}</div>
+              ) : null}
+              <div className="mt-2 flex flex-wrap gap-1.5">
+                <button type="button" className={ghost} disabled={busy === sub.id} onClick={() => run({ op: "activate", id: sub.id, plan: "starter" })}>
+                  {sub.status === "active" ? "+30 days Starter" : "Activate Starter"}
+                </button>
+                <button type="button" className={ghost} disabled={busy === sub.id} onClick={() => run({ op: "activate", id: sub.id, plan: "pro" })}>
+                  {sub.status === "active" ? "+30 days Pro" : "Activate Pro"}
+                </button>
+                {u ? (
+                  <button type="button" className={ghost + " text-[var(--bad)]"} disabled={busy === sub.id} onClick={() => run({ op: "reject", id: sub.id })}>
+                    Payment not found
+                  </button>
+                ) : null}
+                {sub.status === "active" ? (
+                  <button type="button" className={ghost} disabled={busy === sub.id} onClick={() => run({ op: "stop", id: sub.id })}>
+                    Stop plan
+                  </button>
+                ) : null}
+                <button type="button" className={ghost} disabled={busy === sub.id} onClick={() => run({ op: "trial", id: sub.id })}>
+                  Reset free trial
+                </button>
+              </div>
+            </li>
+          )
+        })}
+      </ul>
     </Modal>
   )
 }

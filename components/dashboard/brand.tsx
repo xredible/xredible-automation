@@ -16,7 +16,7 @@ const glyph = (paths: ReactNode) =>
 const Instagram = glyph(<><rect x="3" y="3" width="18" height="18" rx="5" /><circle cx="12" cy="12" r="4" /><circle cx="17.5" cy="6.5" r="0.6" fill="currentColor" /></>)
 const Facebook = glyph(<path d="M15 3h-2.5A3.5 3.5 0 0 0 9 6.5V10H7v3.5h2V21h3.5v-7.5H15l.5-3.5h-3V7a1 1 0 0 1 1-1H15z" />)
 const Youtube = glyph(<><rect x="2.5" y="5.5" width="19" height="13" rx="3.5" /><path d="m10 9.5 4.5 2.5-4.5 2.5z" fill="currentColor" /></>)
-const Linkedin = glyph(<><rect x="3" y="3" width="18" height="18" rx="3" /><path d="M8 10.5V16M8 7.5v.01M11.5 16v-5.5M11.5 13a2.5 2.5 0 0 1 5 0v3" /></>)
+export const Linkedin = glyph(<><rect x="3" y="3" width="18" height="18" rx="3" /><path d="M8 10.5V16M8 7.5v.01M11.5 16v-5.5M11.5 13a2.5 2.5 0 0 1 5 0v3" /></>)
 
 export type PlatformMeta = { label: string; short: string; color: string; icon: ReactNode; big: ReactNode }
 

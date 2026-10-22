@@ -1,7 +1,7 @@
 "use client"
 
-import { useActionState, type ReactNode } from "react"
-import { setupFirstAdmin, signIn, type FormState } from "@/app/dashboard/actions"
+import { useActionState, useState, type ReactNode } from "react"
+import { setupFirstAdmin, signIn, signUp, type FormState } from "@/app/dashboard/actions"
 
 const input =
   "mt-1.5 w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-base text-slate-900 outline-none focus:border-[#10203f] focus:ring-2 focus:ring-[#e7c766]"
@@ -31,10 +31,16 @@ function Problem({ text }: { text: string | null | undefined }) {
 const button =
   "mt-5 w-full rounded-lg bg-[#10203f] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#1b3160] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#e7c766] disabled:opacity-60"
 
-export function SignInForm({ configured, warning }: { configured: boolean; warning?: string | null }) {
+export function SignInForm({ configured, warning, startWithSignUp }: { configured: boolean; warning?: string | null; startWithSignUp?: boolean }) {
+  const [mode, setMode] = useState<"in" | "up">(startWithSignUp ? "up" : "in")
+  if (configured && mode === "up") return <SignUpForm onSignIn={() => setMode("in")} />
+  return <SignInOnly configured={configured} warning={warning} onSignUp={() => setMode("up")} />
+}
+
+function SignInOnly({ configured, warning, onSignUp }: { configured: boolean; warning?: string | null; onSignUp: () => void }) {
   const [state, action, pending] = useActionState<FormState, FormData>(signIn, { error: null })
   return (
-    <Shell title="Client Dashboard" sub="Xredible · sign in to see your business">
+    <Shell title="Xredible Dashboard" sub="Sign in to your automations">
       {configured ? (
         <form action={action}>
           <label htmlFor="email" className={label}>
@@ -49,7 +55,14 @@ export function SignInForm({ configured, warning }: { configured: boolean; warni
           <button type="submit" disabled={pending} className={button}>
             {pending ? "Signing in…" : "Sign in"}
           </button>
-          <div className="mt-4 text-xs leading-relaxed text-slate-500">You stay signed in on this device for 60 days. Forgot your password? Ask your Xredible admin to reset it.</div>
+          <div className="mt-4 text-xs leading-relaxed text-slate-500">You stay signed in on this device for 60 days. Forgot your password? <a href="https://wa.me/918085949384" className="underline">Message us on WhatsApp</a> and we&rsquo;ll reset it.</div>
+          <div className="mt-5 border-t border-slate-100 pt-4 text-sm text-slate-600">
+            New here?{" "}
+            <button type="button" onClick={onSignUp} className="font-semibold text-[#10203f] underline underline-offset-2">
+              Create a free account
+            </button>{" "}
+            and try LinkedIn Autopilot with 3 free posts.
+          </div>
         </form>
       ) : (
         <div className="mt-6 rounded-lg bg-amber-50 px-3 py-3 text-sm leading-relaxed text-amber-900">
@@ -88,6 +101,54 @@ export function SetupForm() {
         <button type="submit" disabled={pending} className={button}>
           {pending ? "Creating…" : "Create admin account"}
         </button>
+      </form>
+    </Shell>
+  )
+}
+
+function SignUpForm({ onSignIn }: { onSignIn: () => void }) {
+  const [state, action, pending] = useActionState<FormState, FormData>(signUp, { error: null })
+  return (
+    <Shell title="Create your account" sub="Start with 3 free LinkedIn posts. No card needed.">
+      <form action={action}>
+        <label htmlFor="su-name" className={label}>
+          Your name
+        </label>
+        <input id="su-name" name="name" type="text" autoComplete="name" required autoFocus className={input} />
+        <label htmlFor="su-email" className={label}>
+          Email
+        </label>
+        <input id="su-email" name="email" type="email" autoComplete="username" required className={input} />
+        <label htmlFor="su-password" className={label}>
+          Password
+        </label>
+        <input id="su-password" name="password" type="password" autoComplete="new-password" minLength={10} required className={input} />
+        <div className="mt-1 text-xs text-slate-500">At least 10 characters.</div>
+        <input type="text" name="website" tabIndex={-1} autoComplete="off" className="hidden" aria-hidden />
+        <label className="mt-4 flex items-start gap-2 text-sm text-slate-600">
+          <input type="checkbox" name="terms" required className="mt-1" />
+          <span>
+            I agree to the{" "}
+            <a href="/terms" target="_blank" className="underline">
+              Terms
+            </a>{" "}
+            and{" "}
+            <a href="/privacy" target="_blank" className="underline">
+              Privacy Policy
+            </a>
+            .
+          </span>
+        </label>
+        <Problem text={state.error} />
+        <button type="submit" disabled={pending} className={button}>
+          {pending ? "Creating…" : "Create account"}
+        </button>
+        <div className="mt-5 border-t border-slate-100 pt-4 text-sm text-slate-600">
+          Already have an account?{" "}
+          <button type="button" onClick={onSignIn} className="font-semibold text-[#10203f] underline underline-offset-2">
+            Sign in
+          </button>
+        </div>
       </form>
     </Shell>
   )
