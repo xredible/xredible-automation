@@ -8,7 +8,7 @@ const eslintConfig = defineConfig([
   // The client dashboard was built (and battle-tested) before the React Compiler lint
   // rules existed; its effects deliberately sync URL/data state. Keep the rules as warnings there.
   {
-    files: ["components/dashboard/**", "app/dashboard/**"],
+    files: ["components/dashboard/**", "components/autopilot/**", "app/dashboard/**"],
     rules: {
       "react-hooks/set-state-in-effect": "warn",
       "react-hooks/purity": "warn",

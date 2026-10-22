@@ -20,7 +20,8 @@ const scrypt = promisify(scryptCb) as (pw: string, salt: Buffer, len: number, op
 export const COOKIE = "xd_dash"
 const SESSION_DAYS = 60
 
-export type Role = "admin" | "member"
+/** admin: every business + accounts. member: chosen businesses. customer: self-signed-up Autopilot customer. */
+export type Role = "admin" | "member" | "customer"
 
 export type StoredUser = {
   email: string
@@ -40,7 +41,7 @@ export const toPublic = (u: StoredUser): PublicUser => ({
   email: u.email,
   name: u.name,
   role: u.role,
-  businesses: u.role === "admin" ? [...BUSINESS_KEYS] : u.businesses.filter(isBusiness),
+  businesses: u.role === "admin" ? [...BUSINESS_KEYS] : u.role === "customer" ? [] : u.businesses.filter(isBusiness),
   active: u.active,
   lastLogin: u.lastLogin,
 })
@@ -82,7 +83,7 @@ export async function listUsers(fresh = false): Promise<{ users: StoredUser[] | 
   const r = await gateway({ kind: "users", op: "list" }, 20_000)
   const body = r.body as { ok?: boolean; users?: StoredUser[]; error?: string } | null
   if (r.status !== 200 || !body?.ok || !Array.isArray(body.users)) return { users: null, error: body?.error || "Could not load accounts." }
-  const users = body.users.map((u) => ({ ...u, email: normEmail(u.email), role: (u.role === "admin" ? "admin" : "member") as Role }))
+  const users = body.users.map((u) => ({ ...u, email: normEmail(u.email), role: (u.role === "admin" || u.role === "customer" ? u.role : "member") as Role }))
   cache = { at: Date.now(), users }
   return { users, error: null }
 }

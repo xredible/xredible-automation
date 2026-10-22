@@ -4,7 +4,7 @@
 // comparison, per-platform filters, and the active report.
 
 import { useEffect, useMemo, useRef, useState } from "react"
-import { CalendarRange, Check, ChevronDown, ChevronsUpDown, KeyRound, LogOut, Menu, RefreshCw, Users, X } from "lucide-react"
+import { BadgeIndianRupee, CalendarRange, Check, ChevronDown, ChevronsUpDown, KeyRound, LogOut, Menu, RefreshCw, Users, X } from "lucide-react"
 import type { BlogData, QueueData, SectionData } from "@/lib/dashboard/types"
 import { BUSINESSES, type BusinessKey } from "@/lib/dashboard/businesses"
 import { signOut } from "@/app/dashboard/actions"
@@ -17,7 +17,7 @@ import { BlogView } from "./blog-view"
 import { Overview } from "./overview"
 import { Notice, SectionSkeleton, ViewBoundary } from "./ui"
 import { QueueActionsProvider } from "./actions"
-import { AccountsPanel, PasswordPanel, type Me } from "./accounts"
+import { AccountsPanel, CustomersPanel, PasswordPanel, type Me } from "./accounts"
 
 const INTRO: Partial<Record<View, string>> = {
   youtube: "YouTube Analytics is 2–3 days behind, so the last few days fill in later.",
@@ -32,7 +32,7 @@ const CSS = `
 
 export function DashboardApp({ allowed, me }: { allowed: BusinessKey[]; me: Me }) {
   const [state, setState] = useState<DashState | null>(null)
-  const [panel, setPanel] = useState<"accounts" | "password" | null>(null)
+  const [panel, setPanel] = useState<"accounts" | "customers" | "password" | null>(null)
   const [menu, setMenu] = useState(false)
   const [tick, setTick] = useState(0)
   useEffect(() => setState(readUrl(allowed)), [allowed])
@@ -70,6 +70,7 @@ export function DashboardApp({ allowed, me }: { allowed: BusinessKey[]; me: Me }
       <style>{CSS}</style>
       {panel === "accounts" ? <AccountsPanel me={me} onClose={() => setPanel(null)} /> : null}
       {panel === "password" ? <PasswordPanel onClose={() => setPanel(null)} /> : null}
+      {panel === "customers" ? <CustomersPanel onClose={() => setPanel(null)} /> : null}
       <div className="lg:grid lg:grid-cols-[244px_minmax(0,1fr)]">
         {/* Sidebar */}
         <aside
@@ -124,6 +125,12 @@ export function DashboardApp({ allowed, me }: { allowed: BusinessKey[]; me: Me }
                 <button type="button" onClick={() => { setPanel("accounts"); setMenu(false) }} className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-[13px] font-medium text-white/70 hover:bg-white/5 hover:text-white">
                   <Users className="h-4 w-4" />
                   Accounts
+                </button>
+              ) : null}
+              {me.role === "admin" ? (
+                <button type="button" onClick={() => { setPanel("customers"); setMenu(false) }} className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-[13px] font-medium text-white/70 hover:bg-white/5 hover:text-white">
+                  <BadgeIndianRupee className="h-4 w-4" />
+                  Customers
                 </button>
               ) : null}
               <button type="button" onClick={() => { setPanel("password"); setMenu(false) }} className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-[13px] font-medium text-white/70 hover:bg-white/5 hover:text-white">
