@@ -3,6 +3,7 @@ import { Inter } from "next/font/google"
 import { currentUser, isConfigured, listUsers, toPublic } from "@/lib/dashboard/auth"
 import { SetupForm, SignInForm } from "@/components/dashboard/sign-in"
 import { DashboardApp } from "@/components/dashboard/app"
+import { RegisterSW } from "@/components/dashboard/register-sw"
 
 // Private page: never indexed, never cached for the public.
 export const metadata: Metadata = {
@@ -39,6 +40,7 @@ export default async function DashboardPage(props: { searchParams: Promise<Recor
   const q = await props.searchParams
   return (
     <div className={`${inter.variable} notranslate`} translate="no">
+      <RegisterSW />
       <Screen signup={q.signup !== undefined} />
     </div>
   )

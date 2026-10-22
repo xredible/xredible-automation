@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#10203f">
+<title>You're offline · Xredible</title>
+<style>
+  :root{--bg:#f4f5f7;--ink:#0e1627;--muted:#5d6676;--btn:#10203f;--btnink:#fff}
+  @media (prefers-color-scheme:dark){:root{--bg:#0b111c;--ink:#eef2f8;--muted:#98a2b3;--btn:#d4ad4b;--btnink:#10203f}}
+  body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;padding:16px;box-sizing:border-box;text-align:center}
+  img{width:64px;height:64px;border-radius:14px}
+  h1{font-size:20px;margin:18px 0 6px}
+  p{color:var(--muted);font-size:15px;margin:0 0 20px;max-width:320px}
+  button{border:0;border-radius:10px;padding:12px 20px;font-size:15px;font-weight:600;background:var(--btn);color:var(--btnink)}
+</style>
+</head>
+<body>
+  <div>
+    <img src="/app/icon-192.png" alt="">
+    <h1>You're offline</h1>
+    <p>Your posts are safe and still go out on time. Connect to the internet to see your dashboard.</p>
+    <button type="button" onclick="location.reload()">Try again</button>
+  </div>
+</body>
+</html>

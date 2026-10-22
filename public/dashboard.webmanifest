@@ -1,22 +1,22 @@
 {
-  "name": "Xredible Client Dashboard",
+  "id": "/dashboard",
+  "name": "Xredible Autopilot",
   "short_name": "Xredible",
-  "start_url": "/dashboard",
-  "scope": "/dashboard",
+  "description": "Approve your posts, see results and get ideas for LinkedIn, Instagram, Facebook, your blog and newsletter.",
+  "start_url": "/dashboard?biz=autopilot",
+  "scope": "/",
   "display": "standalone",
+  "orientation": "portrait",
   "background_color": "#10203f",
   "theme_color": "#10203f",
+  "categories": ["business", "productivity", "social"],
   "icons": [
-    {
-      "src": "/dashboard/xredible-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "/dashboard/xredible-180.png",
-      "sizes": "180x180",
-      "type": "image/png"
-    }
+    { "src": "/app/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/app/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/app/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Content calendar", "url": "/dashboard?biz=autopilot&view=schedule" },
+    { "name": "Ideas", "url": "/dashboard?biz=autopilot&view=ap-ideas" }
   ]
 }

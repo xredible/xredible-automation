@@ -1,0 +1,47 @@
+// Xredible Autopilot for Android: a Trusted Web Activity that opens the live dashboard
+// (https://www.xredible.in/dashboard) full screen. Built unsigned by GitHub Actions and signed afterwards.
+plugins { id "com.android.application" }
+
+def host = "www.xredible.in"
+def launchUrl = "https://www.xredible.in/dashboard?biz=autopilot&app=android"
+
+android {
+    namespace "com.xredible.app"
+    compileSdk 36
+
+    defaultConfig {
+        applicationId "com.xredible.app"
+        minSdk 23
+        targetSdk 36
+        versionCode Integer.parseInt(System.getenv("VERSION_CODE") ?: "1")
+        versionName System.getenv("VERSION_NAME") ?: "1.0.0"
+
+        resValue "string", "appName", "Xredible Autopilot"
+        resValue "string", "launcherName", "Xredible"
+        resValue "string", "launchUrl", launchUrl
+        resValue "string", "hostName", host
+        resValue "string", "assetStatements", """[{ "relation": ["delegate_permission/common.handle_all_urls"], "target": { "namespace": "web", "site": "https://$host" } }]"""
+        resValue "color", "colorPrimary", "#10203F"
+        resValue "color", "navigationColor", "#10203F"
+        resValue "color", "backgroundColor", "#10203F"
+        resValue "string", "providerAuthority", "com.xredible.app.fileprovider"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+    lint {
+        abortOnError false
+        checkReleaseBuilds false
+    }
+}
+
+dependencies {
+    implementation "com.google.androidbrowserhelper:androidbrowserhelper:2.5.0"
+}
