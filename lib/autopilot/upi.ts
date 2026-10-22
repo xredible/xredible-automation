@@ -6,6 +6,7 @@
 // The customer pays, types the 12-digit UTR, and an admin activates the plan in Customers.
 
 import QRCode from "qrcode"
+import { PRODUCTS, type ProductKey } from "./products"
 
 export const upiConfigured = () => Boolean(process.env.XD_UPI_ID?.trim())
 
@@ -26,3 +27,15 @@ export async function upiQr(link: string): Promise<string> {
 
 export const upiId = () => process.env.XD_UPI_ID?.trim() || ""
 export const validUtr = (u: string) => /^[A-Za-z0-9]{10,22}$/.test(u)
+
+/** The QR + link per plan, shown on a product's page (null until XD_UPI_ID is set). */
+export async function upiOptions(product: ProductKey, email: string) {
+  if (!upiConfigured()) return null
+  const plans = await Promise.all(
+    PRODUCTS[product].plans.map(async (p) => {
+      const link = upiLink(p.price, `${PRODUCTS[product].name.split(" ")[0]} ${p.name} ${email}`)
+      return { key: p.key, link, qr: await upiQr(link) }
+    }),
+  )
+  return { id: upiId(), plans }
+}

@@ -12,8 +12,9 @@ export default function Privacy() {
         <li><b>Account:</b> your name, email, and your password as a one-way hash (we never see the password itself).</li>
         <li><b>Automation settings:</b> what you tell us about your work, audience, topics and tone, and your posting schedule.</li>
         <li><b>Posts:</b> drafts, your edits, approval times, and links to published posts.</li>
-        <li><b>Connected accounts:</b> when you connect LinkedIn, your LinkedIn name, member ID and an access key that lets us publish posts you approve. The access key is stored encrypted and expires after about 60 days.</li>
-        <li><b>Billing:</b> your plan and Razorpay subscription ID. Card and UPI details are handled by Razorpay; we never receive them.</li>
+        <li><b>Connected accounts:</b> the name of what you connect (LinkedIn profile, Facebook Page and Instagram account, WordPress site, or sending email address) and the access key or password that lets us publish what you approve. These are stored encrypted. LinkedIn keys expire after about 60 days.</li>
+        <li><b>Newsletter subscribers:</b> the email addresses and names you add, and who unsubscribed. You own this list; we use it only to send your approved newsletters and never email these people for ourselves.</li>
+        <li><b>Billing:</b> your plan, and the UPI reference number or Razorpay subscription ID of your payment. Card and bank details stay with your bank or Razorpay; we never receive them.</li>
       </ul>
       <h2>How we use it</h2>
       <ul>
@@ -25,7 +26,7 @@ export default function Privacy() {
       <p>The website runs on Vercel; automation data is kept on our own server. Payment processing is done by Razorpay and AI drafting by Google. Each only receives what it needs for its part.</p>
       <h2>Your choices</h2>
       <ul>
-        <li>Disconnect LinkedIn at any time from the dashboard; we delete the stored access key immediately. You can also remove our access from your LinkedIn settings.</li>
+        <li>Disconnect any account at any time from the dashboard; we delete the stored access key or password immediately. You can also remove our access from your LinkedIn or Facebook settings, or revoke the WordPress Application Password.</li>
         <li>Ask us to export or delete your data, or close your account, by contacting us. We delete account data within 30 days, except what we must keep for tax and billing records.</li>
       </ul>
       <h2>Contact</h2>
