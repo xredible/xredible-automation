@@ -29,9 +29,17 @@ export type ViewName =
   | "ap-meta"
   | "ap-blog"
   | "ap-newsletter"
+  | "ap-ideas"
   | "settings"
   | "billing"
   | "help"
+  // Admin only (filtered out of the sidebar for everyone else; the API refuses non-admins anyway)
+  | "admin-revenue"
+  | "admin-customers"
+  | "admin-payments"
+  | "admin-coupons"
+  | "admin-announce"
+  | "admin-health"
 
 export type Business = {
   key: BusinessKey
@@ -153,10 +161,11 @@ export const BUSINESSES: Record<BusinessKey, Business> = {
     subtitle: "Xredible Autopilot",
     icon: "/dashboard/xredible.svg",
     nav: [
-      { group: "", items: ["overview", "schedule"] },
+      { group: "", items: ["overview", "schedule", "ap-ideas"] },
       { group: "Results", items: ["instagram", "facebook", "linkedin", "articles", "newsletter"] },
       { group: "Automations", items: ["ap-linkedin", "ap-meta", "ap-blog", "ap-newsletter"] },
       { group: "Account", items: ["billing", "settings", "help"] },
+      { group: "Admin", items: ["admin-revenue", "admin-customers", "admin-payments", "admin-coupons", "admin-announce", "admin-health"] },
     ],
     sections: ["queue", "instagram", "facebook", "linkedin", "articles", "newsletter"],
     picks: [
@@ -184,7 +193,10 @@ export const BUSINESS_KEYS = (Object.keys(BUSINESSES) as BusinessKey[]).filter((
 
 /** Autopilot views that open a tool's own page (settings, connection, review queue) instead of a report. */
 /** Autopilot account pages (not reports). */
-export const ACCOUNT_VIEWS: ViewName[] = ["settings", "billing", "help"]
+export const ACCOUNT_VIEWS: ViewName[] = ["settings", "billing", "help", "ap-ideas"]
+
+/** The Admin group (admins only). */
+export const ADMIN_VIEWS: ViewName[] = ["admin-revenue", "admin-customers", "admin-payments", "admin-coupons", "admin-announce", "admin-health"]
 
 export const TOOL_VIEW: Partial<Record<ViewName, "linkedin" | "meta" | "blog" | "newsletter">> = { "ap-linkedin": "linkedin", "ap-meta": "meta", "ap-blog": "blog", "ap-newsletter": "newsletter" }
 

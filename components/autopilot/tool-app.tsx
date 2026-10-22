@@ -7,6 +7,7 @@ import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react
 import { Check, ExternalLink, PenLine, RefreshCw, Send, Sparkles, Trash2 } from "lucide-react"
 import { PRODUCTS, type ProductKey, type Subscription } from "@/lib/autopilot/products"
 import { card, field, ghost, istTime, Notice, PlanCard, primary, small, toLocalInput, type Upi } from "./ui"
+import { RewriteMenu } from "./rewrite"
 
 type Tool = Exclude<ProductKey, "linkedin">
 type Settings = Record<string, string | number>
@@ -692,6 +693,7 @@ function ItemCard({ it, product, busy, act }: { it: Item; product: Tool; busy: b
               <button type="button" className={ghost} onClick={() => { setF({ title: it.title, summary: it.summary, text: it.text, image: it.image }); setEditing(false) }}>
                 Cancel
               </button>
+              <RewriteMenu endpoint={`/dashboard/me/${product}`} id={it.id} text={f.text} title={f.title} onResult={(r) => setF((x) => ({ ...x, text: r.text, title: r.title ?? x.title }))} />
             </>
           ) : (
             <>
@@ -709,6 +711,7 @@ function ItemCard({ it, product, busy, act }: { it: Item; product: Tool; busy: b
                   <button type="button" className={ghost} onClick={() => setEditing(true)}>
                     <PenLine className="h-3.5 w-3.5" /> Edit
                   </button>
+                  <RewriteMenu endpoint={`/dashboard/me/${product}`} id={it.id} text={it.text} title={it.title} onResult={(r) => { setF((x) => ({ ...x, text: r.text, title: r.title ?? x.title })); setEditing(true) }} />
                   <button type="button" className={ghost} onClick={() => setMoving((m) => !m)}>
                     Change time
                   </button>

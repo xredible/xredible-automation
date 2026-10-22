@@ -4,8 +4,10 @@
 // Each brand is a separate set of automations, plans and free trials. Brand 1 uses the
 // person's email as its key; brand N uses "email::N". The chosen brand is kept in a cookie.
 
+import { createHmac, timingSafeEqual } from "node:crypto"
 import { cookies } from "next/headers"
 import { addNotice, noticesFor, realEmail, removeNotice } from "./account"
+import { gatewaySecret } from "@/lib/dashboard/gateway"
 
 export const BRAND_COOKIE = "xd_brand"
 export const MAX_BRANDS = 10
@@ -23,8 +25,44 @@ export async function brandsOf(email: string, firstName = "Main brand"): Promise
   return [{ n: 1, name: main, key: me }, ...extra]
 }
 
-/** The data key for the signed-in person's current brand. */
+// ---------- admin "view as customer" ----------
+// An admin can open a customer's dashboard to help them. The cookie names the admin too and is signed,
+// so it only works for that admin's own session.
+
+export const VIEW_AS_COOKIE = "xd_view_as"
+const sig = (s: string) => createHmac("sha256", gatewaySecret() || "unset").update(`view-as|${s}`).digest("base64url").slice(0, 24)
+
+export async function startViewAs(admin: string, target: string) {
+  const v = `${admin}|${target}`
+  ;(await cookies()).set(VIEW_AS_COOKIE, `${Buffer.from(v).toString("base64url")}.${sig(v)}`, { httpOnly: true, secure: true, sameSite: "lax", path: "/", maxAge: 4 * 3600 })
+}
+
+export async function stopViewAs() {
+  ;(await cookies()).delete({ name: VIEW_AS_COOKIE, path: "/" })
+}
+
+/** The customer key an admin is viewing as, if any. */
+export async function viewingAs(email: string): Promise<string | null> {
+  const raw = (await cookies()).get(VIEW_AS_COOKIE)?.value || ""
+  const [b, s] = raw.split(".")
+  if (!b || !s) return null
+  let v = ""
+  try {
+    v = Buffer.from(b, "base64url").toString("utf8")
+  } catch {
+    return null
+  }
+  const want = Buffer.from(sig(v))
+  const got = Buffer.from(s)
+  if (want.length !== got.length || !timingSafeEqual(want, got)) return null
+  const [admin, target] = v.split("|")
+  return admin === email && target ? target : null
+}
+
+/** The data key for the signed-in person's current brand (or the customer an admin is viewing as). */
 export async function ownerKey(email: string): Promise<string> {
+  const as = await viewingAs(email)
+  if (as) return as
   const n = Number((await cookies()).get(BRAND_COOKIE)?.value || 1)
   if (!Number.isInteger(n) || n < 2) return email
   const list = await brandsOf(email)

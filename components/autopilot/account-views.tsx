@@ -23,6 +23,8 @@ export type AccountState = {
   referral: { code: string; link: string; joined: number; rewarded: number; creditDays: number }
   payments: { id: number; invoiceNo: string; at: string | null; what: string; brand: string; amount: string; method: string; url: string }[]
   mail: boolean
+  viewingAs: string | null
+  announcements: { id: number; title: string; message: string }[]
 }
 
 // ---------- shared account state ----------
@@ -143,6 +145,56 @@ export function BrandSwitcher() {
 }
 
 // ---------- confirm-your-email banner ----------
+
+/** Admin looking at a customer's dashboard: say so, with a way back. */
+export function ViewAsBanner() {
+  const { s } = useAccount()
+  const [busy, setBusy] = useState(false)
+  if (!s?.viewingAs) return null
+  return (
+    <div className="flex flex-wrap items-center gap-3 rounded-xl border border-[var(--brand)] bg-[var(--brand-soft)] px-4 py-2.5 text-sm text-[var(--ink)]">
+      <span className="min-w-0 flex-1">
+        Viewing as <b>{s.viewingAs.split("::")[0]}</b>
+        {s.viewingAs.includes("::") ? ` (brand ${s.viewingAs.split("::")[1]})` : ""}. Changes you make here change their account.
+      </span>
+      <button
+        type="button"
+        disabled={busy}
+        className={primaryBtn}
+        onClick={async () => {
+          setBusy(true)
+          await fetch("/dashboard/admin", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ op: "view-as-stop" }) }).catch(() => null)
+          window.location.assign("/dashboard?biz=autopilot&view=admin-customers")
+        }}
+      >
+        Exit
+      </button>
+    </div>
+  )
+}
+
+/** News from Xredible (Admin → Announcements), until the customer closes it. */
+export function AnnouncementBanner() {
+  const { s, act } = useAccount()
+  const list = s?.announcements || []
+  if (!list.length || s?.viewingAs) return null
+  return (
+    <div className="space-y-2">
+      {list.map((a) => (
+        <div key={a.id} className="flex items-start gap-3 rounded-xl border border-[var(--line)] bg-[var(--panel)] px-4 py-3 text-sm">
+          <span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-[var(--gold)]" aria-hidden />
+          <div className="min-w-0 flex-1">
+            <div className="font-semibold">{a.title}</div>
+            <div className="mt-0.5 whitespace-pre-wrap text-[13px] text-[var(--muted)]">{a.message}</div>
+          </div>
+          <button type="button" onClick={() => act({ op: "announce-dismiss", id: a.id })} className="rounded p-1 text-[var(--faint)] hover:bg-[var(--chip)]" aria-label="Close">
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+      ))}
+    </div>
+  )
+}
 
 export function VerifyBanner() {
   const { s, act, error } = useAccount()

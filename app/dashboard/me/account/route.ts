@@ -8,7 +8,9 @@ import { NextResponse } from "next/server"
 import { cookies } from "next/headers"
 import { errText, json, signedIn } from "@/lib/autopilot/guard"
 import { addNotice, EMAILS, isVerified, mailConfigured, noticesFor, removeNotice, send, verifyUrl } from "@/lib/autopilot/account"
-import { addBrand, brandsOf, currentBrand, renameBrand, selectBrand } from "@/lib/autopilot/brands"
+import { addBrand, brandsOf, currentBrand, renameBrand, selectBrand, viewingAs } from "@/lib/autopilot/brands"
+import { activeAnnouncements, announcements } from "@/lib/autopilot/admin"
+import { subsFor } from "@/lib/autopilot/service"
 import { paymentsFor, receiptUrl, referralInfo } from "@/lib/autopilot/billing"
 import { remove, rows, type Table } from "@/lib/autopilot/db"
 import { COOKIE, deleteUser, findUser, verifyPassword } from "@/lib/dashboard/auth"
@@ -32,6 +34,8 @@ const OWNED: [Table, string][] = [
 const SECRET_COLS = ["tokenEnc", "secretEnc", "passHash"]
 
 async function state(email: string, name: string) {
+  const [as, ann, allSubs] = await Promise.all([viewingAs(email), announcements(), brandsOf(email).then((bs) => Promise.all(bs.map((b) => subsFor(b.key)))).then((x) => x.flat())])
+  const paid = allSubs.some((s) => s.status === "active" && s.plan !== "trial")
   const [notes, brands, referral, payments] = await Promise.all([noticesFor(email), currentBrand(email, name ? `${name.split(" ")[0]}'s brand` : undefined), referralInfo(email), Promise.all((await brandsOf(email)).map((b) => paymentsFor(b.key))).then((x) => x.flat())])
   return {
     ok: true,
@@ -45,6 +49,8 @@ async function state(email: string, name: string) {
       .sort((a, b) => b.id - a.id)
       .map((p) => ({ id: p.id, invoiceNo: p.invoiceNo, at: p.at, what: `${PRODUCTS[p.product].name} ${planOf(p.product, p.plan)?.name || ""} (${p.cycle})`, brand: brands.list.find((b) => b.key === p.email)?.name || "", amount: rupees(p.amount), method: p.method === "razorpay" ? "Card / Razorpay" : "UPI", url: receiptUrl(p.id) })),
     mail: mailConfigured(),
+    viewingAs: as,
+    announcements: activeAnnouncements(ann, await noticesFor(email), paid).map((a) => ({ id: a.id, title: a.title, message: a.message })),
   }
 }
 
@@ -89,6 +95,8 @@ export async function POST(request: Request) {
       const off = notes.find((n) => n.kind === "optout" && n.key === "digest")
       if (b.digest === true && off) await removeNotice(off.id)
       if (b.digest === false && !off) await addNotice(me.email, "optout", "digest")
+    } else if (op === "announce-dismiss") {
+      await addNotice(me.email, "announce-seen", String(Number(b.id)))
     } else if (op === "brand-add") {
       const brand = await addBrand(me.email, String(b.name || ""))
       await selectBrand(me.email, brand.n)

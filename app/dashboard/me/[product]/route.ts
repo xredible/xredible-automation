@@ -22,6 +22,7 @@ import {
   disconnect,
   isTool,
   itemAction,
+  itemById,
   itemsFor,
   pickPage,
   removeContact,
@@ -30,10 +31,11 @@ import {
   type ToolKey,
 } from "@/lib/autopilot/tools"
 import { ownerKey } from "@/lib/autopilot/brands"
+import { rememberVoice, rewrite, voiceOf } from "@/lib/autopilot/ai"
 
 export const runtime = "nodejs"
 export const dynamic = "force-dynamic"
-export const maxDuration = 60
+export const maxDuration = 120
 
 async function state(email: string, product: ToolKey) {
   const [sub, channel, items, upi, contacts] = await Promise.all([
@@ -117,9 +119,26 @@ export async function POST(request: Request, ctx: Ctx) {
       extra = { added: await addContacts(owner, String(b.text || "")) }
     } else if (op === "contact-remove" && product === "newsletter") {
       await removeContact(owner, Number(b.id))
+    } else if (op === "rewrite") {
+      // A suggestion only: the dashboard shows it in the editor and nothing changes until they save.
+      const it = await itemById(Number(b.id))
+      if (!it || it.email !== owner || it.product !== product) throw new Error("That item isn't yours.")
+      const KIND = { meta: "Instagram and Facebook caption (the title is the short text shown on the image)", blog: "blog article (markdown)", newsletter: "email newsletter (the title is the subject line)" } as const
+      const out = await rewrite({
+        kind: KIND[product],
+        text: String(b.text || it.text),
+        title: String(b.title ?? it.title),
+        how: String(b.how || ""),
+        custom: String(b.custom || ""),
+        samples: await voiceOf(owner, product),
+        limit: product === "meta" ? 2200 : product === "blog" ? 60000 : 30000,
+        markdown: product !== "meta",
+      })
+      return json({ ok: true, rewrite: out })
     } else {
       await itemAction(owner, product, b)
       if (op === "test") extra = { tested: true }
+      if (op === "edit") await rememberVoice(owner, product, String(b.text || "")).catch(() => {})
     }
     return json({ ...(await state(owner, product)), ...extra })
   } catch (e) {

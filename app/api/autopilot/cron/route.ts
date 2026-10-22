@@ -10,6 +10,8 @@ import { addNotice, allNotices, EMAILS, mailConfigured, realEmail, send, type No
 import { asSub } from "@/lib/autopilot/service"
 import { PRODUCTS, type ProductKey } from "@/lib/autopilot/products"
 import { listUsers } from "@/lib/dashboard/auth"
+import { noteCronRun } from "@/lib/autopilot/admin"
+import { quickUrl } from "@/lib/autopilot/quick"
 
 export const runtime = "nodejs"
 export const dynamic = "force-dynamic"
@@ -54,9 +56,12 @@ export async function POST(request: Request) {
         const lastDigest = mine.filter((n) => n.kind === "digest").map((n) => n.at || "").sort().pop() || ""
         const fresh = (createdAt: unknown) => String(createdAt || "") > lastDigest
         const lines: string[] = []
-        for (const p of liPosts) if (brandKeys.includes(String(p.email)) && p.status === "draft" && fresh(p.createdAt)) lines.push(`LinkedIn: ${String(p.topic || p.text || "").split("\n")[0].slice(0, 80)}`)
+        const links = (kind: "li" | "item", id: number, owner: string) => ` — [Approve](${quickUrl(owner, kind, id, "approve")}) · [Skip](${quickUrl(owner, kind, id, "reject")})`
+        for (const p of liPosts)
+          if (brandKeys.includes(String(p.email)) && p.status === "draft" && fresh(p.createdAt)) lines.push(`**LinkedIn:** ${String(p.topic || p.text || "").split("\n")[0].slice(0, 80)}${links("li", Number(p.id), String(p.email))}`)
         for (const i of items)
-          if (brandKeys.includes(String(i.email)) && i.status === "draft" && fresh(i.createdAt)) lines.push(`${PRODUCTS[i.product as ProductKey]?.name.split(" ")[0] || "Post"}: ${String(i.title || "").slice(0, 80)}`)
+          if (brandKeys.includes(String(i.email)) && i.status === "draft" && fresh(i.createdAt))
+            lines.push(`**${PRODUCTS[i.product as ProductKey]?.name.split(" ")[0] || "Post"}:** ${String(i.title || "").slice(0, 80)}${links("item", Number(i.id), String(i.email))}`)
         if (lines.length) {
           if (await send(person, EMAILS.drafts(user.name, lines.slice(0, 12)))) sent.push(`drafts ${person}`)
           await mark(person, "digest", today)
@@ -104,5 +109,6 @@ export async function POST(request: Request) {
       // One person's problem shouldn't stop everyone else's emails.
     }
   }
+  await noteCronRun().catch(() => {})
   return NextResponse.json({ ok: true, people: byPerson.size, sent })
 }

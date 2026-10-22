@@ -1,7 +1,7 @@
 // Platform names, colours and icons used across the dashboard.
 
 import type { ReactNode } from "react"
-import { CalendarDays, CircleQuestionMark, CreditCard, FileText, Globe, LayoutDashboard, Mail, MailOpen, Newspaper, PenLine, Pin, Search, Settings, TrendingUp } from "lucide-react"
+import { BadgeIndianRupee, CalendarDays, CircleQuestionMark, CreditCard, HeartPulse, Lightbulb, Megaphone, Receipt, TicketPercent, Users, FileText, Globe, LayoutDashboard, Mail, MailOpen, Newspaper, PenLine, Pin, Search, Settings, TrendingUp } from "lucide-react"
 
 // lucide-react 1.x has no brand icons, so these are simple line glyphs in the same style.
 type IconProps = { className?: string; "aria-hidden"?: boolean }
@@ -47,6 +47,13 @@ export const PLATFORM: Record<string, PlatformMeta> = {
   billing: { label: "Billing", short: "Billing", color: "#10203f", ...i(CreditCard) },
   settings: { label: "Settings", short: "Settings", color: "#10203f", ...i(Settings) },
   help: { label: "Help", short: "Help", color: "#10203f", ...i(CircleQuestionMark) },
+  "ap-ideas": { label: "Ideas", short: "Ideas", color: "#d4ad4b", ...i(Lightbulb) },
+  "admin-revenue": { label: "Revenue", short: "Revenue", color: "#10203f", ...i(BadgeIndianRupee) },
+  "admin-customers": { label: "Customers", short: "Customers", color: "#10203f", ...i(Users) },
+  "admin-payments": { label: "Payments", short: "Payments", color: "#10203f", ...i(Receipt) },
+  "admin-coupons": { label: "Coupons", short: "Coupons", color: "#10203f", ...i(TicketPercent) },
+  "admin-announce": { label: "Announcements", short: "Announcements", color: "#10203f", ...i(Megaphone) },
+  "admin-health": { label: "System health", short: "Health", color: "#10203f", ...i(HeartPulse) },
 }
 
 export const platformKey = (p: string) => (p || "").toLowerCase().replace(/[^a-z]/g, "")
