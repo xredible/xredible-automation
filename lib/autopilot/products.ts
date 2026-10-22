@@ -6,7 +6,7 @@
 export type ProductKey = "linkedin" | "meta" | "blog" | "newsletter"
 export type PlanKey = "starter" | "pro"
 
-export type Plan = { key: PlanKey; name: string; price: number; posts: number; blurb: string }
+export type Plan = { key: PlanKey; name: string; price: number; posts: number; blurb: string; contacts?: number }
 
 export type Product = {
   key: ProductKey
@@ -14,6 +14,8 @@ export type Product = {
   tagline: string
   unit: string
   trial: number
+  /** Newsletter only: how many subscribers the free trial can send to. */
+  trialContacts?: number
   live: boolean
   plans: Plan[]
 }
@@ -33,30 +35,40 @@ export const PRODUCTS: Record<ProductKey, Product> = {
   },
   meta: {
     key: "meta",
-    name: "Instagram + Facebook Publisher",
-    tagline: "A content calendar that posts reels, carousels and posts to your Instagram and Facebook.",
+    name: "Instagram + Facebook Autopilot",
+    tagline: "Captions and post designs made for your brand, approved by you, published to Instagram and your Facebook Page.",
     unit: "posts",
     trial: 3,
-    live: false,
-    plans: [],
+    live: true,
+    plans: [
+      { key: "starter", name: "Starter", price: 189900, posts: 12, blurb: "About 3 posts a week" },
+      { key: "pro", name: "Pro", price: 399900, posts: 30, blurb: "About 1 post a day" },
+    ],
   },
   blog: {
     key: "blog",
     name: "Blog Writer for WordPress",
-    tagline: "Researches keywords, writes SEO articles and schedules them on your WordPress site.",
+    tagline: "SEO articles on your topics, approved by you, published to your WordPress site on schedule.",
     unit: "articles",
-    trial: 1,
-    live: false,
-    plans: [],
+    trial: 3,
+    live: true,
+    plans: [
+      { key: "starter", name: "Starter", price: 249900, posts: 10, blurb: "2–3 articles a week" },
+      { key: "pro", name: "Pro", price: 499900, posts: 25, blurb: "About 6 articles a week" },
+    ],
   },
   newsletter: {
     key: "newsletter",
-    name: "Email Newsletter",
-    tagline: "Welcome emails and a weekly digest to your subscribers, sent from your own domain.",
-    unit: "emails",
-    trial: 1,
-    live: false,
-    plans: [],
+    name: "Email Newsletter Autopilot",
+    tagline: "A newsletter written for your audience, approved by you, sent from your own email to your subscribers.",
+    unit: "issues",
+    trial: 3,
+    trialContacts: 200,
+    live: true,
+    plans: [
+      { key: "starter", name: "Starter", price: 179900, posts: 4, blurb: "Weekly, up to 1,000 subscribers", contacts: 1000 },
+      { key: "pro", name: "Pro", price: 299900, posts: 8, blurb: "Twice a week, up to 5,000 subscribers", contacts: 5000 },
+    ],
   },
 }
 
@@ -91,3 +103,11 @@ export function pendingUpi(s: Subscription | null): { plan: PlanKey; utr: string
   return m ? { plan: m[1] as PlanKey, utr: m[2], at: m[3] } : null
 }
 export const remaining = (s: Subscription | null) => (s ? Math.max(0, s.postLimit - s.used) : 0)
+
+/** Newsletter: how many subscribers this subscription may send to. */
+export function contactCap(s: Subscription | null): number {
+  const p = PRODUCTS.newsletter
+  if (!s || s.product !== "newsletter") return 0
+  if (s.status === "trial") return p.trialContacts || 200
+  return planOf("newsletter", s.plan)?.contacts || p.trialContacts || 200
+}

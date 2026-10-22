@@ -23,11 +23,17 @@ async function admin() {
 export async function GET() {
   if (!(await admin())) return json({ ok: false, error: "Admins only." }, 403)
   try {
-    const [subs, { users }, profiles] = await Promise.all([rows<Subscription>("subs"), listUsers(true), rows<Record<string, unknown>>("li_profiles")])
+    const [subs, { users }, profiles, channels] = await Promise.all([rows<Subscription>("subs"), listUsers(true), rows<Record<string, unknown>>("li_profiles"), rows<Record<string, unknown>>("ap_channels")])
     const name = new Map((users || []).map((u) => [u.email, u.name]))
     const prof = new Map(profiles.map((p) => [String(p.email), p]))
+    const chan = new Map(channels.map((c) => [`${c.email}|${c.product}`, c]))
+    const conn = (s: Subscription) => {
+      if (s.product === "linkedin") return { liName: String(prof.get(s.email)?.liName || ""), connected: prof.get(s.email)?.connected === true }
+      const c = chan.get(`${s.email}|${s.product}`)
+      return { liName: String(c?.connName || ""), connected: c?.connected === true }
+    }
     const customers = subs
-      .map((s) => ({ sub: s, name: name.get(s.email) || "", liName: String(prof.get(s.email)?.liName || ""), connected: prof.get(s.email)?.connected === true }))
+      .map((s) => ({ sub: s, name: name.get(s.email) || "", ...conn(s) }))
       .sort((a, b) => Number(b.sub.note.startsWith("upi:")) - Number(a.sub.note.startsWith("upi:")) || b.sub.id - a.sub.id)
     return json({ ok: true, customers })
   } catch (e) {

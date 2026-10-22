@@ -1,5 +1,7 @@
 "use client"
 
+import { PRODUCTS, type ProductKey } from "@/lib/autopilot/products"
+
 // Admin "Accounts" panel (add people, choose their businesses, reset passwords,
 // switch off or remove access) and everyone's "My password" panel.
 
@@ -407,7 +409,7 @@ export function CustomersPanel({ onClose }: { onClose: () => void }) {
                 <div className="min-w-0 flex-1">
                   <div className="truncate text-sm font-semibold">{name || sub.email}</div>
                   <div className="truncate text-[12px] text-[var(--muted)]">
-                    {sub.email} · {sub.product === "linkedin" ? "LinkedIn Autopilot" : sub.product} · LinkedIn {connected ? `connected (${liName})` : "not connected"}
+                    {sub.email} · {PRODUCTS[sub.product as ProductKey]?.name || sub.product} · {connected ? `connected (${liName})` : "not connected"}
                   </div>
                 </div>
                 <div className="text-right text-[12.5px]">

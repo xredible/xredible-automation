@@ -10,26 +10,14 @@ import { requestDrafts } from "@/lib/autopilot/db"
 import { linkedinConfigured } from "@/lib/autopilot/linkedin"
 import { razorpayConfigured, razorpayKeyId } from "@/lib/autopilot/razorpay"
 import { tokenKeySet } from "@/lib/autopilot/crypto"
-import { PRODUCTS } from "@/lib/autopilot/products"
-import { upiConfigured, upiId, upiLink, upiQr } from "@/lib/autopilot/upi"
+import { upiOptions } from "@/lib/autopilot/upi"
 
 export const runtime = "nodejs"
 export const dynamic = "force-dynamic"
 export const maxDuration = 60
 
-async function upiOptions(email: string) {
-  if (!upiConfigured()) return null
-  const plans = await Promise.all(
-    PRODUCTS.linkedin.plans.map(async (p) => {
-      const link = upiLink(p.price, `LinkedIn Autopilot ${p.name} ${email}`)
-      return { key: p.key, link, qr: await upiQr(link) }
-    }),
-  )
-  return { id: upiId(), plans }
-}
-
 async function state(email: string) {
-  const [sub, profile, posts, upi] = await Promise.all([ensureTrial(email, "linkedin"), profileFor(email), postsFor(email), upiOptions(email)])
+  const [sub, profile, posts, upi] = await Promise.all([ensureTrial(email, "linkedin"), profileFor(email), postsFor(email), upiOptions("linkedin", email)])
   return {
     ok: true,
     sub,

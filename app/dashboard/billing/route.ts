@@ -9,7 +9,7 @@ import { isProduct, planOf, PRODUCTS, rupees, type PlanKey } from "@/lib/autopil
 import { upiConfigured, validUtr } from "@/lib/autopilot/upi"
 import { notify } from "@/lib/autopilot/db"
 import { cancelSubscription, checkoutSignatureOk, createSubscription, razorpayConfigured, razorpayKeyId } from "@/lib/autopilot/razorpay"
-import { applySubscription, ensureTrial, markPending, subFor } from "@/lib/autopilot/service"
+import { applySubscription, ensureTrial, markPending, subFor, subsFor } from "@/lib/autopilot/service"
 import { update } from "@/lib/autopilot/db"
 
 export const runtime = "nodejs"
@@ -53,9 +53,10 @@ export async function POST(request: Request) {
       const pay = String(b.razorpay_payment_id || "")
       const sid = String(b.razorpay_subscription_id || "")
       if (!checkoutSignatureOk(pay, sid, String(b.razorpay_signature || ""))) return json({ ok: false, error: "We couldn't verify that payment. If money was taken, it will show up within a few minutes." }, 400)
-      const subs = await ensureTrial(me.email, "linkedin")
-      const plan = subs.note.startsWith("checkout:") ? subs.note.slice(9) : undefined
-      await applySubscription({ rzpSubId: sid, email: me.email, product: subs.product, plan, status: "active", start: Math.floor(Date.now() / 1000), end: Math.floor(Date.now() / 1000) + 30 * 86400 })
+      const mine = (await subsFor(me.email)).find((x) => x.rzpSubId === sid)
+      if (!mine) return json({ ok: false, error: "We couldn't match that payment. It will show up within a few minutes." }, 400)
+      const plan = mine.note.startsWith("checkout:") ? mine.note.slice(9) : undefined
+      await applySubscription({ rzpSubId: sid, email: me.email, product: mine.product, plan, status: "active", start: Math.floor(Date.now() / 1000), end: Math.floor(Date.now() / 1000) + 30 * 86400 })
       return json({ ok: true })
     }
     if (op === "cancel") {

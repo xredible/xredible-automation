@@ -61,7 +61,7 @@ function SignInOnly({ configured, warning, onSignUp }: { configured: boolean; wa
             <button type="button" onClick={onSignUp} className="font-semibold text-[#10203f] underline underline-offset-2">
               Create a free account
             </button>{" "}
-            and try LinkedIn Autopilot with 3 free posts.
+            and try any automation with 3 free posts.
           </div>
         </form>
       ) : (
@@ -109,7 +109,7 @@ export function SetupForm() {
 function SignUpForm({ onSignIn }: { onSignIn: () => void }) {
   const [state, action, pending] = useActionState<FormState, FormData>(signUp, { error: null })
   return (
-    <Shell title="Create your account" sub="Start with 3 free LinkedIn posts. No card needed.">
+    <Shell title="Create your account" sub="Every automation starts with 3 free posts. No card needed.">
       <form action={action}>
         <label htmlFor="su-name" className={label}>
           Your name
