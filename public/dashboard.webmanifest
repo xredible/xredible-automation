@@ -1,0 +1,22 @@
+{
+  "name": "Xredible Client Dashboard",
+  "short_name": "Xredible",
+  "start_url": "/dashboard",
+  "scope": "/dashboard",
+  "display": "standalone",
+  "background_color": "#10203f",
+  "theme_color": "#10203f",
+  "icons": [
+    {
+      "src": "/dashboard/xredible-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/dashboard/xredible-180.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ]
+}

@@ -1,0 +1,94 @@
+"use client"
+
+import { useActionState, type ReactNode } from "react"
+import { setupFirstAdmin, signIn, type FormState } from "@/app/dashboard/actions"
+
+const input =
+  "mt-1.5 w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-base text-slate-900 outline-none focus:border-[#10203f] focus:ring-2 focus:ring-[#e7c766]"
+const label = "mt-4 block text-sm font-medium text-slate-700"
+
+function Shell({ title, sub, children }: { title: string; sub: string; children: ReactNode }) {
+  return (
+    <div className="flex min-h-[100dvh] items-center justify-center bg-[#10203f] px-4 py-10">
+      <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl sm:p-8">
+        <img src="/dashboard/xredible.svg" alt="" width={56} height={56} className="mb-5 h-14 w-14 rounded-xl" />
+        <h1 className="text-[1.375rem] font-semibold leading-tight text-[#10203f]">{title}</h1>
+        <div className="mt-1 text-sm text-slate-500">{sub}</div>
+        {children}
+      </div>
+    </div>
+  )
+}
+
+function Problem({ text }: { text: string | null | undefined }) {
+  return text ? (
+    <div role="alert" className="mt-3 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
+      {text}
+    </div>
+  ) : null
+}
+
+const button =
+  "mt-5 w-full rounded-lg bg-[#10203f] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#1b3160] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#e7c766] disabled:opacity-60"
+
+export function SignInForm({ configured, warning }: { configured: boolean; warning?: string | null }) {
+  const [state, action, pending] = useActionState<FormState, FormData>(signIn, { error: null })
+  return (
+    <Shell title="Client Dashboard" sub="Xredible · sign in to see your business">
+      {configured ? (
+        <form action={action}>
+          <label htmlFor="email" className={label}>
+            Email
+          </label>
+          <input id="email" name="email" type="email" autoComplete="username" required autoFocus className={input} />
+          <label htmlFor="password" className={label}>
+            Password
+          </label>
+          <input id="password" name="password" type="password" autoComplete="current-password" required className={input} />
+          <Problem text={state.error || warning} />
+          <button type="submit" disabled={pending} className={button}>
+            {pending ? "Signing in…" : "Sign in"}
+          </button>
+          <div className="mt-4 text-xs leading-relaxed text-slate-500">You stay signed in on this device for 60 days. Forgot your password? Ask your Xredible admin to reset it.</div>
+        </form>
+      ) : (
+        <div className="mt-6 rounded-lg bg-amber-50 px-3 py-3 text-sm leading-relaxed text-amber-900">
+          Add <code className="font-mono text-[0.8rem]">XD_N8N_SECRET</code> in Vercel → Settings → Environment Variables (the same value as the n8n credential
+          &ldquo;XD Dashboard secret&rdquo;), then redeploy.
+        </div>
+      )}
+    </Shell>
+  )
+}
+
+export function SetupForm() {
+  const [state, action, pending] = useActionState<FormState, FormData>(setupFirstAdmin, { error: null })
+  return (
+    <Shell title="Set up the dashboard" sub="Create the first admin account. This screen only appears once.">
+      <form action={action}>
+        <label htmlFor="setupKey" className={label}>
+          Setup key
+        </label>
+        <input id="setupKey" name="setupKey" type="password" autoComplete="off" required className={input} />
+        <div className="mt-1 text-xs text-slate-500">The value you saved as XD_N8N_SECRET on Vercel.</div>
+        <label htmlFor="name" className={label}>
+          Your name
+        </label>
+        <input id="name" name="name" type="text" autoComplete="name" required className={input} />
+        <label htmlFor="email" className={label}>
+          Email
+        </label>
+        <input id="email" name="email" type="email" autoComplete="username" required className={input} />
+        <label htmlFor="password" className={label}>
+          Password
+        </label>
+        <input id="password" name="password" type="password" autoComplete="new-password" minLength={10} required className={input} />
+        <div className="mt-1 text-xs text-slate-500">At least 10 characters.</div>
+        <Problem text={state.error} />
+        <button type="submit" disabled={pending} className={button}>
+          {pending ? "Creating…" : "Create admin account"}
+        </button>
+      </form>
+    </Shell>
+  )
+}
