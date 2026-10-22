@@ -11,7 +11,7 @@ import { RewriteMenu } from "./rewrite"
 
 type Tool = Exclude<ProductKey, "linkedin">
 type Settings = Record<string, string | number>
-type Channel = { settings: Settings; connName: string; connected: boolean; meta: { choose?: { id: string; name: string; igUser: string }[]; site?: string; from?: string; host?: string } }
+type Channel = { settings: Settings; connName: string; connected: boolean; meta: { choose?: { id: string; name: string; igUser: string }[]; igId?: string; site?: string; from?: string; host?: string } }
 type Item = {
   id: number
   status: "draft" | "approved" | "posted" | "failed" | "blocked"
@@ -330,6 +330,13 @@ function ConnectCard({ product, s, busy, act }: { product: Tool; s: State; busy:
         <p className="mt-2 text-sm">
           Connected: <b>{ch.connName}</b>. Nothing goes out until you approve it.
         </p>
+        {product === "meta" && !ch.meta.igId ? (
+          <div className="mt-3">
+            <Notice tone="info">
+              Only Facebook is connected: no Instagram account came with this Page, so posts go to Facebook only. To add Instagram: make your Instagram a Business or Creator account, link it to this Facebook Page (Instagram app → Settings → Accounts Center, or Page settings → Linked accounts), then press Reconnect and tick the Instagram account when Facebook asks.
+            </Notice>
+          </div>
+        ) : null}
         <div className="mt-4 flex flex-wrap gap-2">
           {product === "meta" ? (
             <a href="/dashboard/meta/connect" className={ghost}>

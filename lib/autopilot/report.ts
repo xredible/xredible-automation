@@ -258,7 +258,8 @@ const NOT_CONNECTED = (what: string) => `Connect ${what} in Automations → Inst
 
 async function instagram(email: string, r: Range): Promise<SectionData> {
   const acc = metaAccess(await channelFor(email, "meta"))
-  if (!acc || !acc.igId) return section("instagram", r, { notes: [NOT_CONNECTED("Instagram")] })
+  if (!acc) return section("instagram", r, { notes: [NOT_CONNECTED("Instagram")] })
+  if (!acc.igId) return section("instagram", r, { notes: ["Your Facebook Page is connected, but no Instagram account came with it. Link your Instagram (Business or Creator) to the Page, then Reconnect in Automations → Instagram + Facebook and tick the Instagram account."] })
   const { token, igId } = acc
   const errors: { what: string; error: string }[] = []
   const lo = r.cstart && r.cstart < r.start ? r.cstart : r.start
