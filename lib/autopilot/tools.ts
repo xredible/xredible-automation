@@ -14,7 +14,8 @@ import { ensureTrial, subFor } from "./service"
 import { SITE } from "./linkedin"
 import { metaPublish, type MetaPage } from "./meta"
 import { cleanSite, wpPublish, wpVerify } from "./wordpress"
-import { buildIssue, smtpVerify, transport, type Smtp } from "./mail"
+import { buildIssue, isEmailTemplate, smtpVerify, transport, type EmailKit, type EmailTemplate, type Smtp } from "./mail"
+import { kitFor } from "./brandkit"
 import { mdToHtml } from "./markdown"
 import { cleanDesign, isFormat, META_MIXES, mixKey, parseDesign, type Design, type Format } from "./formats"
 
@@ -57,7 +58,19 @@ export type Item = {
   updatedAt?: string
 }
 
-export type Contact = { id: number; owner: string; email: string; name: string; status: "subscribed" | "unsubscribed"; unsubAt: string | null }
+export type Contact = {
+  id: number
+  owner: string
+  email: string
+  name: string
+  status: "subscribed" | "unsubscribed" | "pending"
+  unsubAt: string | null
+  tags: string[]
+  source: string
+  /** Progress through email sequences: sequence id → next step and when it's due. */
+  seq: Record<string, { step: number; next: string | null }>
+  createdAt: string | null
+}
 
 const num = (v: unknown, d = 0) => (Number.isFinite(Number(v)) ? Number(v) : d)
 const parse = (v: unknown): Obj => {
@@ -117,7 +130,17 @@ function cleanSettings(product: ToolKey, i: Obj): Obj {
   const color = /^#[0-9a-f]{6}$/i.test(String(i.color)) ? String(i.color) : "#24438a"
   if (product === "meta") return { ...base, brand: clip(i.brand, 60), color, mix: mixKey(META_MIXES, i.mix), targets: ["both", "instagram", "facebook"].includes(String(i.targets)) ? i.targets : "both" }
   if (product === "blog") return { ...base, words: [800, 1200, 1800].includes(num(i.words)) ? num(i.words) : 1200, publishMode: i.publishMode === "draft" ? "draft" : "publish", cta: clip(i.cta, 300) }
-  return { ...base, name: clip(i.name, 80), fromName: clip(i.fromName, 80), address: clip(i.address, 300), notes: clip(i.notes, 1000), color }
+  const f = (i.form && typeof i.form === "object" ? i.form : {}) as Obj
+  const form = {
+    title: clip(f.title, 80) || "Join my newsletter",
+    text: clip(f.text, 300) || "Useful tips in your inbox. No spam, unsubscribe any time.",
+    button: clip(f.button, 30) || "Subscribe",
+    askName: f.askName !== false,
+    tags: cleanTags(f.tags).join(","),
+    doubleOptIn: f.doubleOptIn !== false,
+    thanks: clip(f.thanks, 200) || "Thanks for subscribing!",
+  }
+  return { ...base, name: clip(i.name, 80), fromName: clip(i.fromName, 80), address: clip(i.address, 300), notes: clip(i.notes, 1000), color, emailTemplate: isEmailTemplate(i.emailTemplate) ? i.emailTemplate : "header", form }
 }
 
 async function ensureChannel(email: string, product: ToolKey): Promise<Channel> {
@@ -242,8 +265,26 @@ function smtpOf(c: Channel): Smtp {
 
 // ---------- contacts ----------
 
-function asContact(r: Obj): Contact {
-  return { id: num(r.id), owner: lc(r.owner), email: lc(r.email), name: String(r.name || ""), status: r.status === "unsubscribed" ? "unsubscribed" : "subscribed", unsubAt: (r.unsubAt as string) || null }
+export const cleanTags = (v: unknown) =>
+  [...new Set((Array.isArray(v) ? v : String(v || "").split(",")).map((t) => String(t).trim().toLowerCase().replace(/[^\p{L}\p{N} _-]/gu, "").slice(0, 30)).filter(Boolean))].slice(0, 20)
+
+export function asContact(r: Obj): Contact {
+  let seq: Contact["seq"] = {}
+  try {
+    seq = JSON.parse(String(r.seq || "{}")) || {}
+  } catch {}
+  return {
+    id: num(r.id),
+    owner: lc(r.owner),
+    email: lc(r.email),
+    name: String(r.name || ""),
+    status: r.status === "unsubscribed" ? "unsubscribed" : r.status === "pending" ? "pending" : "subscribed",
+    unsubAt: (r.unsubAt as string) || null,
+    tags: cleanTags(r.tags),
+    source: String(r.source || "import"),
+    seq,
+    createdAt: (r.createdAt as string) || null,
+  }
 }
 
 export async function contactsFor(owner: string): Promise<Contact[]> {
@@ -253,7 +294,7 @@ export async function contactsFor(owner: string): Promise<Contact[]> {
 export const MAX_CONTACTS = 5000
 
 /** Paste or CSV: one per line, "email" or "email, name" or "name <email>". */
-export async function addContacts(owner: string, raw: string): Promise<{ added: number; skipped: number; total: number }> {
+export async function addContacts(owner: string, raw: string, opts: { tags?: string[]; source?: string } = {}): Promise<{ added: number; skipped: number; total: number }> {
   const have = await contactsFor(owner)
   const seen = new Set(have.map((c) => c.email))
   const fresh: Obj[] = []
@@ -271,7 +312,7 @@ export async function addContacts(owner: string, raw: string): Promise<{ added: 
     }
     const name = line.replace(m[0], "").replace(/[<>,;"']/g, " ").replace(/\s+/g, " ").trim().slice(0, 80)
     seen.add(email)
-    fresh.push({ owner, email, name, status: "subscribed", unsubAt: null })
+    fresh.push({ owner, email, name, status: "subscribed", unsubAt: null, tags: (opts.tags || []).join(","), source: opts.source || "import", seq: "{}" })
   }
   const room = Math.max(0, MAX_CONTACTS - have.length)
   if (fresh.length > room) skipped += fresh.length - room
@@ -285,6 +326,8 @@ export async function removeContact(owner: string, id: number) {
   await remove("ap_contacts", id)
 }
 
+export { smtpOf }
+
 export const unsubUrl = (id: number) => `${SITE}/u?c=${id}&s=${sign(`u:${id}`)}`
 
 /** Open pixel and click links for one subscriber of one issue (signed, so they can't be forged). */
@@ -293,13 +336,23 @@ export const clickUrl = (item: number, contact: number, url: string) => `${SITE}
 
 /** Counts an open or a click (best effort; never blocks the reader). */
 export async function recordMail(type: "open" | "click", item: number, contact: number, url = "") {
-  const it = await itemById(item)
-  if (!it || it.product !== "newsletter") return
-  await insert("ap_events", { owner: it.email, item, contact, type, url: url.slice(0, 500), at: new Date().toISOString() })
+  let owner = ""
+  if (item >= SEQ_ITEM) {
+    const c = (await rows<Obj>("ap_contacts", { col: "id", val: contact })).map(asContact)[0]
+    owner = c?.owner || ""
+  } else {
+    const it = await itemById(item)
+    if (it && it.product === "newsletter") owner = it.email
+  }
+  if (!owner) return
+  await insert("ap_events", { owner, item, contact, type, url: url.slice(0, 500), at: new Date().toISOString() })
 }
 
+/** Sequence emails are tracked as item = SEQ_ITEM + sequence id × 100 + step. */
+export const SEQ_ITEM = 10_000_000
+
 /** Adds the open pixel and wraps every link (except unsubscribe) in a click-tracking link. */
-function track(html: string, item: number, contact: number): string {
+export function track(html: string, item: number, contact: number): string {
   const unsub = unsubUrl(contact)
   return html
     .replace(/href="(https?:\/\/[^"]+)"/g, (m, raw: string) => {
@@ -393,6 +446,11 @@ export async function itemAction(email: string, product: ToolKey, input: Obj) {
     const extra = input.design !== undefined ? { design: JSON.stringify(cleanDesign(input.design)) } : {}
     return update("ap_items", id, { title, text, summary, image, ...extra })
   }
+  if (op === "design" && product === "newsletter") {
+    const design = { ...it.design, audience: cleanDesign({ audience: (input.design as Obj | undefined)?.audience }).audience }
+    if (!design.audience) delete design.audience
+    return update("ap_items", id, { design: JSON.stringify(design) })
+  }
   if (op === "design" && product === "meta") {
     const format = isFormat(input.format) && input.format !== "text" ? input.format : it.format
     const design = input.design !== undefined ? cleanDesign(input.design) : it.design
@@ -470,14 +528,41 @@ export async function publishItem(id: number): Promise<Result> {
   }
 }
 
+/** The brand kit and email layout a customer's emails use. */
+export async function emailLook(owner: string, c: Channel): Promise<{ kit: EmailKit; template: EmailTemplate }> {
+  const kit = await kitFor(owner, { name: String(c.settings.name || ""), color: String(c.settings.color || "") })
+  return { kit: { ...kit, name: String(c.settings.name || kit.name) }, template: isEmailTemplate(c.settings.emailTemplate) ? c.settings.emailTemplate : "header" }
+}
+
+export type Audience = { tags?: string[]; segment?: "all" | "engaged" | "new" | "inactive" }
+
+/** Subscribers an email goes to: all, or only some tags, or a segment by how they read. */
+export async function audience(owner: string, a: Audience | undefined): Promise<Contact[]> {
+  let list = (await contactsFor(owner)).filter((x) => x.status === "subscribed")
+  const tags = cleanTags(a?.tags || [])
+  if (tags.length) list = list.filter((x) => x.tags.some((t) => tags.includes(t)))
+  const seg = a?.segment || "all"
+  if (seg === "all") return list
+  const now = Date.now()
+  if (seg === "new") return list.filter((x) => x.createdAt && Date.parse(x.createdAt) > now - 30 * 864e5)
+  const ev = await rows<Obj>("ap_events", { col: "owner", val: owner })
+  const since = (days: number) => new Set(ev.filter((e) => Date.parse(String(e.at || 0)) > now - days * 864e5).map((e) => num(e.contact)))
+  if (seg === "engaged") {
+    const s = since(30)
+    return list.filter((x) => s.has(x.id))
+  }
+  const s = since(60)
+  return list.filter((x) => !s.has(x.id) && x.createdAt && Date.parse(x.createdAt) < now - 30 * 864e5)
+}
+
 async function sendTest(email: string, it: Item) {
   const c = await channelFor(email, "newsletter")
   if (!c?.connected) throw new Error("Connect your email first.")
   const smtp = smtpOf(c)
   const t = transport(smtp)
   try {
-    const { html, text } = buildIssue({ title: it.title, preheader: it.summary, md: it.text, newsletter: String(c.settings.name || smtp.fromName || "Newsletter"), address: String(c.settings.address || ""), unsubUrl: `${SITE}/u`, toName: "", color: String(c.settings.color || "") })
-    await t.sendMail({ from: { name: smtp.fromName || String(c.settings.name || ""), address: smtp.from }, to: email, subject: `[Test] ${it.title}`, html, text })
+    const { html, text } = buildIssue({ title: it.title, preheader: it.summary, md: it.text, newsletter: String(c.settings.name || smtp.fromName || "Newsletter"), address: String(c.settings.address || ""), unsubUrl: `${SITE}/u`, toName: "", color: String(c.settings.color || ""), ...(await emailLook(email, c)) })
+    await t.sendMail({ from: { name: smtp.fromName || String(c.settings.name || ""), address: smtp.from }, to: email.split("::")[0], subject: `[Test] ${it.title}`, html, text })
   } catch (e) {
     throw new Error("The test email didn't send: " + (e instanceof Error ? e.message : "").slice(0, 160))
   } finally {
@@ -494,7 +579,7 @@ async function sendIssue(it: Item): Promise<Result> {
   const cap = contactCap(sub)
   let sent = Number(it.ref.replace(/^sent:/, "")) || 0
   if (!started) await countOne(it.email, "newsletter")
-  const all = (await contactsFor(it.email)).filter((x) => x.status === "subscribed")
+  const all = await audience(it.email, it.design.audience)
   const queue = all.filter((x) => x.id > it.progress).slice(0, Math.max(0, cap - sent))
   if (!all.length) return fail(it, new Error("You have no subscribers yet. Add them in the Subscribers box."))
   const smtp = smtpOf(c)
@@ -503,11 +588,12 @@ async function sendIssue(it: Item): Promise<Result> {
   let last = it.progress
   let failures = 0
   const name = String(c.settings.name || smtp.fromName || "Newsletter")
+  const look = await emailLook(it.email, c)
   try {
     for (const ct of queue) {
       if (Date.now() > deadline) break
       const u = unsubUrl(ct.id)
-      const built = buildIssue({ title: it.title, preheader: it.summary, md: it.text, newsletter: name, address: String(c.settings.address || ""), unsubUrl: u, toName: ct.name, color: String(c.settings.color || "") })
+      const built = buildIssue({ title: it.title, preheader: it.summary, md: it.text, newsletter: name, address: String(c.settings.address || ""), unsubUrl: u, toName: ct.name, color: String(c.settings.color || ""), ...look })
       const html = track(built.html, it.id, ct.id)
       const text = built.text
       try {

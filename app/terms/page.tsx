@@ -6,7 +6,7 @@ export const metadata: Metadata = { title: "Terms of Service | Xredible", altern
 export default function Terms() {
   return (
     <LegalPage title="Terms of Service" updated="22 October 2026">
-      <p>These terms cover the Xredible automations you sign up for at xredible.in/dashboard, such as LinkedIn Autopilot, Instagram + Facebook Autopilot, Blog Writer for WordPress and Email Newsletter Autopilot. By creating an account you agree to them.</p>
+      <p>These terms cover the Xredible automations you sign up for at xredible.in/dashboard, such as LinkedIn Autopilot, Instagram + Facebook Autopilot, Blog Writer for WordPress and Email Marketing. By creating an account you agree to them.</p>
       <h2>Your account</h2>
       <ul>
         <li>Give accurate details and keep your password private. You are responsible for activity on your account.</li>

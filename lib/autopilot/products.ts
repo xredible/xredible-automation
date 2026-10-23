@@ -61,15 +61,15 @@ export const PRODUCTS: Record<ProductKey, Product> = {
   },
   newsletter: {
     key: "newsletter",
-    name: "Email Newsletter Autopilot",
-    tagline: "A newsletter written for your audience, approved by you, sent from your own email to your subscribers.",
+    name: "Email Marketing",
+    tagline: "Newsletters, automated welcome and follow-up emails, campaigns and signup forms, written in your voice and sent from your own email.",
     unit: "issues",
     trial: 3,
     trialContacts: 200,
     live: true,
     plans: [
-      { key: "starter", name: "Starter", price: 179900, posts: 4, blurb: "Weekly, up to 1,000 subscribers", contacts: 1000 },
-      { key: "pro", name: "Pro", price: 299900, posts: 8, blurb: "Twice a week, up to 5,000 subscribers", contacts: 5000 },
+      { key: "starter", name: "Starter", price: 179900, posts: 4, blurb: "Up to 1,000 subscribers · sequences & signup forms", contacts: 1000 },
+      { key: "pro", name: "Pro", price: 299900, posts: 8, blurb: "Up to 5,000 subscribers · sequences & signup forms", contacts: 5000 },
     ],
   },
 }
