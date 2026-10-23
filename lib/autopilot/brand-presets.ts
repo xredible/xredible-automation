@@ -3,13 +3,14 @@
 // Safe for client code. A brand kit (logo, colours, fonts, design template) and ready-made looks
 // for common niches, so every customer's images and carousels look like their own brand.
 
-export type TemplateKey = "bold" | "minimal" | "editorial" | "split" | "spark"
+export type TemplateKey = "bold" | "minimal" | "editorial" | "split" | "spark" | "playbook"
 export const TEMPLATES: { key: TemplateKey; name: string; blurb: string }[] = [
   { key: "bold", name: "Bold", blurb: "Big headline on your brand colour" },
   { key: "minimal", name: "Minimal", blurb: "Clean, light and calm" },
   { key: "editorial", name: "Editorial", blurb: "Magazine style with a classic font" },
   { key: "split", name: "Split", blurb: "Colour block on top, text below" },
   { key: "spark", name: "Spark", blurb: "Dark and modern with bright accents" },
+  { key: "playbook", name: "Playbook", blurb: "Creator style: your name, big numbers, strong final slide" },
 ]
 export const isTemplate = (v: unknown): v is TemplateKey => typeof v === "string" && TEMPLATES.some((t) => t.key === v)
 
@@ -34,6 +35,8 @@ export const isFont = (v: unknown): v is FontName => typeof v === "string" && (F
 export type BrandKit = {
   name: string
   handle: string
+  /** One line under every design, e.g. "SEO | Amazon | Ads | AI Automation". */
+  tagline: string
   logo: string
   /** Optional version of the logo for dark backgrounds (usually white). */
   logoDark: string
@@ -64,7 +67,7 @@ export const NICHES: Record<string, Preset> = {
   finance: { label: "CA / finance / legal", template: "minimal", primary: "#12355b", secondary: "#f2f5f9", accent: "#2a9d8f", headFont: "Libre Baskerville", bodyFont: "Inter" },
   travel: { label: "Travel / hospitality", template: "split", primary: "#006d77", secondary: "#fefae0", accent: "#f4a261", headFont: "Outfit", bodyFont: "Inter" },
   faith: { label: "Church / ministry / NGO", template: "editorial", primary: "#1b2a49", secondary: "#f7f3e8", accent: "#c9a227", headFont: "Lora", bodyFont: "Inter" },
-  creator: { label: "Creator / personal brand", template: "bold", primary: "#5b21b6", secondary: "#f5f3ff", accent: "#f59e0b", headFont: "Poppins", bodyFont: "Inter" },
+  creator: { label: "Creator / personal brand", template: "playbook", primary: "#5b21b6", secondary: "#f5f3ff", accent: "#f59e0b", headFont: "Poppins", bodyFont: "Inter" },
 }
 
 export const isHex = (v: unknown) => /^#[0-9a-f]{6}$/i.test(String(v || ""))
@@ -74,6 +77,7 @@ export function defaultKit(o: { name?: string; color?: string; niche?: string } 
   return {
     name: o.name || "",
     handle: "",
+    tagline: "",
     logo: "",
     logoDark: "",
     primary: isHex(o.color) ? String(o.color) : p.primary,
@@ -96,6 +100,7 @@ export function cleanKit(input: unknown, base: BrandKit): BrandKit {
   return {
     name: str(o.name, 60, base.name),
     handle: str(o.handle, 60, base.handle),
+    tagline: str(o.tagline, 70, base.tagline || ""),
     logo: logo && !/^https:\/\/\S+$/i.test(logo) ? base.logo : logo,
     logoDark: logoDark && !/^https:\/\/\S+$/i.test(logoDark) ? base.logoDark || "" : logoDark,
     primary: isHex(o.primary) ? String(o.primary) : base.primary,

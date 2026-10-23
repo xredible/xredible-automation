@@ -10,8 +10,8 @@ import { PRODUCTS, type ProductKey, type Subscription } from "@/lib/autopilot/pr
 import { card, field, ghost, istTime, Notice, PlanCard, primary, small, toLocalInput, type Upi } from "./ui"
 import { RewriteMenu } from "./rewrite"
 import { AudiencePicker, CampaignCard, DesignPanel, EmailTabs, FormPanel, SequencesPanel, SubscribersPanel, useTags, type Audience, type EmailTab } from "./email-app"
-import { DesignFields, DesignPreview, FormatPicker, PhotoPicker, TemplatePicker } from "./design-editor"
-import { META_FORMATS, META_MIXES, type Design, type Format } from "@/lib/autopilot/formats"
+import { DesignFields, DesignPreview, FormatPicker, GoalFields, PhotoPicker, TemplatePicker } from "./design-editor"
+import { GOAL_LABEL, GOALS, META_FORMATS, META_MIXES, type Design, type Format } from "@/lib/autopilot/formats"
 
 type Tool = Exclude<ProductKey, "linkedin">
 type Settings = Record<string, string | number>
@@ -188,6 +188,8 @@ function SettingsCard({ product, settings, busy, act }: { product: Tool; setting
     color: "#24438a",
     targets: "both",
     mix: "balanced",
+    goals: "growth",
+    offer: "",
     words: 1200,
     publishMode: "publish",
     cta: "",
@@ -288,6 +290,7 @@ function SettingsCard({ product, settings, busy, act }: { product: Tool; setting
           </select>
         </label>
       ) : null}
+      {product === "meta" ? <GoalFields channel="meta" value={{ goals: String(f.goals || "growth"), offer: String(f.offer || ""), cta: String(f.cta || "") }} onChange={(v) => setF({ ...f, ...v })} /> : null}
       {product === "blog" ? (
         <>
           <div className="mt-3 grid grid-cols-2 gap-3">
@@ -604,6 +607,8 @@ function ItemCard({ it, product, busy, act }: { it: Item; product: Tool; busy: b
   return (
     <li className="rounded-xl border border-[var(--line)] p-4">
       <div className="flex flex-wrap items-center gap-2 text-[12.5px] text-[var(--muted)]">
+        {it.design.goal ? <span title={GOALS.find((g) => g.key === it.design.goal)?.blurb} className="rounded-full bg-[var(--brandsoft)] px-2 py-0.5 font-medium text-[var(--brand)]">{GOAL_LABEL[it.design.goal]}</span> : null}
+        {it.design.trend ? <span title={`Based on this week's news: ${it.design.trend}`} className="rounded-full bg-[var(--soft)] px-2 py-0.5 text-[var(--ink2)]">Trending</span> : null}
         {it.topic ? <span className="rounded bg-[var(--soft)] px-1.5 py-0.5 text-[var(--ink2)]">{it.topic}</span> : null}
         <span>
           {it.status === "posted"

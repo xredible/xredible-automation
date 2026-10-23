@@ -17,7 +17,7 @@ import { cleanSite, wpPublish, wpVerify } from "./wordpress"
 import { buildIssue, isEmailTemplate, smtpVerify, transport, type EmailKit, type EmailTemplate, type Smtp } from "./mail"
 import { kitFor } from "./brandkit"
 import { mdToHtml } from "./markdown"
-import { cleanDesign, isFormat, META_MIXES, mixKey, parseDesign, type Design, type Format } from "./formats"
+import { cleanDesign, goalPlanKey, isFormat, META_MIXES, mixKey, parseDesign, type Design, type Format } from "./formats"
 
 export type ToolKey = Exclude<ProductKey, "linkedin">
 export const TOOL_KEYS: ToolKey[] = ["meta", "blog", "newsletter"]
@@ -128,7 +128,7 @@ function cleanSettings(product: ToolKey, i: Obj): Obj {
     time: /^\d{2}:\d{2}$/.test(String(i.time)) ? String(i.time) : product === "newsletter" ? "08:05" : "10:05",
   }
   const color = /^#[0-9a-f]{6}$/i.test(String(i.color)) ? String(i.color) : "#24438a"
-  if (product === "meta") return { ...base, brand: clip(i.brand, 60), color, mix: mixKey(META_MIXES, i.mix), targets: ["both", "instagram", "facebook"].includes(String(i.targets)) ? i.targets : "both" }
+  if (product === "meta") return { ...base, brand: clip(i.brand, 60), color, mix: mixKey(META_MIXES, i.mix), goals: goalPlanKey(i.goals), offer: clip(i.offer, 300), cta: clip(i.cta, 120), targets: ["both", "instagram", "facebook"].includes(String(i.targets)) ? i.targets : "both" }
   if (product === "blog") return { ...base, words: [800, 1200, 1800].includes(num(i.words)) ? num(i.words) : 1200, publishMode: i.publishMode === "draft" ? "draft" : "publish", cta: clip(i.cta, 300) }
   const f = (i.form && typeof i.form === "object" ? i.form : {}) as Obj
   const form = {

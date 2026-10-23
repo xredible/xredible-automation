@@ -115,7 +115,7 @@ export function BrandKitView() {
   return (
     <div className="space-y-5">
       <link rel="stylesheet" href={fontsCss} />
-      <p className="!m-0 max-w-3xl text-sm text-[var(--muted)]">Your logo, colours and fonts go on every image and carousel Xredible makes for you, on LinkedIn, Instagram and Facebook. Pick a template, or let Xredible rotate all five so your feed never looks repetitive.</p>
+      <p className="!m-0 max-w-3xl text-sm text-[var(--muted)]">Your logo, colours and fonts go on every image and carousel Xredible makes for you, on LinkedIn, Instagram and Facebook. Pick a template, or let Xredible rotate all six so your feed never looks repetitive.</p>
       {err ? <Notice tone="error">{err}</Notice> : null}
 
       <Card title="Start quickly" sub="Read your brand from your website, or start from a look made for your kind of business. Nothing is saved until you press Save.">
@@ -161,6 +161,10 @@ export function BrandKitView() {
               <input value={kit.handle} onChange={(e) => set({ handle: e.target.value })} maxLength={60} placeholder="@yourbrand" className={input} />
             </label>
           </div>
+          <label className="mt-3 block">
+            <span className={label}>Tagline (one line under your designs, optional)</span>
+            <input value={kit.tagline} onChange={(e) => set({ tagline: e.target.value })} maxLength={70} placeholder="e.g. SEO | Amazon | Ads | AI Automation" className={input} />
+          </label>
           <div className="mt-3">
             <span className={label}>Logo (PNG with a transparent background looks best)</span>
             <div className="mt-1.5 flex flex-wrap items-start gap-3">
@@ -212,7 +216,7 @@ export function BrandKitView() {
         </Card>
       </div>
 
-      <Card title="Design templates" sub="Tap one to use it for every post, or rotate all five for variety. You can still change the design on any single post.">
+      <Card title="Design templates" sub="Tap one to use it for every post, or rotate all six for variety. You can still change the design on any single post.">
         <div className="mb-3 flex flex-wrap items-center gap-2">
           <div className="inline-flex max-w-full overflow-x-auto rounded-lg border border-[var(--line)] p-0.5 text-[12.5px]" role="group" aria-label="Preview">
             {(["single", "cover", "slide"] as const).map((v) => (
@@ -223,9 +227,9 @@ export function BrandKitView() {
           </div>
         </div>
         <button type="button" onClick={() => set({ template: "rotate" })} aria-pressed={kit.template === "rotate"} className={`mb-3 inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-[13px] font-medium ${kit.template === "rotate" ? "border-[var(--brand)] bg-[var(--brand-soft)] text-[var(--brand)]" : "border-[var(--line)] text-[var(--muted)]"}`}>
-          {kit.template === "rotate" ? <Check className="h-4 w-4" /> : null} Rotate all five templates (recommended)
+          {kit.template === "rotate" ? <Check className="h-4 w-4" /> : null} Rotate all six templates (recommended)
         </button>
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-5">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-6">
           {TEMPLATES.map((t) => {
             const on = kit.template === t.key
             return (
