@@ -12,6 +12,7 @@ import { PRODUCTS, type ProductKey } from "@/lib/autopilot/products"
 import { listUsers } from "@/lib/dashboard/auth"
 import { noteCronRun } from "@/lib/autopilot/admin"
 import { quickUrl } from "@/lib/autopilot/quick"
+import { runSequences } from "@/lib/autopilot/email"
 
 export const runtime = "nodejs"
 export const dynamic = "force-dynamic"
@@ -24,7 +25,9 @@ const date = (iso: string) => new Date(iso).toLocaleDateString("en-IN", { day: "
 
 export async function POST(request: Request) {
   if (!fromN8n(request)) return NextResponse.json({ ok: false, error: "Not allowed." }, { status: 403 })
-  if (!mailConfigured()) return NextResponse.json({ ok: true, skipped: "XD_SMTP_PASS is not set" })
+  // Customers' email sequences go out from their own accounts, so they run whatever Xredible's email is.
+  const sequences = await runSequences().catch((e) => ({ error: e instanceof Error ? e.message : "failed" }))
+  if (!mailConfigured()) return NextResponse.json({ ok: true, sequences, skipped: "XD_SMTP_PASS is not set" })
   const [subsRaw, liPosts, items, notices, { users }] = await Promise.all([rows<Record<string, unknown>>("subs"), rows<Record<string, unknown>>("li_posts"), rows<Record<string, unknown>>("ap_items"), allNotices(), listUsers(true)])
   const subs = subsRaw.map(asSub)
   const people = new Map((users || []).filter((u) => u.active).map((u) => [u.email, u]))
@@ -110,5 +113,5 @@ export async function POST(request: Request) {
     }
   }
   await noteCronRun().catch(() => {})
-  return NextResponse.json({ ok: true, people: byPerson.size, sent })
+  return NextResponse.json({ ok: true, people: byPerson.size, sent, sequences })
 }

@@ -6,7 +6,7 @@ export const metadata: Metadata = { title: "Cancellation & Refund Policy | Xredi
 export default function RefundPolicy() {
   return (
     <LegalPage title="Cancellation & Refund Policy" updated="22 October 2026">
-      <p>This policy covers the Autopilot subscriptions sold at xredible.in (LinkedIn Autopilot, Instagram + Facebook Autopilot, Blog Writer for WordPress and Email Newsletter Autopilot).</p>
+      <p>This policy covers the Autopilot subscriptions sold at xredible.in (LinkedIn Autopilot, Instagram + Facebook Autopilot, Blog Writer for WordPress and Email Marketing (newsletters, sequences and campaigns)).</p>
       <h2>Try before you pay</h2>
       <ul>
         <li>Every automation starts with a free trial of 3 published posts, articles or newsletter issues. No payment is needed to try it, so you can check it suits you before you subscribe.</li>

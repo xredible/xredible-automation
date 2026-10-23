@@ -8,6 +8,7 @@ import { Check, ExternalLink, PenLine, RefreshCw, Send, Sparkles, Trash2 } from 
 import { PRODUCTS, type ProductKey, type Subscription } from "@/lib/autopilot/products"
 import { card, field, ghost, istTime, Notice, PlanCard, primary, small, toLocalInput, type Upi } from "./ui"
 import { RewriteMenu } from "./rewrite"
+import { AudiencePicker, CampaignCard, DesignPanel, EmailTabs, FormPanel, SequencesPanel, SubscribersPanel, useTags, type Audience, type EmailTab } from "./email-app"
 import { DesignFields, DesignPreview, FormatPicker, PhotoPicker, TemplatePicker } from "./design-editor"
 import { META_FORMATS, META_MIXES, type Design, type Format } from "@/lib/autopilot/formats"
 
@@ -84,6 +85,7 @@ const Step = ({ n, children }: { n: number; children: ReactNode }) => (
 
 export function ToolApp({ product, bare = false }: { product: Tool; bare?: boolean }) {
   const [s, setS] = useState<State | null>(null)
+  const [tab, setTab] = useState<EmailTab>("emails")
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
   const load = useCallback(async () => {
@@ -132,14 +134,39 @@ export function ToolApp({ product, bare = false }: { product: Tool; bare?: boole
       </div>
       {error ? <Notice tone="bad">{error}</Notice> : null}
       <PlanCard product={product} s={s} onChanged={load} />
-      <div className="grid gap-5 lg:grid-cols-2">
-        <SettingsCard key={JSON.stringify(s.channel?.settings || {})} product={product} settings={s.channel?.settings || {}} busy={busy} act={act} />
-        <div className="space-y-5">
-          <ConnectCard product={product} s={s} busy={busy} act={act} />
-          {product === "newsletter" && s.contacts ? <ContactsCard contacts={s.contacts} busy={busy} act={act} /> : null}
-        </div>
-      </div>
-      <Items product={product} s={s} busy={busy} ready={ready} act={act} />
+      {product === "newsletter" ? <EmailTabs tab={tab} onTab={setTab} /> : null}
+      {product === "newsletter" && tab === "subscribers" ? <SubscribersPanel cap={s.contacts?.cap || 0} /> : null}
+      {product === "newsletter" && tab === "sequences" ? <SequencesPanel /> : null}
+      {product === "newsletter" && tab === "form" ? <FormPanel settings={s.channel?.settings || {}} connected={!!s.channel?.connected} busy={busy} save={async (st) => !!(await act({ op: "settings", ...st }))} /> : null}
+      {product === "newsletter" && tab === "design" ? <DesignPanel settings={s.channel?.settings || {}} busy={busy} save={async (st) => !!(await act({ op: "settings", ...st }))} /> : null}
+      {product !== "newsletter" || tab === "emails" ? (
+        <>
+          <div className="grid gap-5 lg:grid-cols-2">
+            <SettingsCard key={JSON.stringify(s.channel?.settings || {})} product={product} settings={s.channel?.settings || {}} busy={busy} act={act} />
+            <div className="space-y-5">
+              <ConnectCard product={product} s={s} busy={busy} act={act} />
+              {product === "newsletter" && s.contacts ? (
+                <div className={card}>
+                  <Step n={3}>Subscribers</Step>
+                  <p className="mt-2 text-sm">
+                    <b className="tabular-nums">{s.contacts.subscribed.toLocaleString("en-IN")}</b> subscribed · your plan sends to up to {s.contacts.cap.toLocaleString("en-IN")}
+                  </p>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <button type="button" className={ghost} onClick={() => setTab("subscribers")}>
+                      Manage subscribers
+                    </button>
+                    <button type="button" className={ghost} onClick={() => setTab("form")}>
+                      Get a signup form
+                    </button>
+                  </div>
+                </div>
+              ) : null}
+            </div>
+          </div>
+          {product === "newsletter" && ready ? <CampaignCard onDone={load} /> : null}
+          <Items product={product} s={s} busy={busy} ready={ready} act={act} />
+        </>
+      ) : null}
     </>
   )
 }
@@ -514,67 +541,6 @@ function SmtpConnect({ busy, act }: { busy: boolean; act: Act }) {
 
 // ---------- subscribers ----------
 
-function ContactsCard({ contacts, busy, act }: { contacts: Contacts; busy: boolean; act: Act }) {
-  const [text, setText] = useState("")
-  const [msg, setMsg] = useState<string | null>(null)
-  const over = contacts.subscribed > contacts.cap
-  return (
-    <div className={card}>
-      <Step n={3}>Subscribers</Step>
-      <div className="mt-2 text-sm">
-        <b className="tabular-nums">{contacts.subscribed.toLocaleString("en-IN")}</b> subscribed
-        {contacts.total > contacts.subscribed ? <span className="text-[var(--muted)]"> · {contacts.total - contacts.subscribed} unsubscribed</span> : null}
-        <span className="text-[var(--muted)]"> · your plan sends to up to {contacts.cap.toLocaleString("en-IN")}</span>
-      </div>
-      {over ? (
-        <div className="mt-2">
-          <Notice tone="info">Only the first {contacts.cap.toLocaleString("en-IN")} subscribers get each issue on this plan.</Notice>
-        </div>
-      ) : null}
-      <form
-        className="mt-3"
-        onSubmit={async (e) => {
-          e.preventDefault()
-          const r = await act({ op: "contacts-add", text })
-          if (r?.added) {
-            setMsg(`Added ${r.added.added}${r.added.skipped ? `, skipped ${r.added.skipped} (duplicates or not emails)` : ""}.`)
-            setText("")
-          }
-        }}
-      >
-        <textarea value={text} onChange={(e) => setText(e.target.value)} rows={4} className={field + " font-mono text-[13px]"} placeholder={"one per line, or paste from a spreadsheet:\nasha@example.com, Asha\nrahul@example.com"} />
-        <div className="mt-2 flex flex-wrap items-center gap-3">
-          <button type="submit" className={ghost} disabled={busy || !text.trim()}>
-            Add subscribers
-          </button>
-          <span className="text-xs text-[var(--faint)]">Only add people who agreed to get your emails.</span>
-        </div>
-      </form>
-      {msg ? <div className="mt-2 text-sm text-[var(--good)]">{msg}</div> : null}
-      {contacts.recent.length ? (
-        <details className="mt-3">
-          <summary className="cursor-pointer text-[13px] font-medium text-[var(--ink2)]">Latest {contacts.recent.length}</summary>
-          <ul className="mt-2 max-h-60 space-y-1 overflow-auto text-[13px]">
-            {contacts.recent.map((c) => (
-              <li key={c.id} className="flex items-center gap-2">
-                <span className={"min-w-0 flex-1 truncate" + (c.status === "unsubscribed" ? " text-[var(--faint)] line-through" : "")}>
-                  {c.email}
-                  {c.name ? <span className="text-[var(--muted)]"> · {c.name}</span> : null}
-                </span>
-                <button type="button" className="rounded p-1 text-[var(--faint)] hover:text-[var(--bad)]" disabled={busy} onClick={() => act({ op: "contact-remove", id: c.id })} aria-label={`Remove ${c.email}`}>
-                  <Trash2 className="h-3.5 w-3.5" />
-                </button>
-              </li>
-            ))}
-          </ul>
-        </details>
-      ) : null}
-    </div>
-  )
-}
-
-// ---------- review queue ----------
-
 function Items({ product, s, busy, ready, act }: { product: Tool; s: State; busy: boolean; ready: boolean; act: Act }) {
   const c = COPY[product]
   const groups = useMemo(() => {
@@ -628,6 +594,12 @@ const LABELS: Record<Tool, { title: string; summary?: string; text: string }> = 
   meta: { title: "Words on the image", text: "Caption" },
   blog: { title: "Title", summary: "Meta description (shown on Google)", text: "Article" },
   newsletter: { title: "Subject line", summary: "Preview text", text: "Email" },
+}
+
+function ItemAudience({ it, busy, act }: { it: Item; busy: boolean; act: Act }) {
+  const tags = useTags()
+  const a = (it.design.audience || {}) as Audience
+  return <AudiencePicker value={a} tags={tags} disabled={busy} onChange={(audience) => act({ op: "design", id: it.id, design: { ...it.design, audience } })} />
 }
 
 function ItemCard({ it, product, busy, act }: { it: Item; product: Tool; busy: boolean; act: Act }) {
@@ -713,6 +685,11 @@ function ItemCard({ it, product, busy, act }: { it: Item; product: Tool; busy: b
             <button type="button" className="mt-1 text-[13px] font-medium text-[var(--brand)] hover:underline" onClick={() => setFull(!full)}>
               {full ? "Show less" : "Show all"}
             </button>
+          ) : null}
+          {product === "newsletter" && open ? (
+            <div className="mt-3">
+              <ItemAudience it={it} busy={busy} act={act} />
+            </div>
           ) : null}
         </div>
       )}

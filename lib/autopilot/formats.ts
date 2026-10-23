@@ -7,7 +7,7 @@ import { isTemplate, type TemplateKey } from "./brand-presets"
 
 export type Format = "text" | "image" | "carousel" | "photo"
 export type Slide = { title: string; body: string }
-export type Design = { headline?: string; slides?: Slide[]; photos?: string[]; template?: TemplateKey }
+export type Design = { headline?: string; slides?: Slide[]; photos?: string[]; template?: TemplateKey; audience?: { tags?: string[]; segment?: "all" | "engaged" | "new" | "inactive" } }
 
 export const FORMAT_LABEL: Record<Format, string> = { text: "Text", image: "Image", carousel: "Carousel", photo: "Your photos" }
 export const LI_FORMATS: Format[] = ["text", "image", "carousel", "photo"]
@@ -42,6 +42,12 @@ export function cleanDesign(d: unknown): Design {
     if (slides.length) out.slides = slides
   }
   if (isTemplate(o.template)) out.template = o.template
+  if (o.audience && typeof o.audience === "object") {
+    const a = o.audience as Record<string, unknown>
+    const tags = (Array.isArray(a.tags) ? a.tags : []).map((t) => String(t).trim().toLowerCase().slice(0, 30)).filter(Boolean).slice(0, 10)
+    const segment = ["all", "engaged", "new", "inactive"].includes(String(a.segment)) ? (a.segment as "all") : "all"
+    if (tags.length || segment !== "all") out.audience = { tags, segment }
+  }
   if (Array.isArray(o.photos)) {
     const photos = o.photos.map((x) => String(x || "").trim()).filter((x) => /^https:\/\/\S+$/i.test(x)).slice(0, MAX_PHOTOS)
     if (photos.length) out.photos = photos
