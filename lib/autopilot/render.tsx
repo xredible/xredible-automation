@@ -10,6 +10,7 @@ import { PDFDocument } from "pdf-lib"
 import type { ReactElement, ReactNode } from "react"
 import type { Slide } from "./formats"
 import type { BrandKit, TemplateKey } from "./brand-presets"
+import { safeFetch } from "./safe-fetch"
 
 export const W = 1080
 export const H = 1350
@@ -121,12 +122,11 @@ function loadLogo(url: string): Promise<Logo | null> {
       url,
       (async () => {
         try {
-          const r = await fetch(url, { signal: AbortSignal.timeout(6000) })
+          const { res: r, bytes } = await safeFetch(url, { signal: AbortSignal.timeout(6000) }, 3_000_000)
           if (!r.ok) return null
           const type = (r.headers.get("content-type") || "").split(";")[0] || (url.endsWith(".svg") ? "image/svg+xml" : "image/png")
           if (!/image\/(png|jpe?g|gif|webp|svg\+xml)/.test(type)) return null
-          const b = new Uint8Array(await r.arrayBuffer())
-          if (b.length > 3_000_000) return null
+          const b = new Uint8Array(bytes)
           const d = dims(b, type) || [1, 1]
           return { src: `data:${type};base64,${Buffer.from(b).toString("base64")}`, w: d[0] || 1, h: d[1] || 1 }
         } catch {
