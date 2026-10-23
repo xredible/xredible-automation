@@ -71,7 +71,14 @@ export async function POST(request: Request) {
     } else if (op === "generate") {
       const prof = await profileFor(owner)
       if (!prof || !prof.about) return json({ ok: false, error: "Fill in 'About you' first so the drafts sound like you." }, 400)
+      const waiting = (list: LiPost[]) => list.filter((p) => p.status === "draft" || (p.status === "approved" && Date.parse(p.scheduledAt || "") > Date.now())).length
+      const [sub, before] = await Promise.all([ensureTrial(owner, "linkedin"), postsFor(owner)])
+      const room = Math.max(0, sub.postLimit - sub.used) + 2 - waiting(before)
+      if (room <= 0) return json({ ok: false, error: `Your queue is full for your plan (${waiting(before)} posts waiting). Approve or discard a draft first, or upgrade for more posts a month.` }, 400)
       await requestDrafts(owner, Math.min(5, Math.max(1, Number(b.count) || 3)))
+      const after = await postsFor(owner)
+      if (after.filter((p) => p.status === "draft").length <= before.filter((p) => p.status === "draft").length)
+        return json({ ...(await state(owner)), ok: false, error: "No new drafts this time: the AI writer is busy. Try again in a few minutes. New drafts are also written for you every morning." })
     } else if (op === "disconnect") {
       await disconnectLinkedIn(owner)
     } else if (op === "format") {
