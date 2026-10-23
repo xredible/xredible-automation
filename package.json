@@ -12,9 +12,11 @@
     "@google/generative-ai": "^0.24.1",
     "@next/third-parties": "^16.3.8",
     "@types/qrcode": "^1.5.5",
+    "@vercel/blob": "^2.8.2",
     "lucide-react": "^1.16.0",
     "next": "16.2.6",
     "nodemailer": "^7.0.13",
+    "pdf-lib": "^1.17.1",
     "qrcode": "^1.5.4",
     "react": "19.2.4",
     "react-dom": "19.2.4"

@@ -49,28 +49,46 @@ export async function metaExchange(code: string): Promise<MetaPage[]> {
 
 const form = (o: Record<string, string>) => ({ method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: new URLSearchParams(o) })
 
-/** Posts one image with its caption. Returns links to what went out. */
+const waitReady = async (id: string, token: string) => {
+  // Instagram fetches the image first; wait until the container is ready.
+  for (let i = 0; i < 15; i++) {
+    const st = await graph<{ status_code?: string }>(`/${id}?fields=status_code&access_token=${encodeURIComponent(token)}`)
+    if (st.status_code === "FINISHED" || !st.status_code) return
+    if (st.status_code === "ERROR" || st.status_code === "EXPIRED") throw new Error("Instagram couldn't use the image.")
+    await new Promise((r) => setTimeout(r, 2000))
+  }
+}
+
+/** Posts one image, or a carousel of 2–10 images, with its caption. Returns links to what went out. */
 export async function metaPublish(
   page: { id: string; token: string; igId: string },
   targets: "both" | "instagram" | "facebook",
   caption: string,
-  imageUrl: string,
+  images: string[],
 ): Promise<{ fb?: string; ig?: string }> {
   const out: { fb?: string; ig?: string } = {}
   const errors: string[] = []
+  const list = images.slice(0, 10)
+  if (!list.length) throw new Error("This post has no image.")
+  const tok = page.token
   if (targets !== "facebook") {
     try {
       if (!page.igId) throw new Error("No Instagram professional account is linked to this Facebook Page.")
-      const c = await graph<{ id: string }>(`/${page.igId}/media`, form({ image_url: imageUrl, caption: caption.slice(0, 2200), access_token: page.token }))
-      // Instagram fetches the image first; wait until the container is ready.
-      for (let i = 0; i < 10; i++) {
-        const st = await graph<{ status_code?: string }>(`/${c.id}?fields=status_code&access_token=${encodeURIComponent(page.token)}`)
-        if (st.status_code === "FINISHED" || !st.status_code) break
-        if (st.status_code === "ERROR" || st.status_code === "EXPIRED") throw new Error("Instagram couldn't use the image.")
-        await new Promise((r) => setTimeout(r, 2000))
+      let creation: string
+      if (list.length === 1) {
+        const c = await graph<{ id: string }>(`/${page.igId}/media`, form({ image_url: list[0], caption: caption.slice(0, 2200), access_token: tok }))
+        await waitReady(c.id, tok)
+        creation = c.id
+      } else {
+        const kids: string[] = []
+        for (const url of list) kids.push((await graph<{ id: string }>(`/${page.igId}/media`, form({ image_url: url, is_carousel_item: "true", access_token: tok }))).id)
+        await Promise.all(kids.map((k) => waitReady(k, tok)))
+        const c = await graph<{ id: string }>(`/${page.igId}/media`, form({ media_type: "CAROUSEL", children: kids.join(","), caption: caption.slice(0, 2200), access_token: tok }))
+        await waitReady(c.id, tok)
+        creation = c.id
       }
-      const pub = await graph<{ id: string }>(`/${page.igId}/media_publish`, form({ creation_id: c.id, access_token: page.token }))
-      const link = await graph<{ permalink?: string }>(`/${pub.id}?fields=permalink&access_token=${encodeURIComponent(page.token)}`).catch(() => ({ permalink: "" }))
+      const pub = await graph<{ id: string }>(`/${page.igId}/media_publish`, form({ creation_id: creation, access_token: tok }))
+      const link = await graph<{ permalink?: string }>(`/${pub.id}?fields=permalink&access_token=${encodeURIComponent(tok)}`).catch(() => ({ permalink: "" }))
       out.ig = link.permalink || `https://www.instagram.com/`
     } catch (e) {
       errors.push(`Instagram: ${e instanceof Error ? e.message : "failed"}`)
@@ -78,8 +96,18 @@ export async function metaPublish(
   }
   if (targets !== "instagram") {
     try {
-      const r = await graph<{ id: string; post_id?: string }>(`/${page.id}/photos`, form({ url: imageUrl, message: caption, access_token: page.token }))
-      out.fb = `https://www.facebook.com/${r.post_id || r.id}`
+      if (list.length === 1) {
+        const r = await graph<{ id: string; post_id?: string }>(`/${page.id}/photos`, form({ url: list[0], message: caption, access_token: tok }))
+        out.fb = `https://www.facebook.com/${r.post_id || r.id}`
+      } else {
+        // Several photos: upload each unpublished, then one post with all of them.
+        const ids: string[] = []
+        for (const url of list) ids.push((await graph<{ id: string }>(`/${page.id}/photos`, form({ url, published: "false", access_token: tok }))).id)
+        const f: Record<string, string> = { message: caption, access_token: tok }
+        ids.forEach((id, i) => (f[`attached_media[${i}]`] = JSON.stringify({ media_fbid: id })))
+        const r = await graph<{ id: string }>(`/${page.id}/feed`, form(f))
+        out.fb = `https://www.facebook.com/${r.id}`
+      }
     } catch (e) {
       errors.push(`Facebook: ${e instanceof Error ? e.message : "failed"}`)
     }

@@ -8,6 +8,8 @@ import { Check, ExternalLink, PenLine, RefreshCw, Send, Sparkles, Trash2 } from 
 import { PRODUCTS, type ProductKey, type Subscription } from "@/lib/autopilot/products"
 import { card, field, ghost, istTime, Notice, PlanCard, primary, small, toLocalInput, type Upi } from "./ui"
 import { RewriteMenu } from "./rewrite"
+import { DesignFields, DesignPreview, FormatPicker, PhotoPicker } from "./design-editor"
+import { META_FORMATS, META_MIXES, type Design, type Format } from "@/lib/autopilot/formats"
 
 type Tool = Exclude<ProductKey, "linkedin">
 type Settings = Record<string, string | number>
@@ -21,6 +23,9 @@ type Item = {
   topic: string
   image: string
   preview: string
+  previews?: string[]
+  format: Format
+  design: Design
   scheduledAt: string | null
   postedAt: string | null
   ref: string
@@ -154,6 +159,7 @@ function SettingsCard({ product, settings, busy, act }: { product: Tool; setting
     brand: "",
     color: "#24438a",
     targets: "both",
+    mix: "balanced",
     words: 1200,
     publishMode: "publish",
     cta: "",
@@ -250,6 +256,18 @@ function SettingsCard({ product, settings, busy, act }: { product: Tool; setting
             <option value="both">Instagram and Facebook</option>
             <option value="instagram">Instagram only</option>
             <option value="facebook">Facebook only</option>
+          </select>
+        </label>
+      ) : null}
+      {product === "meta" ? (
+        <label className="mt-3 block">
+          <span className={small}>Mix of post types</span>
+          <select value={f.mix} onChange={set("mix")} className={field}>
+            {META_MIXES.map((m) => (
+              <option key={m.key} value={m.key}>
+                {m.label}
+              </option>
+            ))}
           </select>
         </label>
       ) : null}
@@ -615,6 +633,7 @@ const LABELS: Record<Tool, { title: string; summary?: string; text: string }> = 
 function ItemCard({ it, product, busy, act }: { it: Item; product: Tool; busy: boolean; act: Act }) {
   const [editing, setEditing] = useState(false)
   const [f, setF] = useState({ title: it.title, summary: it.summary, text: it.text, image: it.image })
+  const [design, setDesign] = useState<Design>(it.design)
   const [when, setWhen] = useState(toLocalInput(it.scheduledAt))
   const [moving, setMoving] = useState(false)
   const [full, setFull] = useState(product === "meta")
@@ -663,17 +682,22 @@ function ItemCard({ it, product, busy, act }: { it: Item; product: Tool; busy: b
             </span>
             <textarea value={f.text} onChange={(e) => setF({ ...f, text: e.target.value })} rows={product === "meta" ? 8 : 16} className={field + " font-[inherit] leading-relaxed"} />
           </label>
-          {product === "meta" ? (
-            <label className="block">
-              <span className={small}>Use your own image instead (optional link to a JPG or PNG)</span>
-              <input value={f.image} onChange={(e) => setF({ ...f, image: e.target.value })} className={field} placeholder="https://…" />
-            </label>
+          {product === "meta" && it.format !== "image" ? <DesignFields format={it.format} design={design} onChange={setDesign} /> : null}
+          {product === "meta" && it.format === "image" ? (
+            <div>
+              <span className={small}>Or use your own photo instead of the design</span>
+              <div className="mt-1.5">
+                <PhotoPicker photos={design.photos || []} max={1} onChange={(photos) => setDesign({ ...design, photos })} />
+              </div>
+            </div>
           ) : null}
         </div>
       ) : product === "meta" ? (
-        <div className="mt-2 flex flex-col gap-4 sm:flex-row">
-          {it.preview ? <img src={it.preview} onError={(e) => { const el = e.currentTarget; if (!el.dataset.retried) { el.dataset.retried = "1"; el.src = it.preview + "&r=" + Date.now() } }} alt={it.title} width={216} height={270} className="h-[270px] w-[216px] shrink-0 rounded-lg border border-[var(--line)] object-cover" loading="lazy" /> : null}
-          <div className="min-w-0 whitespace-pre-wrap text-sm leading-relaxed">{it.text}</div>
+        <div className="mt-2">
+          {open ? <FormatPicker formats={META_FORMATS} value={it.format} busy={busy} onPick={(format) => act({ op: "format", id: it.id, format })} /> : null}
+          {it.format === "photo" && !(it.previews || []).length ? <div className="mt-3 text-[13px] text-[var(--muted)]">Tap Edit to add your photos.</div> : null}
+          <DesignPreview urls={it.previews || (it.preview ? [it.preview] : [])} alt={it.title} />
+          <div className="mt-3 min-w-0 whitespace-pre-wrap text-sm leading-relaxed">{it.text}</div>
         </div>
       ) : (
         <div className="mt-2">
@@ -701,10 +725,10 @@ function ItemCard({ it, product, busy, act }: { it: Item; product: Tool; busy: b
         <div className="mt-3 flex flex-wrap items-center gap-2">
           {editing ? (
             <>
-              <button type="button" className={primary} disabled={busy} onClick={async () => (await act({ op: "edit", id: it.id, ...f })) && setEditing(false)}>
+              <button type="button" className={primary} disabled={busy} onClick={async () => (await act({ op: "edit", id: it.id, ...f, ...(product === "meta" ? { design } : {}) })) && setEditing(false)}>
                 Save
               </button>
-              <button type="button" className={ghost} onClick={() => { setF({ title: it.title, summary: it.summary, text: it.text, image: it.image }); setEditing(false) }}>
+              <button type="button" className={ghost} onClick={() => { setF({ title: it.title, summary: it.summary, text: it.text, image: it.image }); setDesign(it.design); setEditing(false) }}>
                 Cancel
               </button>
               <RewriteMenu endpoint={`/dashboard/me/${product}`} id={it.id} text={f.text} title={f.title} onResult={(r) => setF((x) => ({ ...x, text: r.text, title: r.title ?? x.title }))} />

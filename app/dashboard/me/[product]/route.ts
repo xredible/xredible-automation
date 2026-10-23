@@ -23,6 +23,7 @@ import {
   isTool,
   itemAction,
   itemById,
+  metaImages,
   itemsFor,
   pickPage,
   removeContact,
@@ -31,7 +32,8 @@ import {
   type ToolKey,
 } from "@/lib/autopilot/tools"
 import { ownerKey } from "@/lib/autopilot/brands"
-import { rememberVoice, rewrite, voiceOf } from "@/lib/autopilot/ai"
+import { makeHeadline, makeSlides, rememberVoice, rewrite, voiceOf } from "@/lib/autopilot/ai"
+import { isFormat } from "@/lib/autopilot/formats"
 
 export const runtime = "nodejs"
 export const dynamic = "force-dynamic"
@@ -49,7 +51,7 @@ async function state(email: string, product: ToolKey) {
     ok: true,
     sub,
     channel: viewChannel(channel),
-    items,
+    items: product === "meta" ? items.map((it) => ({ ...it, previews: it.format === "photo" && !it.design.photos?.length ? [] : metaImages(it) })) : items,
     contacts: contacts
       ? {
           total: contacts.length,
@@ -119,6 +121,15 @@ export async function POST(request: Request, ctx: Ctx) {
       extra = { added: await addContacts(owner, String(b.text || "")) }
     } else if (op === "contact-remove" && product === "newsletter") {
       await removeContact(owner, Number(b.id))
+    } else if (op === "format" && product === "meta") {
+      // Switch a draft's type; writes the carousel slides it needs.
+      const it = await itemById(Number(b.id))
+      if (!it || it.email !== owner || it.product !== product) throw new Error("That item isn't yours.")
+      if (!isFormat(b.format) || b.format === "text") throw new Error("Pick a post type.")
+      const design = { ...it.design }
+      if (b.format === "carousel" && !(design.slides && design.slides.length >= 2)) design.slides = await makeSlides(`${it.title}\n\n${it.text}`)
+      if (b.format === "image" && !it.title) design.headline = await makeHeadline(it.text)
+      await itemAction(owner, product, { op: "design", id: it.id, format: b.format, design })
     } else if (op === "rewrite") {
       // A suggestion only: the dashboard shows it in the editor and nothing changes until they save.
       const it = await itemById(Number(b.id))

@@ -16,6 +16,7 @@ import { metaPublish, type MetaPage } from "./meta"
 import { cleanSite, wpPublish, wpVerify } from "./wordpress"
 import { buildIssue, smtpVerify, transport, type Smtp } from "./mail"
 import { mdToHtml } from "./markdown"
+import { cleanDesign, isFormat, META_MIXES, mixKey, parseDesign, type Design, type Format } from "./formats"
 
 export type ToolKey = Exclude<ProductKey, "linkedin">
 export const TOOL_KEYS: ToolKey[] = ["meta", "blog", "newsletter"]
@@ -50,7 +51,10 @@ export type Item = {
   ref: string
   progress: number
   error: string
+  format: Format
+  design: Design
   createdAt?: string
+  updatedAt?: string
 }
 
 export type Contact = { id: number; owner: string; email: string; name: string; status: "subscribed" | "unsubscribed"; unsubAt: string | null }
@@ -111,7 +115,7 @@ function cleanSettings(product: ToolKey, i: Obj): Obj {
     time: /^\d{2}:\d{2}$/.test(String(i.time)) ? String(i.time) : product === "newsletter" ? "08:05" : "10:05",
   }
   const color = /^#[0-9a-f]{6}$/i.test(String(i.color)) ? String(i.color) : "#24438a"
-  if (product === "meta") return { ...base, brand: clip(i.brand, 60), color, targets: ["both", "instagram", "facebook"].includes(String(i.targets)) ? i.targets : "both" }
+  if (product === "meta") return { ...base, brand: clip(i.brand, 60), color, mix: mixKey(META_MIXES, i.mix), targets: ["both", "instagram", "facebook"].includes(String(i.targets)) ? i.targets : "both" }
   if (product === "blog") return { ...base, words: [800, 1200, 1800].includes(num(i.words)) ? num(i.words) : 1200, publishMode: i.publishMode === "draft" ? "draft" : "publish", cta: clip(i.cta, 300) }
   return { ...base, name: clip(i.name, 80), fromName: clip(i.fromName, 80), address: clip(i.address, 300), notes: clip(i.notes, 1000), color }
 }
@@ -330,11 +334,24 @@ function asItem(r: Obj): Item {
     ref: String(r.ref || ""),
     progress: num(r.progress),
     error: String(r.error || ""),
+    format: isFormat(r.format) ? r.format : r.product === "meta" ? "image" : "text",
+    design: parseDesign(r.design),
     createdAt: (r.createdAt as string) || undefined,
+    updatedAt: (r.updatedAt as string) || undefined,
   }
 }
 
-export const cardUrl = (id: number) => `${SITE}/api/autopilot/card/${id}?s=${sign(`card:${id}`)}`
+/** Public, signed address of a post design: slide n of a carousel, or the single image (n = 0). */
+export const cardUrl = (id: number, n = 0, v = "") => `${SITE}/api/autopilot/card/${id}?s=${sign(`card:${id}`)}${n ? `&n=${n}` : ""}${v ? `&v=${encodeURIComponent(v)}` : ""}`
+export const liCardUrl = (id: number, n = 0, v = "") => `${SITE}/api/autopilot/card/${id}?k=li&s=${sign(`cardli:${id}`)}${n ? `&n=${n}` : ""}${v ? `&v=${encodeURIComponent(v)}` : ""}`
+
+/** The images a Meta post sends, in order. */
+export function metaImages(it: Item): string[] {
+  const v = it.updatedAt || ""
+  if (it.format === "carousel" && it.design.slides && it.design.slides.length >= 2) return it.design.slides.map((_, n) => cardUrl(it.id, n, v))
+  if (it.format === "photo" && it.design.photos?.length) return it.design.photos
+  return [/^https:\/\//.test(it.image) ? it.image : it.design.photos?.[0] || cardUrl(it.id, 0, v)]
+}
 
 export async function itemsFor(email: string, product: ToolKey) {
   return (await rows<Obj>("ap_items", { col: "email", val: email }))
@@ -373,7 +390,14 @@ export async function itemAction(email: string, product: ToolKey, input: Obj) {
     if (text.length < 20) throw new Error("The text is too short.")
     if (text.length > L.text) throw new Error(`Keep it under ${L.text.toLocaleString("en-IN")} characters.`)
     if (image && !/^https:\/\/\S+$/i.test(image)) throw new Error("The image link must start with https://")
-    return update("ap_items", id, { title, text, summary, image })
+    const extra = input.design !== undefined ? { design: JSON.stringify(cleanDesign(input.design)) } : {}
+    return update("ap_items", id, { title, text, summary, image, ...extra })
+  }
+  if (op === "design" && product === "meta") {
+    const format = isFormat(input.format) && input.format !== "text" ? input.format : it.format
+    const design = input.design !== undefined ? cleanDesign(input.design) : it.design
+    const title = format === "carousel" && design.slides?.[0]?.title ? design.slides[0].title.slice(0, 90) : it.title
+    return update("ap_items", id, { format, design: JSON.stringify(design), title })
   }
   if (op === "reschedule") {
     const when = String(input.when || "")
@@ -426,7 +450,8 @@ export async function publishItem(id: number): Promise<Result> {
     const secret = parse(open(c.secretEnc))
     let url = ""
     if (it.product === "meta") {
-      const img = /^https:\/\//.test(it.image) ? it.image : cardUrl(it.id)
+      if (it.format === "photo" && !it.design.photos?.length) throw new Error("Add your photos to this post first, or switch it to another type.")
+      const img = metaImages(it)
       const targets = (c.settings.targets as "both" | "instagram" | "facebook") || "both"
       const r = await metaPublish({ id: String(c.meta.pageId), igId: String(c.meta.igId || ""), token: String(secret.token) }, c.meta.igId ? targets : "facebook", it.text, img)
       url = r.ig || r.fb || ""
