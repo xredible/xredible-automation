@@ -91,25 +91,25 @@ const SPEC: Record<Channel, { kind: string; spec: string; json: string; tokens: 
     kind: "LinkedIn post",
     spec: "120 to 220 words, first line a specific hook under 12 words, short paragraphs with blank lines, one practical idea, end with a light question, at most 3 hashtags and 1 emoji. Plain text, no markdown or asterisks.",
     json: '{"topic": "<3-6 words>", "text": "..."}',
-    tokens: 3000,
+    tokens: 8000,
   },
   meta: {
     kind: "Instagram and Facebook post (one designed image + caption)",
     spec: "headline: 4 to 12 words printed on the image, max 70 characters, no hashtags or emojis. caption: hook first line, 50 to 140 words in short lines, a clear call to action, last line 5 to 10 hashtags, at most 3 emojis. Plain text, no markdown.",
     json: '{"topic": "<3-6 words>", "headline": "...", "caption": "..."}',
-    tokens: 3000,
+    tokens: 8000,
   },
   blog: {
     kind: "SEO blog article",
     spec: "About 800 words. title max 65 characters with the main search phrase; metaDescription 140 to 155 characters; body in markdown using only ## and ### headings, - bullets, 1. lists and **bold** (no H1, links, tables or images): a 2-3 sentence intro, 4 to 6 ## sections, a ## Frequently asked questions section with 3 ### questions, a short ## Conclusion.",
     json: '{"topic": "<main search phrase>", "title": "...", "metaDescription": "...", "body": "..."}',
-    tokens: 9000,
+    tokens: 12000,
   },
   newsletter: {
     kind: "email newsletter issue",
     spec: "subject max 55 characters, at most 1 emoji; preheader 60 to 100 characters; body in markdown with only ## headings, - bullets and **bold**, starting with the line 'Hi {{name}},', 250 to 400 words, 2 or 3 short sections, one clear call to reply or act, then a sign-off line.",
     json: '{"topic": "<3-6 words>", "subject": "...", "preheader": "...", "body": "..."}',
-    tokens: 6000,
+    tokens: 12000,
   },
 }
 

@@ -13,7 +13,7 @@ export async function ask(prompt: string, o: { json?: boolean; maxTokens?: numbe
   return b.text
 }
 
-export async function askJson<T>(prompt: string, maxTokens = 2048): Promise<T> {
+export async function askJson<T>(prompt: string, maxTokens = 8000): Promise<T> {
   const text = await ask(prompt, { json: true, maxTokens })
   try {
     return JSON.parse(text.replace(/^```(json)?|```$/g, "").trim()) as T
@@ -71,7 +71,7 @@ export async function rewrite(o: { kind: string; text: string; title?: string; h
   if (!instruction) throw new Error("Pick how to rewrite it.")
   const out = await askJson<{ text?: string; title?: string }>(
     `You edit a ${o.kind} for its author. Apply this change: ${instruction}\n${voiceBlock(o.samples)}\n${HONEST}\n${o.markdown ? "Keep the same simple markdown marks (## headings, - lists, **bold**)." : "Plain text only, no markdown or asterisks."} Keep it under ${o.limit} characters.\n\n${o.title !== undefined ? `CURRENT TITLE: ${o.title}\n` : ""}CURRENT TEXT:\n${o.text}\n\nReturn JSON only: {${o.title !== undefined ? '"title": "...", ' : ""}"text": "..."}`,
-    o.markdown ? 8000 : 3000,
+    12000,
   )
   const text = String(out.text || "").trim()
   if (text.length < 20) throw new Error("The rewrite came back empty. Try again.")
