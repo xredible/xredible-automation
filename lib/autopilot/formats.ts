@@ -7,7 +7,28 @@ import { isTemplate, type TemplateKey } from "./brand-presets"
 
 export type Format = "text" | "image" | "carousel" | "photo"
 export type Slide = { title: string; body: string }
-export type Design = { headline?: string; slides?: Slide[]; photos?: string[]; template?: TemplateKey; audience?: { tags?: string[]; segment?: "all" | "engaged" | "new" | "inactive" } }
+export type Design = { headline?: string; slides?: Slide[]; photos?: string[]; template?: TemplateKey; goal?: Goal; trend?: string; audience?: { tags?: string[]; segment?: "all" | "engaged" | "new" | "inactive" } }
+
+// ---------- post goals: what each post is for ----------
+// Most posts earn attention and trust; a few ask for business. Only "offer" posts carry the sales call to action.
+
+export type Goal = "teach" | "story" | "proof" | "talk" | "offer"
+export const GOALS: { key: Goal; label: string; blurb: string }[] = [
+  { key: "teach", label: "Teach", blurb: "How-tos, checklists, mistakes to avoid, trend explainers. Builds authority and saves." },
+  { key: "story", label: "Story", blurb: "Lessons, opinions and behind the scenes from your own work. Builds trust and likeability." },
+  { key: "proof", label: "Proof", blurb: "What you did and how it turned out: before/after, process, small wins. Shows you deliver." },
+  { key: "talk", label: "Conversation", blurb: "A question, a hot take or a this-or-that. Starts comments, which spreads your reach." },
+  { key: "offer", label: "Offer", blurb: "Your service, product or free audit, with one clear next step. Turns readers into leads." },
+]
+export const isGoal = (v: unknown): v is Goal => typeof v === "string" && GOALS.some((g) => g.key === v)
+export const GOAL_LABEL = Object.fromEntries(GOALS.map((g) => [g.key, g.label])) as Record<Goal, string>
+export type GoalMix = Record<Goal, number>
+export const GOAL_PLANS: { key: string; label: string; mix: GoalMix }[] = [
+  { key: "growth", label: "Steady growth (recommended): 40% teach · 20% story · 15% proof · 10% conversation · 15% offer", mix: { teach: 40, story: 20, proof: 15, talk: 10, offer: 15 } },
+  { key: "leads", label: "More leads: 30% teach · 15% story · 20% proof · 10% conversation · 25% offer", mix: { teach: 30, story: 15, proof: 20, talk: 10, offer: 25 } },
+  { key: "brand", label: "New account, build trust first: 45% teach · 30% story · 10% proof · 10% conversation · 5% offer", mix: { teach: 45, story: 30, proof: 10, talk: 10, offer: 5 } },
+]
+export const goalPlanKey = (v: unknown) => (GOAL_PLANS.some((m) => m.key === v) ? String(v) : "growth")
 
 export const FORMAT_LABEL: Record<Format, string> = { text: "Text", image: "Image", carousel: "Carousel", photo: "Your photos" }
 export const LI_FORMATS: Format[] = ["text", "image", "carousel", "photo"]
@@ -42,6 +63,9 @@ export function cleanDesign(d: unknown): Design {
     if (slides.length) out.slides = slides
   }
   if (isTemplate(o.template)) out.template = o.template
+  if (isGoal(o.goal)) out.goal = o.goal
+  const trend = s(o.trend, 200)
+  if (trend && trend !== "evergreen") out.trend = trend
   if (o.audience && typeof o.audience === "object") {
     const a = o.audience as Record<string, unknown>
     const tags = (Array.isArray(a.tags) ? a.tags : []).map((t) => String(t).trim().toLowerCase().slice(0, 30)).filter(Boolean).slice(0, 10)

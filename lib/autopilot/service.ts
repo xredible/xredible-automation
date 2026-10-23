@@ -7,7 +7,7 @@ import { insert, rows, update, type Table } from "./db"
 import { open, seal } from "./crypto"
 import { planOf, PRODUCTS, canPublish, isProduct, type PlanKey, type ProductKey, type Subscription } from "./products"
 import { liUpload, publishPost, postUrl, type LiMedia } from "./linkedin"
-import { cleanDesign, isFormat, LI_MIXES, mixKey, parseDesign, type Design, type Format } from "./formats"
+import { cleanDesign, goalPlanKey, isFormat, LI_MIXES, mixKey, parseDesign, type Design, type Format } from "./formats"
 import { carouselPdf, renderCard, safeColor, type Look } from "./render"
 import { kitFor } from "./brandkit"
 import { templateFor } from "./brand-presets"
@@ -29,7 +29,7 @@ export type LiProfile = {
   tokenExpires: string | null
   connected: boolean
   /** Post designs: format mix the writer aims for, brand colour and name on images. */
-  prefs: { mix: string; color: string; brand: string }
+  prefs: { mix: string; color: string; brand: string; goals: string; offer: string; cta: string }
 }
 
 export type LiPost = {
@@ -141,7 +141,7 @@ function asPrefs(raw: unknown): LiProfile["prefs"] {
   try {
     o = JSON.parse(String(raw || "{}")) || {}
   } catch {}
-  return { mix: mixKey(LI_MIXES, o.mix), color: safeColor(o.color, "#10203f"), brand: String(o.brand || "").slice(0, 60) }
+  return { mix: mixKey(LI_MIXES, o.mix), color: safeColor(o.color, "#10203f"), brand: String(o.brand || "").slice(0, 60), goals: goalPlanKey(o.goals), offer: String(o.offer || "").slice(0, 300), cta: String(o.cta || "").slice(0, 120) }
 }
 
 export async function profileFor(email: string): Promise<LiProfile | null> {
@@ -169,7 +169,7 @@ export async function saveProfile(email: string, input: Record<string, unknown>)
     language: ["English", "Hinglish", "Hindi"].includes(String(input.language)) ? String(input.language) : "English",
     postsPerWeek: Math.min(7, Math.max(1, num(input.postsPerWeek, 3))),
     postTime: /^\d{2}:\d{2}$/.test(String(input.postTime)) ? String(input.postTime) : "09:05",
-    prefs: JSON.stringify({ mix: mixKey(LI_MIXES, input.mix), color: safeColor(input.color, "#10203f"), brand: clip(input.brand, 60) }),
+    prefs: JSON.stringify({ mix: mixKey(LI_MIXES, input.mix), color: safeColor(input.color, "#10203f"), brand: clip(input.brand, 60), goals: goalPlanKey(input.goals), offer: clip(input.offer, 300), cta: clip(input.cta, 120) }),
   }
   const have = await profileFor(email)
   if (have) {
@@ -301,7 +301,8 @@ export async function publishOne(id: number): Promise<{ ok: boolean; status: str
 /** The look of a LinkedIn post's design: the brand kit and the post's template. */
 export async function liLook(post: Pick<LiPost, "id" | "email" | "design">, prof: LiProfile | null): Promise<Look> {
   const kit = await kitFor(post.email, { name: prof?.prefs.brand || prof?.liName || "", color: prof?.prefs.color !== "#10203f" ? prof?.prefs.color : "" })
-  return { kit, template: templateFor(kit, post.design.template, post.id) }
+  // Personal LinkedIn posts carry the person's own name on Playbook designs.
+  return { kit, template: templateFor(kit, post.design.template, post.id), author: prof?.liName || undefined }
 }
 
 async function photoBytes(url: string): Promise<{ bytes: ArrayBuffer; type: string }> {

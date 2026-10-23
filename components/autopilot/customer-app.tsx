@@ -10,8 +10,8 @@ import { Linkedin as LinkedinIcon } from "@/components/dashboard/brand"
 import type { Subscription } from "@/lib/autopilot/products"
 import { card, field, ghost, istTime, Notice, PlanCard, primary, small, toLocalInput, type Upi } from "./ui"
 import { RewriteMenu } from "./rewrite"
-import { DesignFields, DesignPreview, FormatPicker, TemplatePicker } from "./design-editor"
-import { LI_FORMATS, LI_MIXES, type Design, type Format } from "@/lib/autopilot/formats"
+import { DesignFields, DesignPreview, FormatPicker, GoalFields, TemplatePicker } from "./design-editor"
+import { GOAL_LABEL, GOALS, LI_FORMATS, LI_MIXES, type Design, type Format } from "@/lib/autopilot/formats"
 
 type Profile = {
   about: string
@@ -25,7 +25,7 @@ type Profile = {
   connected: boolean
   tokenExpiringSoon: boolean
   tokenExpires: string | null
-  prefs: { mix: string; color: string; brand: string }
+  prefs: { mix: string; color: string; brand: string; goals?: string; offer?: string; cta?: string }
 }
 type Post = { id: number; status: "draft" | "approved" | "posted" | "failed" | "blocked"; text: string; topic: string; scheduledAt: string | null; postedAt: string | null; postUrn: string; error: string; format: Format; design: Design; previews: string[] }
 type LiState = { ok: true; sub: Subscription; profile: Profile | null; posts: Post[]; ready: { linkedin: boolean; payments: boolean; razorpayKey: string; upi: Upi | null } }
@@ -108,6 +108,9 @@ function ProfileCard({ profile, busy, onSave }: { profile: Profile | null; busy:
     mix: profile?.prefs?.mix || "balanced",
     color: profile?.prefs?.color || "#10203f",
     brand: profile?.prefs?.brand || "",
+    goals: profile?.prefs?.goals || "growth",
+    offer: profile?.prefs?.offer || "",
+    cta: profile?.prefs?.cta || "",
   })
   const [saved, setSaved] = useState(false)
   const set = (k: keyof typeof f) => (e: { target: { value: string } }) => setF({ ...f, [k]: k === "postsPerWeek" ? Number(e.target.value) : e.target.value })
@@ -177,6 +180,7 @@ function ProfileCard({ profile, busy, onSave }: { profile: Profile | null; busy:
           ))}
         </select>
       </label>
+      <GoalFields channel="linkedin" value={{ goals: f.goals, offer: f.offer, cta: f.cta }} onChange={(v) => setF({ ...f, ...v })} />
       <BrandKitSummary what="LinkedIn images and carousels" />
       <div className="mt-4 flex items-center gap-3">
         <button type="submit" className={primary} disabled={busy}>
@@ -297,6 +301,8 @@ function PostItem({ p, busy, act }: { p: Post; busy: boolean; act: (b: Record<st
   return (
     <li className="rounded-xl border border-[var(--line)] p-4">
       <div className="flex flex-wrap items-center gap-2 text-[12.5px] text-[var(--muted)]">
+        {p.design.goal ? <span title={GOALS.find((g) => g.key === p.design.goal)?.blurb} className="rounded-full bg-[var(--brandsoft)] px-2 py-0.5 font-medium text-[var(--brand)]">{GOAL_LABEL[p.design.goal]}</span> : null}
+        {p.design.trend ? <span title={`Based on this week's news: ${p.design.trend}`} className="rounded-full bg-[var(--soft)] px-2 py-0.5 text-[var(--ink2)]">Trending</span> : null}
         {p.topic ? <span className="rounded bg-[var(--soft)] px-1.5 py-0.5 text-[var(--ink2)]">{p.topic}</span> : null}
         <span>{p.status === "posted" ? `Posted ${istTime(p.postedAt)}` : p.scheduledAt ? `Planned for ${istTime(p.scheduledAt)}` : ""}</span>
         {p.status === "posted" && p.postUrn.startsWith("urn:li:") ? (

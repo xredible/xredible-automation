@@ -5,7 +5,7 @@
 
 import { useState } from "react"
 import { ArrowDown, ArrowUp, ImagePlus, Plus, X } from "lucide-react"
-import { FORMAT_LABEL, MAX_PHOTOS, MAX_SLIDES, type Design, type Format } from "@/lib/autopilot/formats"
+import { FORMAT_LABEL, GOAL_PLANS, GOALS, MAX_PHOTOS, MAX_SLIDES, type Design, type Format } from "@/lib/autopilot/formats"
 import { TEMPLATES } from "@/lib/autopilot/brand-presets"
 import { field, small } from "./ui"
 
@@ -28,7 +28,7 @@ export function FormatPicker({ formats, value, busy, onPick }: { formats: Format
   )
 }
 
-/** Which of the five templates this post's design uses ("" = the brand kit's choice). */
+/** Which of the six templates this post's design uses ("" = the brand kit's choice). */
 export function TemplatePicker({ value, busy, onPick }: { value: string; busy: boolean; onPick: (t: string) => void }) {
   return (
     <label className="inline-flex items-center gap-2 text-[12.5px] text-[var(--muted)]">
@@ -205,4 +205,42 @@ export function DesignFields({ format, design, onChange, headlineLabel = "Words 
       </div>
     )
   return null
+}
+
+/** Settings block: the mix of post goals, and the offer + keyword that Offer posts use. */
+export function GoalFields({ value, onChange, channel }: { value: { goals: string; offer: string; cta: string }; onChange: (v: { goals: string; offer: string; cta: string }) => void; channel: "linkedin" | "meta" }) {
+  const plan = GOAL_PLANS.find((p) => p.key === value.goals) || GOAL_PLANS[0]
+  const reach = channel === "linkedin" ? 'comment "AUDIT" and I\'ll message you' : 'DM us "MENU" for prices'
+  return (
+    <div className="mt-3 rounded-lg border border-[var(--line)] p-3">
+      <label className="block">
+        <span className={small}>What your posts are for</span>
+        <select value={plan.key} onChange={(e) => onChange({ ...value, goals: e.target.value })} className={field}>
+          {GOAL_PLANS.map((p) => (
+            <option key={p.key} value={p.key}>
+              {p.label}
+            </option>
+          ))}
+        </select>
+      </label>
+      <div className="mt-2 flex flex-wrap gap-1.5">
+        {GOALS.map((g) => (
+          <span key={g.key} title={g.blurb} className="rounded-full bg-[var(--chip)] px-2 py-0.5 text-[11.5px] text-[var(--ink-2)]">
+            {g.label} {plan.mix[g.key]}%
+          </span>
+        ))}
+      </div>
+      <p className="!mb-0 mt-2 text-[12px] text-[var(--muted)]">Most posts earn attention and trust. Only Offer posts ask for business, so your feed never feels like an ad. Each draft also checks this week&apos;s news on your topics and uses it when it fits.</p>
+      <div className="mt-3 grid gap-3 sm:grid-cols-[1fr_220px]">
+        <label className="block">
+          <span className={small}>Your offer (used only in Offer posts)</span>
+          <input value={value.offer} onChange={(e) => onChange({ ...value, offer: e.target.value })} maxLength={300} className={field} placeholder={channel === "linkedin" ? "e.g. Free 20-minute marketing audit for D2C brands" : "e.g. Diwali hampers from Rs 799 with free delivery"} />
+        </label>
+        <label className="block">
+          <span className={small}>How people respond</span>
+          <input value={value.cta} onChange={(e) => onChange({ ...value, cta: e.target.value })} maxLength={120} className={field} placeholder={reach} />
+        </label>
+      </div>
+    </div>
+  )
 }

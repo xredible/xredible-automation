@@ -1,7 +1,7 @@
 // lib/autopilot/render.tsx
 //
 // Server-only. Draws post designs as 1080×1350 PNGs (Instagram portrait, also used for LinkedIn
-// images and carousel pages) in one of five templates, using the customer's brand kit: logo,
+// images and carousel pages) in one of six templates, using the customer's brand kit: logo,
 // three colours, heading and body fonts. Cards: a single headline image, or carousel slides
 // (cover, numbered slides, closing slide). Also packs carousel slides into a PDF for LinkedIn.
 
@@ -149,7 +149,8 @@ export type Card =
   | { kind: "slide"; title: string; body: string; n: number; total: number }
   | { kind: "end"; title: string; body: string; total: number }
 
-export type Look = { kit: BrandKit; template: TemplateKey }
+/** author: the name on Playbook designs (a person's name for personal LinkedIn posts; the brand name otherwise). */
+export type Look = { kit: BrandKit; template: TemplateKey; author?: string }
 
 /** The card for slide n of a carousel (first = cover, last = closing slide). */
 export function slideCard(slides: Slide[], n: number): Card {
@@ -165,7 +166,7 @@ const body = (c: Card) => ("body" in c ? c.body : "")
 const pos = (c: Card) => (c.kind === "slide" ? c.n : c.kind === "end" ? c.total - 1 : 0)
 const total = (c: Card) => ("total" in c ? c.total : 1)
 
-type Ctx = { kit: BrandKit; logo: Logo | null; logoDark: Logo | null; head: string; text: string }
+type Ctx = { kit: BrandKit; logo: Logo | null; logoDark: Logo | null; head: string; text: string; author?: string }
 
 /** The logo. On a dark background it uses the dark-background version, or puts the normal logo on a white plate so it stays visible. */
 function LogoMark({ ctx, height, color, dark = false }: { ctx: Ctx; height: number; color: string; dark?: boolean }) {
@@ -346,22 +347,67 @@ function Spark(c: Card, ctx: Ctx) {
   )
 }
 
-const TEMPLATE_FN: Record<TemplateKey, (c: Card, ctx: Ctx) => ReactNode> = { bold: Bold, minimal: Minimal, editorial: Editorial, split: Split, spark: Spark }
+// 6. Playbook: the creator carousel style. Near-black slides, the author's name with an accent bar,
+// big accent numbers, "Swipe" prompts, a tagline line, and an accent-coloured closing slide.
+function Playbook(c: Card, ctx: Ctx) {
+  const k = ctx.kit
+  const bg = mix(k.primary, "#07080b", 0.84)
+  const accent = lum(k.accent) > 0.2 ? k.accent : lum(k.secondary) > 0.2 && lum(k.secondary) < 0.85 ? k.secondary : "#ffc400"
+  const end = c.kind === "end"
+  // Dark ink on all but very dark accents (white text on gold or yellow is hard to read).
+  const fg = end ? (lum(accent) > 0.22 ? INK : "#ffffff") : "#ffffff"
+  const soft = end ? (fg === "#ffffff" ? "rgba(255,255,255,0.85)" : "rgba(21,23,28,0.82)") : "rgba(225,229,236,0.86)"
+  const grey = end ? soft : "rgba(160,166,178,0.95)"
+  const mark = end ? fg : accent
+  const author = (ctx.author || k.name || "").toUpperCase()
+  const tagline = k.tagline || k.handle
+  const count = c.kind === "single" ? "" : `${c.kind === "cover" ? 1 : c.kind === "slide" ? c.n + 1 : total(c)}/${total(c)}`
+  const titleSz = c.kind === "slide" ? fit(c.title, [[28, 68], [50, 60], [999, 50]]) : end ? fit(c.title, [[28, 88], [50, 74], [999, 60]]) : fit(c.title, [[30, 96], [55, 82], [999, 66]])
+  const bodySz = c.kind === "slide" ? fit(body(c), [[120, 42], [190, 37], [999, 33]]) : 40
+  return (
+    <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", justifyContent: "space-between", padding: "86px 90px 76px", background: end ? accent : bg, color: fg }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: 22 }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div style={{ display: "flex", fontFamily: ctx.text, fontSize: 27, fontWeight: 700, letterSpacing: 1.5, color: mark }}>{author}</div>
+          {count ? <div style={{ display: "flex", fontFamily: ctx.text, fontSize: 26, fontWeight: 700, color: grey }}>{count}</div> : ctx.logo || ctx.logoDark ? <LogoMark ctx={ctx} height={64} color={fg} dark={!end || fg === "#ffffff"} /> : null}
+        </div>
+        <div style={{ display: "flex", width: 110, height: 8, background: mark }} />
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", gap: c.kind === "slide" ? 26 : 40 }}>
+        {c.kind === "slide" ? <div style={{ display: "flex", fontFamily: ctx.head, fontSize: 124, lineHeight: 1, fontWeight: 700, color: accent }}>{num(c)}</div> : null}
+        <div style={{ display: "flex", fontFamily: ctx.head, fontSize: titleSz, lineHeight: 1.12, fontWeight: 700, letterSpacing: -1 }}>{c.title}</div>
+        {body(c) ? <div style={{ display: "flex", fontFamily: ctx.text, fontSize: bodySz, lineHeight: 1.42, color: soft }}>{body(c)}</div> : null}
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 26 }}>
+        {end ? <div style={{ display: "flex", height: 4, background: fg }} /> : null}
+        <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between" }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+            {end ? <div style={{ display: "flex", fontFamily: ctx.head, fontSize: 40, fontWeight: 700 }}>{ctx.author || k.name}</div> : null}
+            {tagline ? <div style={{ display: "flex", fontFamily: ctx.text, fontSize: end ? 27 : 24, color: grey }}>{tagline}</div> : null}
+          </div>
+          {c.kind === "cover" || c.kind === "slide" ? <div style={{ display: "flex", fontFamily: ctx.text, fontSize: c.kind === "cover" ? 36 : 30, fontWeight: 700, color: c.kind === "cover" ? accent : grey }}>Swipe →</div> : null}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+const TEMPLATE_FN: Record<TemplateKey, (c: Card, ctx: Ctx) => ReactNode> = { bold: Bold, minimal: Minimal, editorial: Editorial, split: Split, spark: Spark, playbook: Playbook }
 
 /** One design as PNG bytes. Falls back to the built-in font (and no logo) if something can't be drawn. */
 export async function renderCard(card: Card, look: Look): Promise<ArrayBuffer> {
   const kit = look.kit
-  const all = [card.title, body(card), kit.name, kit.handle].join(" ")
+  const all = [card.title, body(card), kit.name, kit.handle, kit.tagline, look.author || ""].join(" ")
   const [fonts, logo, logoDark] = await Promise.all([fontsFor(kit, all), loadLogo(kit.logo), loadLogo(kit.logoDark || "")])
   const deva = /[ऀ-ॿ]/.test(all) ? ", Noto Sans Devanagari" : ""
   const fam = (f: string) => (fonts.some((x) => x.name === f) ? `"${f}"${deva}` : deva ? "Noto Sans Devanagari" : "sans-serif")
   const draw = (f: Font[], c: Card, ctx: Ctx) => new ImageResponse(TEMPLATE_FN[look.template](c, ctx) as ReactElement, { width: W, height: H, ...(f.length ? { fonts: f } : {}) }).arrayBuffer()
   try {
-    return await draw(fonts, card, { kit, logo, logoDark, head: fam(kit.headFont), text: fam(kit.bodyFont) })
+    return await draw(fonts, card, { kit, logo, logoDark, head: fam(kit.headFont), text: fam(kit.bodyFont), author: look.author })
   } catch {
     const strip = (t: string) => t.replace(/[^\p{L}\p{N}\p{P}\p{Zs}]/gu, "")
     const plain = { ...card, title: strip(card.title), ...("body" in card ? { body: strip(card.body) } : {}) } as Card
-    return draw([], plain, { kit: { ...kit, name: strip(kit.name), handle: strip(kit.handle) }, logo: null, logoDark: null, head: "sans-serif", text: "sans-serif" })
+    return draw([], plain, { kit: { ...kit, name: strip(kit.name), handle: strip(kit.handle) }, logo: null, logoDark: null, head: "sans-serif", text: "sans-serif", author: look.author ? strip(look.author) : undefined })
   }
 }
 
