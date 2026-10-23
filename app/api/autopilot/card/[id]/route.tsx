@@ -5,7 +5,9 @@
 import { signed } from "@/lib/autopilot/crypto"
 import { channelFor, itemById } from "@/lib/autopilot/tools"
 import { liLook, postsFor, profileFor } from "@/lib/autopilot/service"
-import { renderCard, safeColor, slideCard, type Card, type Look } from "@/lib/autopilot/render"
+import { renderCard, slideCard, type Card, type Look } from "@/lib/autopilot/render"
+import { kitFor } from "@/lib/autopilot/brandkit"
+import { templateFor } from "@/lib/autopilot/brand-presets"
 import { rows } from "@/lib/autopilot/db"
 import { isFormat, parseDesign, type Design, type Format } from "@/lib/autopilot/formats"
 
@@ -37,13 +39,14 @@ export async function GET(request: Request, ctx: { params: Promise<{ id: string 
     const email = String(r.email || "")
     const post = (await postsFor(email)).find((p) => p.id === id)
     if (!post) return missing()
-    look = liLook(await profileFor(email))
+    look = await liLook(post, await profileFor(email))
     card = cardFor(post.format === "text" ? "image" : post.format, post.design, post.topic || post.text.split("\n")[0], n)
   } else {
     const it = await itemById(id).catch(() => null)
     if (!it || it.product !== "meta") return missing()
     const ch = await channelFor(it.email, "meta").catch(() => null)
-    look = { color: safeColor(ch?.settings.color), brand: String(ch?.settings.brand || ch?.meta.pageName || "").slice(0, 60) }
+    const kit = await kitFor(it.email, { name: String(ch?.settings.brand || ch?.meta.pageName || "").slice(0, 60), color: String(ch?.settings.color || "") })
+    look = { kit, template: templateFor(kit, it.design.template, it.id) }
     const format = isFormat(it.format) ? it.format : "image"
     card = cardFor(format, { ...parseDesign(it.design), headline: it.title || it.design.headline }, it.topic, n)
   }

@@ -9,6 +9,8 @@ import { planOf, PRODUCTS, canPublish, isProduct, type PlanKey, type ProductKey,
 import { liUpload, publishPost, postUrl, type LiMedia } from "./linkedin"
 import { cleanDesign, isFormat, LI_MIXES, mixKey, parseDesign, type Design, type Format } from "./formats"
 import { carouselPdf, renderCard, safeColor, type Look } from "./render"
+import { kitFor } from "./brandkit"
+import { templateFor } from "./brand-presets"
 
 export type LiProfile = {
   id: number
@@ -295,8 +297,11 @@ export async function publishOne(id: number): Promise<{ ok: boolean; status: str
   }
 }
 
-/** The look of a LinkedIn customer's designs. */
-export const liLook = (prof: LiProfile | null): Look => ({ color: prof?.prefs.color || "#10203f", brand: prof?.prefs.brand || prof?.liName || "" })
+/** The look of a LinkedIn post's design: the brand kit and the post's template. */
+export async function liLook(post: Pick<LiPost, "id" | "email" | "design">, prof: LiProfile | null): Promise<Look> {
+  const kit = await kitFor(post.email, { name: prof?.prefs.brand || prof?.liName || "", color: prof?.prefs.color !== "#10203f" ? prof?.prefs.color : "" })
+  return { kit, template: templateFor(kit, post.design.template, post.id) }
+}
 
 async function photoBytes(url: string): Promise<{ bytes: ArrayBuffer; type: string }> {
   const r = await fetch(url, { cache: "no-store" })
@@ -313,12 +318,12 @@ async function liMedia(post: LiPost, prof: LiProfile, token: string): Promise<Li
       const p = await photoBytes(d.photos[0])
       return { kind: "image", urn: await liUpload(token, prof.liSub, "images", p.bytes, p.type), alt }
     }
-    const png = await renderCard({ kind: "single", title: d.headline || post.topic || post.text.split("\n")[0].slice(0, 90) }, liLook(prof))
+    const png = await renderCard({ kind: "single", title: d.headline || post.topic || post.text.split("\n")[0].slice(0, 90) }, await liLook(post, prof))
     return { kind: "image", urn: await liUpload(token, prof.liSub, "images", png, "image/png"), alt }
   }
   if (post.format === "carousel") {
     if (!d.slides || d.slides.length < 2) throw new Error("This carousel has no slides. Open it and add slides, or switch it to Text.")
-    const pdf = await carouselPdf(d.slides, liLook(prof))
+    const pdf = await carouselPdf(d.slides, await liLook(post, prof))
     return { kind: "document", urn: await liUpload(token, prof.liSub, "documents", pdf, "application/pdf"), title: d.slides[0].title || post.topic }
   }
   if (post.format === "photo") {

@@ -8,7 +8,7 @@ import { Check, ExternalLink, PenLine, RefreshCw, Send, Sparkles, Trash2 } from 
 import { PRODUCTS, type ProductKey, type Subscription } from "@/lib/autopilot/products"
 import { card, field, ghost, istTime, Notice, PlanCard, primary, small, toLocalInput, type Upi } from "./ui"
 import { RewriteMenu } from "./rewrite"
-import { DesignFields, DesignPreview, FormatPicker, PhotoPicker } from "./design-editor"
+import { DesignFields, DesignPreview, FormatPicker, PhotoPicker, TemplatePicker } from "./design-editor"
 import { META_FORMATS, META_MIXES, type Design, type Format } from "@/lib/autopilot/formats"
 
 type Tool = Exclude<ProductKey, "linkedin">
@@ -694,7 +694,12 @@ function ItemCard({ it, product, busy, act }: { it: Item; product: Tool; busy: b
         </div>
       ) : product === "meta" ? (
         <div className="mt-2">
-          {open ? <FormatPicker formats={META_FORMATS} value={it.format} busy={busy} onPick={(format) => act({ op: "format", id: it.id, format })} /> : null}
+          {open ? (
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+              <FormatPicker formats={META_FORMATS} value={it.format} busy={busy} onPick={(format) => act({ op: "format", id: it.id, format })} />
+              {it.format !== "photo" ? <TemplatePicker value={it.design.template || ""} busy={busy} onPick={(t) => act({ op: "design", id: it.id, design: { ...it.design, template: t || undefined } })} /> : null}
+            </div>
+          ) : null}
           {it.format === "photo" && !(it.previews || []).length ? <div className="mt-3 text-[13px] text-[var(--muted)]">Tap Edit to add your photos.</div> : null}
           <DesignPreview urls={it.previews || (it.preview ? [it.preview] : [])} alt={it.title} />
           <div className="mt-3 min-w-0 whitespace-pre-wrap text-sm leading-relaxed">{it.text}</div>

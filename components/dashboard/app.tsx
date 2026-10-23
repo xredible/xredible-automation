@@ -9,6 +9,7 @@ import type { BlogData, QueueData, SectionData, ToolSummary } from "@/lib/dashbo
 import { ACCOUNT_VIEWS, ADMIN_VIEWS, BUSINESSES, TOOL_VIEW, type BusinessKey } from "@/lib/dashboard/businesses"
 import { AnnouncementBanner, BillingView, BrandSwitcher, ChatWidget, HelpView, SettingsView, VerifyBanner, ViewAsBanner } from "@/components/autopilot/account-views"
 import { IdeasView } from "@/components/autopilot/ideas-view"
+import { BrandKitView } from "@/components/autopilot/brand-kit"
 import { AdminAnnounce, AdminCoupons, AdminCustomers, AdminHealth, AdminPayments, AdminRevenue } from "./admin-views"
 import { LinkedInAutopilot } from "@/components/autopilot/customer-app"
 import { ToolApp } from "@/components/autopilot/tool-app"
@@ -249,6 +250,8 @@ export function DashboardApp({ allowed, me }: { allowed: BusinessKey[]; me: Me }
             ) : null}
             {!state ? (
               <SectionSkeleton />
+            ) : view === "ap-brand" ? (
+              <BrandKitView key={tick} />
             ) : view === "ap-ideas" ? (
               <IdeasView key={tick} go={go} />
             ) : view === "admin-revenue" ? (

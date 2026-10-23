@@ -9,7 +9,7 @@ import { Linkedin as LinkedinIcon } from "@/components/dashboard/brand"
 import type { Subscription } from "@/lib/autopilot/products"
 import { card, field, ghost, istTime, Notice, PlanCard, primary, small, toLocalInput, type Upi } from "./ui"
 import { RewriteMenu } from "./rewrite"
-import { DesignFields, DesignPreview, FormatPicker } from "./design-editor"
+import { DesignFields, DesignPreview, FormatPicker, TemplatePicker } from "./design-editor"
 import { LI_FORMATS, LI_MIXES, type Design, type Format } from "@/lib/autopilot/formats"
 
 type Profile = {
@@ -315,7 +315,10 @@ function PostItem({ p, busy, act }: { p: Post; busy: boolean; act: (b: Record<st
       </div>
       {open && !editing ? (
         <div className="mt-2">
-          <FormatPicker formats={LI_FORMATS} value={p.format} busy={busy} onPick={(format) => act({ op: "format", id: p.id, format })} />
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+            <FormatPicker formats={LI_FORMATS} value={p.format} busy={busy} onPick={(format) => act({ op: "format", id: p.id, format })} />
+            {p.format === "image" || p.format === "carousel" ? <TemplatePicker value={p.design.template || ""} busy={busy} onPick={(t) => act({ op: "design", id: p.id, design: { ...p.design, template: t || undefined } })} /> : null}
+          </div>
         </div>
       ) : null}
       {editing ? (
