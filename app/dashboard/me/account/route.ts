@@ -33,7 +33,7 @@ const OWNED: [Table, string][] = [
 ]
 const SECRET_COLS = ["tokenEnc", "secretEnc", "passHash"]
 
-async function state(email: string, name: string) {
+async function state(email: string, name: string, role = "customer") {
   const [as, ann, allSubs] = await Promise.all([viewingAs(email), announcements(), brandsOf(email).then((bs) => Promise.all(bs.map((b) => subsFor(b.key)))).then((x) => x.flat())])
   const paid = allSubs.some((s) => s.status === "active" && s.plan !== "trial")
   const [notes, brands, referral, payments] = await Promise.all([noticesFor(email), currentBrand(email, name ? `${name.split(" ")[0]}'s brand` : undefined), referralInfo(email), Promise.all((await brandsOf(email)).map((b) => paymentsFor(b.key))).then((x) => x.flat())])
@@ -41,7 +41,8 @@ async function state(email: string, name: string) {
     ok: true,
     name,
     email,
-    verified: isVerified(notes),
+    // Admins and team members were added by an admin, so their email needs no confirming.
+    verified: role !== "customer" || isVerified(notes),
     prefs: { digest: !notes.some((n) => n.kind === "optout" && n.key === "digest") },
     brands,
     referral,
@@ -69,7 +70,7 @@ export async function GET(request: Request) {
       const body = JSON.stringify({ exportedAt: new Date().toISOString(), account: { email: me.email, name: me.name }, ...out }, null, 2)
       return new NextResponse(body, { headers: { "Content-Type": "application/json", "Content-Disposition": `attachment; filename="xredible-data-${new Date().toISOString().slice(0, 10)}.json"`, "Cache-Control": "no-store" } })
     }
-    return json(await state(me.email, me.name))
+    return json(await state(me.email, me.name, me.role))
   } catch (e) {
     return json({ ok: false, error: errText(e) }, 502)
   }
@@ -88,7 +89,7 @@ export async function POST(request: Request) {
       if (!mailConfigured()) return json({ ok: false, error: "Email sending is being switched on. Please try again later." }, 503)
       const sent = await send(me.email, EMAILS.verify(me.name, verifyUrl(me.email)))
       if (!sent) return json({ ok: false, error: "The email didn't send. Try again in a minute." }, 502)
-      return json({ ...(await state(me.email, me.name)), sent: true })
+      return json({ ...(await state(me.email, me.name, me.role)), sent: true })
     }
     if (op === "prefs") {
       const notes = await noticesFor(me.email)
@@ -123,7 +124,7 @@ export async function POST(request: Request) {
       ;(await cookies()).delete({ name: COOKIE, path: "/dashboard" })
       return json({ ok: true, deleted: true })
     } else return json({ ok: false, error: "Unknown request." }, 400)
-    return json(await state(me.email, me.name))
+    return json(await state(me.email, me.name, me.role))
   } catch (e) {
     return json({ ok: false, error: errText(e) }, 400)
   }
