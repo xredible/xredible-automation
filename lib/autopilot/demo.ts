@@ -14,7 +14,7 @@ export const INTERESTS = ["LinkedIn", "Instagram + Facebook", "Blog writing", "E
 export const STATUSES = ["new", "contacted", "demo done", "customer", "not a fit"] as const
 export type DemoStatus = (typeof STATUSES)[number]
 
-export type DemoRequest = { id: number; name: string; email: string; phone: string; business: string; website: string; interests: string[]; when: string; note: string; consent: boolean; at: string; status: DemoStatus }
+export type DemoRequest = { id: number; kind: "demo" | "inquiry"; name: string; email: string; phone: string; business: string; website: string; interests: string[]; when: string; note: string; consent: boolean; at: string; status: DemoStatus }
 
 const clip = (v: unknown, n: number) => String(v ?? "").replace(/[\r\n]+/g, " ").trim().slice(0, n)
 
@@ -39,7 +39,10 @@ export async function requestDemo(input: Record<string, unknown>, ip: string): P
   if (phone.replace(/\D/g, "").length < 10) throw new Error("Please enter your WhatsApp number so we can fix a time.")
   if (!allowed(`ip:${ip}`, 4, 3_600_000) || !allowed(`em:${email}`, 2, 86_400_000)) throw new Error("We've got your request already. We'll be in touch soon.")
   const interests = (Array.isArray(input.interests) ? input.interests : []).map(String).filter((x) => (INTERESTS as readonly string[]).includes(x))
+  // "inquiry": the homepage contact form (custom automation work); "demo": the Autopilot demo form.
+  const kind = input.kind === "inquiry" ? "inquiry" : "demo"
   const r = {
+    kind,
     name,
     email,
     phone,
@@ -47,22 +50,29 @@ export async function requestDemo(input: Record<string, unknown>, ip: string): P
     website: clip(input.website, 200),
     interests,
     when: clip(input.when, 60),
-    note: clip(input.note, 600),
+    note: clip(input.note, 1500),
     consent: input.consent === true,
     at: new Date().toISOString(),
   }
   await addNotice(DEMO_KEY, "demo", "new", JSON.stringify(r))
-  const lines = [`New demo request: ${r.name}${r.business ? ` (${r.business})` : ""}`, `Email: ${r.email}`, `WhatsApp: ${r.phone}`, r.interests.length ? `Wants: ${r.interests.join(", ")}` : "", r.when ? `Best time: ${r.when}` : "", r.website ? `Site: ${r.website}` : "", r.note ? `Note: ${r.note}` : ""].filter(Boolean)
+  const lines = [`${kind === "inquiry" ? "New inquiry" : "New demo request"}: ${r.name}${r.business ? ` (${r.business})` : ""}`, `Email: ${r.email}`, `WhatsApp: ${r.phone}`, r.interests.length ? `Wants: ${r.interests.join(", ")}` : "", r.when ? `Best time: ${r.when}` : "", r.website ? `Site: ${r.website}` : "", r.note ? `Note: ${r.note}` : ""].filter(Boolean)
   const wa = `https://wa.me/${r.phone.replace(/\D/g, "").replace(/^(\d{10})$/, "91$1")}`
   await Promise.all([
     notify(lines.join("\n")).catch(() => {}),
-    sendXd(process.env.XD_ADMIN_EMAIL || "accounts@xredible.in", `Demo request: ${r.name}${r.business ? `, ${r.business}` : ""}`, `${lines.map((l) => `- ${l}`).join("\n")}\n\n[Message them on WhatsApp](${wa})`, { label: "Open Demo requests", url: "https://www.xredible.in/dashboard?biz=autopilot&view=admin-leads" }),
-    sendXd(
-      r.email,
-      "Your Xredible demo: we'll fix a time with you",
-      `Hi ${r.name.split(" ")[0]},\n\nThanks for asking for a demo of Xredible Autopilot. We'll message you on WhatsApp within one working day to fix a 15-minute slot${r.when ? ` (you said ${r.when} suits you)` : ""}.\n\nIn the demo we'll set up your brand, write your first posts together and show you how approving and posting works.\n\nCan't wait? You can start free now: every automation includes 3 free posts.`,
-      { label: "Start free", url: "https://www.xredible.in/dashboard" },
-    ),
+    sendXd(process.env.XD_ADMIN_EMAIL || "accounts@xredible.in", `${kind === "inquiry" ? "Inquiry" : "Demo request"}: ${r.name}${r.business ? `, ${r.business}` : ""}`, `${lines.map((l) => `- ${l}`).join("\n")}\n\n[Message them on WhatsApp](${wa})`, { label: "Open Demo requests", url: "https://www.xredible.in/dashboard?biz=autopilot&view=admin-leads" }),
+    kind === "inquiry"
+      ? sendXd(
+          r.email,
+          "We've got your automation inquiry",
+          `Hi ${r.name.split(" ")[0]},\n\nThanks for telling us what you'd like to automate. We'll reply within one working day, usually on WhatsApp, with questions or a quick plan.\n\nMeanwhile, you can see our ready-made Autopilot tools in action.`,
+          { label: "See the Autopilot demo", url: "https://www.xredible.in/demo" },
+        )
+      : sendXd(
+          r.email,
+          "Your Xredible demo: we'll fix a time with you",
+          `Hi ${r.name.split(" ")[0]},\n\nThanks for asking for a demo of Xredible Autopilot. We'll message you on WhatsApp within one working day to fix a 15-minute slot${r.when ? ` (you said ${r.when} suits you)` : ""}.\n\nIn the demo we'll set up your brand, write your first posts together and show you how approving and posting works.\n\nCan't wait? You can start free now: every automation includes 3 free posts.`,
+          { label: "Start free", url: "https://www.xredible.in/dashboard" },
+        ),
   ])
   // Only people who ticked the box join the email list (with the list's own confirmation email, if it has one).
   const owner = process.env.XD_LIST_OWNER
@@ -78,7 +88,7 @@ export async function demoRequests(): Promise<DemoRequest[]> {
         v = JSON.parse(n.value)
       } catch {}
       const status = (STATUSES as readonly string[]).includes(n.key) ? (n.key as DemoStatus) : "new"
-      return { name: "", email: "", phone: "", business: "", website: "", interests: [], when: "", note: "", consent: false, at: n.at || "", ...v, id: n.id, status }
+      return { kind: "demo" as const, name: "", email: "", phone: "", business: "", website: "", interests: [], when: "", note: "", consent: false, at: n.at || "", ...v, id: n.id, status }
     })
     .sort((a, b) => b.id - a.id)
 }

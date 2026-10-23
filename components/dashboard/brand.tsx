@@ -53,7 +53,7 @@ export const PLATFORM: Record<string, PlatformMeta> = {
   "admin-customers": { label: "Customers", short: "Customers", color: "#10203f", ...i(Users) },
   "admin-payments": { label: "Payments", short: "Payments", color: "#10203f", ...i(Receipt) },
   "admin-coupons": { label: "Coupons", short: "Coupons", color: "#10203f", ...i(TicketPercent) },
-  "admin-leads": { label: "Demo requests", short: "Demos", color: "#10203f", ...i(CalendarCheck) },
+  "admin-leads": { label: "Leads", short: "Leads", color: "#10203f", ...i(CalendarCheck) },
   "admin-announce": { label: "Announcements", short: "Announcements", color: "#10203f", ...i(Megaphone) },
   "admin-health": { label: "System health", short: "Health", color: "#10203f", ...i(HeartPulse) },
 }

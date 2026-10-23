@@ -1,15 +1,26 @@
-import Link from "next/link"
 import type { ReactNode } from "react"
+import { SiteFooter, SiteHeader } from "@/components/site/site"
+import { ui } from "@/components/site/ui"
 
-export function LegalPage({ title, updated, children }: { title: string; updated: string; children: ReactNode }) {
+/** Terms, Privacy, Refunds, Delivery and similar pages: the site header and footer around easy-to-read text. */
+export function LegalPage({ title, updated, intro, children }: { title: string; updated?: string; intro?: ReactNode; children: ReactNode }) {
   return (
-    <main className="mx-auto w-full max-w-3xl px-4 py-12 sm:px-6">
-      <Link href="/" className="text-sm text-slate-500 hover:underline">
-        ← Xredible
-      </Link>
-      <h1 className="mt-4 text-3xl font-semibold tracking-tight">{title}</h1>
-      <p className="mt-2 text-sm text-slate-500">Last updated {updated}</p>
-      <div className="mt-8 space-y-6 text-[15px] leading-relaxed [&_h2]:mt-8 [&_h2]:text-lg [&_h2]:font-semibold [&_li]:ml-5 [&_li]:list-disc [&_ul]:space-y-1.5">{children}</div>
-    </main>
+    <div className={ui.page}>
+      <SiteHeader />
+      <section className="relative overflow-hidden border-b border-white/10">
+        <div className={ui.glow} />
+        <div className="relative mx-auto max-w-3xl px-5 py-14 sm:px-6 sm:py-16">
+          <h1 className="text-4xl font-black tracking-tight sm:text-5xl">{title}</h1>
+          {updated ? <p className="mt-3 text-sm text-slate-400">Last updated {updated}</p> : null}
+          {intro ? <div className="mt-5 text-lg leading-relaxed text-slate-300">{intro}</div> : null}
+        </div>
+      </section>
+      <main className="mx-auto w-full max-w-3xl px-5 py-12 sm:px-6 sm:py-14">
+        <div className="space-y-6 text-[16px] leading-relaxed text-slate-300 [&_a]:text-[#e9cf86] [&_a]:underline [&_a]:underline-offset-4 [&_b]:text-white [&_h2]:mt-10 [&_h2]:text-xl [&_h2]:font-bold [&_h2]:text-white [&_h3]:mt-6 [&_h3]:font-semibold [&_h3]:text-white [&_li]:ml-5 [&_li]:list-disc [&_li]:marker:text-[#d4ad4b] [&_strong]:text-white [&_ul]:space-y-2">
+          {children}
+        </div>
+      </main>
+      <SiteFooter />
+    </div>
   )
 }

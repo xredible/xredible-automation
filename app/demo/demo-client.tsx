@@ -5,17 +5,18 @@
 
 import Link from "next/link"
 import { useState } from "react"
+import { SiteFooter, SiteHeader, WhatsAppButton } from "@/components/site/site"
+import { ui, WHATSAPP } from "@/components/site/ui"
 import { DEMO_BRANDS } from "@/lib/autopilot/demo-samples"
 import { GOAL_LABEL, type Goal } from "@/lib/autopilot/formats"
 
-const WHATSAPP = "918085949384"
 const INTERESTS = ["LinkedIn", "Instagram + Facebook", "Blog writing", "Email marketing", "Custom automation"]
 const GOAL_STYLE: Record<Goal, string> = {
-  teach: "bg-[#e7eefc] text-[#24438a]",
-  story: "bg-[#fbf1dc] text-[#7a5a12]",
-  proof: "bg-[#e3f4ef] text-[#17695a]",
-  talk: "bg-[#efe9fb] text-[#5a3d9a]",
-  offer: "bg-[#d4ad4b] text-[#10203f]",
+  teach: "bg-[#6f93f0]/15 text-[#b4c8fb]",
+  story: "bg-[#d4ad4b]/15 text-[#f0d68a]",
+  proof: "bg-[#35c2a7]/15 text-[#86e3d0]",
+  talk: "bg-[#b49cf0]/15 text-[#d3c5f8]",
+  offer: "bg-[#d4ad4b] text-[#0b1530]",
 }
 
 const STEPS = [
@@ -38,28 +39,14 @@ export function DemoClient() {
   const [brand, setBrand] = useState(DEMO_BRANDS[0].key)
   const b = DEMO_BRANDS.find((x) => x.key === brand) || DEMO_BRANDS[0]
   return (
-    <main className="min-h-screen bg-[#f6f4ee] text-[#15171c]">
-      {/* Header */}
-      <header className="sticky top-0 z-30 border-b border-white/10 bg-[#10203f]/95 backdrop-blur">
-        <div className="mx-auto flex max-w-6xl items-center gap-4 px-4 py-3 sm:px-6">
-          <Link href="/" className="flex items-center" aria-label="Xredible home">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/brand/xredible-logo-white.png" alt="Xredible Automation" width={142} height={45} className="h-9 w-auto" />
-          </Link>
-          <nav className="ml-auto hidden items-center gap-6 text-sm text-white/80 sm:flex">
-            <a href="#sample" className="hover:text-white">Sample week</a>
-            <a href="#how" className="hover:text-white">How it works</a>
-            <Link href="/pricing" className="hover:text-white">Pricing</Link>
-          </nav>
-          <a href="#book" className="ml-auto rounded-xl bg-[#d4ad4b] px-4 py-2 text-sm font-semibold text-[#10203f] hover:brightness-105 sm:ml-0">
-            Book a demo
-          </a>
-        </div>
-      </header>
+    <div className={ui.page}>
+      <SiteHeader active="Autopilot" />
+      <WhatsAppButton />
 
       {/* Hero */}
-      <section className="bg-[#10203f] text-white">
-        <div className="mx-auto grid max-w-6xl items-center gap-10 px-4 py-14 sm:px-6 lg:grid-cols-[1.1fr_0.9fr] lg:py-20">
+      <section className="relative overflow-hidden border-b border-white/10 text-white">
+        <div className={ui.glow} />
+        <div className="relative mx-auto grid max-w-6xl items-center gap-10 px-4 py-14 sm:px-6 lg:grid-cols-[1.1fr_0.9fr] lg:py-20">
           <div>
             <div className="inline-flex rounded-full border border-[#d4ad4b]/40 bg-[#d4ad4b]/10 px-3 py-1 text-sm text-[#e9cf86]">Xredible Autopilot · for Indian businesses</div>
             <h1 className="mt-5 text-4xl font-extrabold leading-[1.1] tracking-tight sm:text-5xl">
@@ -83,7 +70,7 @@ export function DemoClient() {
           <div className="mx-auto w-full max-w-sm">
             <div className="rounded-3xl border border-white/10 bg-white p-4 text-[#15171c] shadow-2xl">
               <div className="flex items-center gap-2 text-xs text-[#5d6676]">
-                <span className={`rounded-full px-2 py-0.5 font-medium ${GOAL_STYLE.teach}`}>Teach</span>
+                <span className="rounded-full bg-[#e7eefc] px-2 py-0.5 font-medium text-[#24438a]">Teach</span>
                 <span>Planned for Mon, 9:05 am</span>
               </div>
               {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -100,32 +87,32 @@ export function DemoClient() {
       </section>
 
       {/* Sample week */}
-      <section id="sample" className="mx-auto max-w-6xl px-4 py-14 sm:px-6">
-        <h2 className="text-3xl font-extrabold tracking-tight text-[#10203f]">A sample week for a business like yours</h2>
-        <p className="mt-2 max-w-2xl text-[#5d6676]">Pick a business. Every week mixes posts that teach, tell a story, show proof, start a conversation and, now and then, make an offer.</p>
+      <section id="sample" className="mx-auto max-w-6xl scroll-mt-20 px-4 py-16 sm:px-6">
+        <h2 className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl">A sample week for a business like yours</h2>
+        <p className="mt-2 max-w-2xl text-slate-400">Pick a business. Every week mixes posts that teach, tell a story, show proof, start a conversation and, now and then, make an offer.</p>
         <div className="mt-6 flex flex-wrap gap-2" role="tablist" aria-label="Sample business">
           {DEMO_BRANDS.map((x) => (
-            <button key={x.key} type="button" role="tab" aria-selected={x.key === brand} onClick={() => setBrand(x.key)} className={`rounded-full border px-4 py-2 text-sm font-medium transition ${x.key === brand ? "border-[#10203f] bg-[#10203f] text-white" : "border-[#e6e3da] bg-white hover:border-[#10203f]/40"}`}>
+            <button key={x.key} type="button" role="tab" aria-selected={x.key === brand} onClick={() => setBrand(x.key)} className={`rounded-full border px-4 py-2 text-sm font-medium transition ${x.key === brand ? "border-[#d4ad4b] bg-[#d4ad4b]/15 text-[#f0d68a]" : "border-white/15 text-slate-300 hover:border-white/30 hover:text-white"}`}>
               {x.label}
             </button>
           ))}
         </div>
         <div className="mt-6 grid gap-6 lg:grid-cols-[0.95fr_1.05fr]">
-          <div className="rounded-2xl border border-[#e6e3da] bg-white p-5">
-            <div className="text-sm text-[#5d6676]">Sample brand</div>
-            <div className="text-lg font-bold text-[#10203f]">{b.name}</div>
-            <ul className="mt-4 divide-y divide-[#efece4]">
+          <div className={ui.card + " p-6"}>
+            <div className="text-sm text-slate-400">Sample brand</div>
+            <div className="text-lg font-bold text-white">{b.name}</div>
+            <ul className="mt-4 divide-y divide-white/10">
               {b.week.map((p) => (
                 <li key={p.day} className="flex gap-3 py-3">
-                  <div className="w-10 shrink-0 text-sm font-semibold text-[#10203f]">{p.day}</div>
+                  <div className="w-10 shrink-0 text-sm font-semibold text-[#d4ad4b]">{p.day}</div>
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-1.5 text-xs">
                       <span className={`rounded-full px-2 py-0.5 font-semibold ${GOAL_STYLE[p.goal]}`}>{GOAL_LABEL[p.goal]}</span>
-                      <span className="text-[#5d6676]">
+                      <span className="text-slate-400">
                         {p.channel} · {p.format === "carousel" ? "Carousel" : p.format === "image" ? "Image post" : "Text post"}
                       </span>
                     </div>
-                    <div className="mt-1 text-[15px] leading-snug">{p.hook}</div>
+                    <div className="mt-1 text-[15px] leading-snug text-slate-200">{p.hook}</div>
                   </div>
                 </li>
               ))}
@@ -135,54 +122,46 @@ export function DemoClient() {
             <div className="grid grid-cols-3 gap-3">
               {(["cover", "slide", "offer"] as const).map((v) => (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img key={b.key + v} src={`/api/autopilot/demo?b=${b.key}&v=${v}`} alt={`${b.name}: ${v === "offer" ? "offer post" : v === "cover" ? "carousel cover" : "carousel slide"}`} width={1080} height={1350} loading="lazy" className="aspect-[4/5] w-full rounded-xl border border-[#e6e3da] bg-[#efece4] object-cover" />
+                <img key={b.key + v} src={`/api/autopilot/demo?b=${b.key}&v=${v}`} alt={`${b.name}: ${v === "offer" ? "offer post" : v === "cover" ? "carousel cover" : "carousel slide"}`} width={1080} height={1350} loading="lazy" className="aspect-[4/5] w-full rounded-2xl border border-white/10 bg-white/5 object-cover shadow-2xl" />
               ))}
             </div>
-            <p className="mt-3 text-sm text-[#5d6676]">Carousel cover, a slide and an offer post, drawn by Xredible in this brand&apos;s colours and fonts. Yours use your own logo and colours, in six designs.</p>
+            <p className="mt-4 text-sm text-slate-400">Carousel cover, a slide and an offer post, drawn by Xredible in this brand&apos;s colours and fonts. Yours use your own logo and colours, in six designs.</p>
           </div>
         </div>
       </section>
 
       {/* How it works */}
-      <section id="how" className="border-y border-[#e6e3da] bg-white">
+      <section id="how" className={ui.band + " scroll-mt-20"}>
         <div className="mx-auto max-w-6xl px-4 py-14 sm:px-6">
-          <h2 className="text-3xl font-extrabold tracking-tight text-[#10203f]">How it works</h2>
+          <h2 className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl">How it works</h2>
           <ol className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {STEPS.map((s, i) => (
-              <li key={s.t} className="rounded-2xl border border-[#e6e3da] p-5">
-                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#10203f] font-bold text-[#d4ad4b]">{i + 1}</div>
-                <div className="mt-3 font-semibold text-[#10203f]">{s.t}</div>
-                <p className="mt-1 text-sm leading-relaxed text-[#5d6676]">{s.d}</p>
+              <li key={s.t} className={ui.card + " p-6"}>
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#d4ad4b] font-bold text-[#0b1530]">{i + 1}</div>
+                <div className="mt-4 font-semibold text-white">{s.t}</div>
+                <p className="mt-1 text-sm leading-relaxed text-slate-400">{s.d}</p>
               </li>
             ))}
           </ol>
-          <h3 className="mt-12 text-xl font-bold text-[#10203f]">What&apos;s included</h3>
+          <h3 className="mt-14 text-2xl font-bold text-white">What&apos;s included</h3>
           <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {INCLUDED.map((x) => (
-              <div key={x.t} className="rounded-2xl bg-[#f6f4ee] p-5">
-                <div className="font-semibold text-[#10203f]">{x.t}</div>
-                <p className="mt-1 text-sm leading-relaxed text-[#5d6676]">{x.d}</p>
+              <div key={x.t} className={ui.tile + " p-6"}>
+                <div className="font-semibold text-[#e9cf86]">{x.t}</div>
+                <p className="mt-1 text-sm leading-relaxed text-slate-400">{x.d}</p>
               </div>
             ))}
           </div>
-          <p className="mt-6 text-sm text-[#5d6676]">
-            Plans from ₹999 a month per automation. <Link href="/pricing" className="font-medium text-[#24438a] underline">See pricing</Link>
+          <p className="mt-8 text-sm text-slate-400">
+            Plans from ₹999 a month per automation. <Link href="/pricing" className="font-medium text-[#e9cf86] underline underline-offset-4">See pricing</Link>
           </p>
         </div>
       </section>
 
       <BookDemo />
 
-      <footer className="bg-[#10203f] text-white/70">
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-6 gap-y-2 px-4 py-8 text-sm sm:px-6">
-          <span>© Xredible</span>
-          <Link href="/contact" className="hover:text-white">Contact</Link>
-          <Link href="/terms" className="hover:text-white">Terms</Link>
-          <Link href="/privacy" className="hover:text-white">Privacy</Link>
-          <a href={`https://wa.me/${WHATSAPP}`} className="ml-auto hover:text-white">WhatsApp +91 80859 49384</a>
-        </div>
-      </footer>
-    </main>
+      <SiteFooter />
+    </div>
   )
 }
 
@@ -196,8 +175,8 @@ function BookDemo() {
   const wa = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(`Hi, I'm ${f.name || "interested"}${f.business ? ` from ${f.business}` : ""}. I'd like a demo of Xredible Autopilot.`)}`
 
   return (
-    <section id="book" className="mx-auto max-w-6xl px-4 py-14 sm:px-6">
-      <div className="grid gap-8 rounded-3xl bg-[#10203f] p-6 text-white sm:p-10 lg:grid-cols-[0.8fr_1.2fr]">
+    <section id="book" className="mx-auto max-w-6xl scroll-mt-20 px-4 py-16 sm:px-6">
+      <div className="grid gap-8 rounded-3xl border border-[#d4ad4b]/30 bg-gradient-to-br from-[#d4ad4b]/10 via-white/5 to-[#35c2a7]/5 p-6 text-white sm:p-10 lg:grid-cols-[0.8fr_1.2fr]">
         <div>
           <h2 className="text-3xl font-extrabold tracking-tight">Book a free 15-minute demo</h2>
           <p className="mt-3 leading-relaxed text-white/80">We&apos;ll set up your brand, write your first posts together and show you how approving and posting works. In Hindi or English.</p>
