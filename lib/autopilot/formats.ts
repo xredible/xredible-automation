@@ -1,11 +1,13 @@
 // lib/autopilot/formats.ts
 //
+import { isTemplate, type TemplateKey } from "./brand-presets"
+
 // Safe for client code. Post formats: plain text, one designed image, a carousel of designed
 // slides, or the customer's own photos. A post's design lives as JSON in its `design` column.
 
 export type Format = "text" | "image" | "carousel" | "photo"
 export type Slide = { title: string; body: string }
-export type Design = { headline?: string; slides?: Slide[]; photos?: string[] }
+export type Design = { headline?: string; slides?: Slide[]; photos?: string[]; template?: TemplateKey }
 
 export const FORMAT_LABEL: Record<Format, string> = { text: "Text", image: "Image", carousel: "Carousel", photo: "Your photos" }
 export const LI_FORMATS: Format[] = ["text", "image", "carousel", "photo"]
@@ -39,6 +41,7 @@ export function cleanDesign(d: unknown): Design {
       .slice(0, MAX_SLIDES)
     if (slides.length) out.slides = slides
   }
+  if (isTemplate(o.template)) out.template = o.template
   if (Array.isArray(o.photos)) {
     const photos = o.photos.map((x) => String(x || "").trim()).filter((x) => /^https:\/\/\S+$/i.test(x)).slice(0, MAX_PHOTOS)
     if (photos.length) out.photos = photos

@@ -30,6 +30,7 @@ export type ViewName =
   | "ap-blog"
   | "ap-newsletter"
   | "ap-ideas"
+  | "ap-brand"
   | "settings"
   | "billing"
   | "help"
@@ -161,7 +162,7 @@ export const BUSINESSES: Record<BusinessKey, Business> = {
     subtitle: "Xredible Autopilot",
     icon: "/dashboard/xredible.svg",
     nav: [
-      { group: "", items: ["overview", "schedule", "ap-ideas"] },
+      { group: "", items: ["overview", "schedule", "ap-ideas", "ap-brand"] },
       { group: "Results", items: ["instagram", "facebook", "linkedin", "articles", "newsletter"] },
       { group: "Automations", items: ["ap-linkedin", "ap-meta", "ap-blog", "ap-newsletter"] },
       { group: "Account", items: ["billing", "settings", "help"] },
@@ -193,7 +194,7 @@ export const BUSINESS_KEYS = (Object.keys(BUSINESSES) as BusinessKey[]).filter((
 
 /** Autopilot views that open a tool's own page (settings, connection, review queue) instead of a report. */
 /** Autopilot account pages (not reports). */
-export const ACCOUNT_VIEWS: ViewName[] = ["settings", "billing", "help", "ap-ideas"]
+export const ACCOUNT_VIEWS: ViewName[] = ["settings", "billing", "help", "ap-ideas", "ap-brand"]
 
 /** The Admin group (admins only). */
 export const ADMIN_VIEWS: ViewName[] = ["admin-revenue", "admin-customers", "admin-payments", "admin-coupons", "admin-announce", "admin-health"]

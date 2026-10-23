@@ -6,6 +6,7 @@
 import { useState } from "react"
 import { ArrowDown, ArrowUp, ImagePlus, Plus, X } from "lucide-react"
 import { FORMAT_LABEL, MAX_PHOTOS, MAX_SLIDES, type Design, type Format } from "@/lib/autopilot/formats"
+import { TEMPLATES } from "@/lib/autopilot/brand-presets"
 import { field, small } from "./ui"
 
 export function FormatPicker({ formats, value, busy, onPick }: { formats: Format[]; value: Format; busy: boolean; onPick: (f: Format) => void }) {
@@ -24,6 +25,23 @@ export function FormatPicker({ formats, value, busy, onPick }: { formats: Format
         </button>
       ))}
     </div>
+  )
+}
+
+/** Which of the five templates this post's design uses ("" = the brand kit's choice). */
+export function TemplatePicker({ value, busy, onPick }: { value: string; busy: boolean; onPick: (t: string) => void }) {
+  return (
+    <label className="inline-flex items-center gap-2 text-[12.5px] text-[var(--muted)]">
+      Design
+      <select value={value} disabled={busy} onChange={(e) => onPick(e.target.value)} className="rounded-lg border border-[var(--line)] bg-[var(--panel)] px-2 py-1 text-[12.5px] text-[var(--ink2)]">
+        <option value="">Brand kit</option>
+        {TEMPLATES.map((t) => (
+          <option key={t.key} value={t.key}>
+            {t.name}
+          </option>
+        ))}
+      </select>
+    </label>
   )
 }
 
