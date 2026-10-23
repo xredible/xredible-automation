@@ -6,6 +6,7 @@
 import { addNotice, noticesFor, removeNotice } from "./account"
 import { askJson } from "./ai"
 import { cleanKit, defaultKit, FONTS, isFont, isHex, NICHES, type BrandKit } from "./brand-presets"
+import { safeText } from "./safe-fetch"
 
 export async function savedKit(owner: string): Promise<BrandKit | null> {
   const n = (await noticesFor(owner)).filter((x) => x.kind === "brandkit").sort((a, b) => b.id - a.id)[0]
@@ -67,18 +68,15 @@ const hsl = (h: string) => {
 
 /** Logo, colours, fonts and name from a website's home page and its first stylesheets. */
 export async function readWebsite(url: string): Promise<Partial<BrandKit> & { found: string[] }> {
-  if (!/^https?:\/\/\S+$/i.test(url)) throw new Error("Enter your website address, starting with https://")
-  const u = new URL(url)
-  if (/^(localhost|127\.|10\.|192\.168\.|169\.254\.|0\.)/.test(u.hostname)) throw new Error("That address can't be read.")
-  const get = async (x: string, n: number) => {
-    const r = await fetch(x, { headers: { "User-Agent": "Mozilla/5.0 (compatible; XredibleBot/1.0; +https://www.xredible.in)" }, signal: AbortSignal.timeout(10_000), redirect: "follow" })
-    return (await r.text()).slice(0, n)
-  }
+  if (/^http:\/\//i.test(url)) url = "https://" + url.slice(7)
+  if (!/^https:\/\/\S+$/i.test(url)) throw new Error("Enter your website address, starting with https://")
+  const get = (x: string, n: number) => safeText(x, n, { headers: { "User-Agent": "Mozilla/5.0 (compatible; XredibleBot/1.0; +https://www.xredible.in)" } })
   let html = ""
   try {
     html = await get(url, 600_000)
-  } catch {
-    throw new Error("Couldn't open that website. Check the address and try again.")
+  } catch (e) {
+    const m = e instanceof Error ? e.message : ""
+    throw new Error(/can't be (read|used)/.test(m) ? m : "Couldn't open that website. Check the address and try again.")
   }
   const found: string[] = []
   const out: Partial<BrandKit> & { found: string[] } = { found, website: url }

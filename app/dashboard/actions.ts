@@ -5,7 +5,10 @@ import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
 import { BUSINESS_KEYS } from "@/lib/dashboard/businesses"
 import { gatewaySecret } from "@/lib/dashboard/gateway"
-import { EMAILS, makeToken, readToken, send, verifyUrl } from "@/lib/autopilot/account"
+import { addNotice, EMAILS, makeToken, noticesFor, readToken, removeNotice, send, verifyUrl } from "@/lib/autopilot/account"
+
+const LOCK_AFTER = 8
+const LOCK_MINUTES = 15
 import { noteReferral } from "@/lib/autopilot/billing"
 import { SITE } from "@/lib/autopilot/linkedin"
 import {
@@ -48,13 +51,23 @@ export async function signIn(_prev: FormState, formData: FormData): Promise<Form
   const { users, error } = await listUsers(true)
   if (!users) return { error: error || "Could not reach the account list. Try again in a minute." }
   const u = users.find((x) => x.email === email)
-  const ok = u && u.active && u.passHash ? await verifyPassword(password, u.passHash) : false
-  if (!u || !ok) {
-    noteFailure(email)
+  // A lasting lock for real accounts (the in-memory one above resets whenever Vercel starts a new server).
+  const fails = u ? (await noticesFor(email).catch(() => [])).filter((n) => n.kind === "loginfail") : []
+  const recent = fails.filter((n) => n.at && Date.parse(n.at) > Date.now() - LOCK_MINUTES * 60_000)
+  if (recent.length >= LOCK_AFTER) {
     await slow()
-    return { error: u && !u.active ? "This account has been switched off. Ask your admin." : "That email and password don't match." }
+    return { error: "Too many wrong tries. Wait 15 minutes, or use Forgot password to set a new one." }
+  }
+  const pwOk = u?.passHash ? await verifyPassword(password, u.passHash) : false
+  if (!u || !pwOk || !u.active) {
+    noteFailure(email)
+    if (u && !pwOk) await addNotice(email, "loginfail").catch(() => {})
+    await slow()
+    // Only say an account is switched off to someone who knows its password.
+    return { error: u && pwOk && !u.active ? "This account has been switched off. Ask your admin." : "That email and password don't match." }
   }
   clearFailures(email)
+  for (const n of fails) await removeNotice(n.id).catch(() => {})
   await saveUser({ ...u, lastLogin: new Date().toISOString() })
   await startSession(u)
   redirect("/dashboard")
@@ -180,6 +193,7 @@ export async function resetPassword(_prev: FormState, formData: FormData): Promi
   const err = await saveUser(u)
   if (err) return { error: err }
   clearFailures(email)
+  for (const n of (await noticesFor(email).catch(() => [])).filter((x) => x.kind === "loginfail")) await removeNotice(n.id).catch(() => {})
   await startSession(u)
   redirect("/dashboard")
 }

@@ -11,6 +11,7 @@ import { cleanDesign, isFormat, LI_MIXES, mixKey, parseDesign, type Design, type
 import { carouselPdf, renderCard, safeColor, type Look } from "./render"
 import { kitFor } from "./brandkit"
 import { templateFor } from "./brand-presets"
+import { safeFetch } from "./safe-fetch"
 
 export type LiProfile = {
   id: number
@@ -304,9 +305,13 @@ export async function liLook(post: Pick<LiPost, "id" | "email" | "design">, prof
 }
 
 async function photoBytes(url: string): Promise<{ bytes: ArrayBuffer; type: string }> {
-  const r = await fetch(url, { cache: "no-store" })
+  const { res: r, bytes } = await safeFetch(url, { cache: "no-store" }, 15_000_000).catch(() => {
+    throw new Error("One of your photos couldn't be loaded. Upload it again.")
+  })
   if (!r.ok) throw new Error("One of your photos couldn't be loaded. Upload it again.")
-  return { bytes: await r.arrayBuffer(), type: r.headers.get("content-type") || "image/jpeg" }
+  const type = (r.headers.get("content-type") || "image/jpeg").split(";")[0]
+  if (!/^image\/(png|jpe?g|gif|webp)$/.test(type)) throw new Error("One of your photos isn't a picture file. Upload it again.")
+  return { bytes, type }
 }
 
 /** Uploads what a post needs (designed image, carousel PDF or the customer's photos) before posting. */

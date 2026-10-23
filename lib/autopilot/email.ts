@@ -261,6 +261,25 @@ export async function formFor(owner: string) {
 }
 
 /** Someone filled in the form. Returns what to tell them. */
+// One confirmation email per address per 30 minutes, and at most 120 an hour from one form
+// (per server instance; the daily cap on new pending signups backs this up across instances).
+const confirmSent = new Map<string, number>()
+const confirmHour = new Map<string, { start: number; n: number }>()
+
+function confirmAllowed(owner: string, addr: string): boolean {
+  const now = Date.now()
+  const key = `${owner}|${addr}`
+  if (now - (confirmSent.get(key) || 0) < 30 * 60_000) return false
+  const h = confirmHour.get(owner)
+  const hour = !h || now - h.start > 3_600_000 ? { start: now, n: 0 } : h
+  if (hour.n >= 120) return false
+  hour.n += 1
+  confirmHour.set(owner, hour)
+  confirmSent.set(key, now)
+  if (confirmSent.size > 20_000) for (const [k, t] of confirmSent) if (now - t > 30 * 60_000) confirmSent.delete(k)
+  return true
+}
+
 export async function join(owner: string, email: string, name: string): Promise<"confirm" | "done"> {
   const ff = await formFor(owner)
   if (!ff || !ff.channel.connected) throw new Error("This list isn't accepting signups yet.")
@@ -285,6 +304,9 @@ export async function join(owner: string, email: string, name: string): Promise<
     await enroll(owner, c, ["join", ...tags.map((t) => `tag:${t}`)])
     return "done"
   }
+  // Someone re-submitting the same address (or a script doing it for them) mustn't turn the
+  // customer's form into a way to flood a stranger's inbox.
+  if (!confirmAllowed(owner, addr)) return "confirm"
   const smtp = smtpOf(ff.channel)
   const t = transport(smtp)
   const nl = String(ff.channel.settings.name || smtp.fromName || "our newsletter")
