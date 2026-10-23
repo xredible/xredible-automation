@@ -3,6 +3,7 @@
 // LinkedIn Autopilot's own page inside a customer's dashboard (Automations → LinkedIn Autopilot):
 // plan + usage, profile, Connect LinkedIn, and the posts to review.
 
+import { BrandKitSummary } from "./brand-kit"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { Check, ExternalLink, PenLine, RefreshCw, Sparkles } from "lucide-react"
 import { Linkedin as LinkedinIcon } from "@/components/dashboard/brand"
@@ -176,16 +177,7 @@ function ProfileCard({ profile, busy, onSave }: { profile: Profile | null; busy:
           ))}
         </select>
       </label>
-      <div className="mt-3 grid grid-cols-[1fr_auto] gap-3">
-        <label className="block">
-          <span className={small}>Name on your images and carousels</span>
-          <input value={f.brand} onChange={set("brand")} maxLength={60} className={field} placeholder="Your name or brand" />
-        </label>
-        <label className="block">
-          <span className={small}>Colour</span>
-          <input type="color" value={f.color} onChange={set("color")} className="mt-1 h-[38px] w-16 cursor-pointer rounded-lg border border-[var(--line)] bg-[var(--panel)] p-1" />
-        </label>
-      </div>
+      <BrandKitSummary what="LinkedIn images and carousels" />
       <div className="mt-4 flex items-center gap-3">
         <button type="submit" className={primary} disabled={busy}>
           Save

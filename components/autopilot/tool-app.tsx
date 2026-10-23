@@ -3,6 +3,7 @@
 // Customer pages for Instagram + Facebook Autopilot, Blog Writer for WordPress and
 // Email Newsletter Autopilot: plan, settings, connection, subscribers and the review queue.
 
+import { BrandKitSummary } from "./brand-kit"
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react"
 import { Check, ExternalLink, PenLine, RefreshCw, Send, Sparkles, Trash2 } from "lucide-react"
 import { PRODUCTS, type ProductKey, type Subscription } from "@/lib/autopilot/products"
@@ -224,18 +225,7 @@ function SettingsCard({ product, settings, busy, act }: { product: Tool; setting
           </label>
         </div>
       ) : null}
-      {product === "meta" ? (
-        <div className="mt-3 grid grid-cols-[1fr_auto] gap-3">
-          <label className="block">
-            <span className={small}>Brand name (shown on the post design)</span>
-            <input required value={f.brand} onChange={set("brand")} className={field} placeholder="e.g. Sweet Crumbs Bakery" />
-          </label>
-          <label className="block">
-            <span className={small}>Brand colour</span>
-            <input type="color" value={String(f.color)} onChange={set("color")} className={field + " h-[38px] w-16 p-1"} />
-          </label>
-        </div>
-      ) : null}
+      {product === "meta" ? <BrandKitSummary what="Instagram and Facebook designs" /> : null}
       <label className="mt-3 block">
         <span className={small}>{c.about}</span>
         <textarea required value={f.about} onChange={set("about")} rows={3} className={field} placeholder={c.aboutHint} />
@@ -329,16 +319,11 @@ function SettingsCard({ product, settings, busy, act }: { product: Tool; setting
             <span className={small}>News for the next issue (optional)</span>
             <textarea value={f.notes} onChange={set("notes")} rows={2} className={field} placeholder="e.g. New batch starts 1 Nov. Diwali offer: 20% off the 8-week plan." />
           </label>
-          <div className="mt-3 grid grid-cols-[1fr_auto] gap-3">
-            <label className="block">
-              <span className={small}>Business address (shown at the bottom, required by law)</span>
-              <input required value={f.address} onChange={set("address")} className={field} placeholder="Business name, street, city, PIN" />
-            </label>
-            <label className="block">
-              <span className={small}>Colour</span>
-              <input type="color" value={String(f.color)} onChange={set("color")} className={field + " h-[38px] w-16 p-1"} />
-            </label>
-          </div>
+          <label className="mt-3 block">
+            <span className={small}>Business address (shown at the bottom, required by law)</span>
+            <input required value={f.address} onChange={set("address")} className={field} placeholder="Business name, street, city, PIN" />
+          </label>
+          <BrandKitSummary what="emails" />
         </>
       ) : null}
       <div className="mt-4 flex items-center gap-3">

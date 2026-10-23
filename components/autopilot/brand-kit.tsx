@@ -256,3 +256,55 @@ export function BrandKitView() {
     </div>
   )
 }
+
+/** Compact read-only view of the saved Brand kit, shown inside each tool's settings instead of separate name and colour boxes. */
+export function BrandKitSummary({ what = "images and carousels" }: { what?: string }) {
+  const [kit, setKit] = useState<Kit | null>(null)
+  const [failed, setFailed] = useState(false)
+  useEffect(() => {
+    let live = true
+    call().then((r) => {
+      if (!live) return
+      if (r.ok && r.kit) setKit(r.kit)
+      else setFailed(true)
+    })
+    return () => {
+      live = false
+    }
+  }, [])
+  const href = "/dashboard?biz=autopilot&view=ap-brand"
+  if (failed) return null
+  if (!kit) return <div className="mt-3 h-[74px] animate-pulse rounded-lg bg-[var(--chip)]" />
+  return (
+    <div className="mt-3 rounded-lg border border-[var(--line)] bg-[var(--panel)] p-3">
+      <div className="flex flex-wrap items-center gap-3">
+        <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-[var(--line)] bg-white p-1">
+          {kit.logo ? (
+            <img src={kit.logo} alt="Your logo" className="max-h-full max-w-full object-contain" />
+          ) : (
+            <span className="text-lg font-bold" style={{ color: kit.primary }}>
+              {(kit.name || "?").slice(0, 1).toUpperCase()}
+            </span>
+          )}
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="truncate text-sm font-semibold text-[var(--ink)]">{kit.name || "No brand name yet"}</div>
+          <div className="mt-1 flex flex-wrap items-center gap-1.5 text-[12px] text-[var(--muted)]">
+            {[kit.primary, kit.secondary, kit.accent].map((c, i) => (
+              <span key={i} title={c} className="inline-block h-4 w-4 rounded border border-[var(--line)]" style={{ background: c }} />
+            ))}
+            <span className="ml-1 truncate">
+              {kit.headFont} · {kit.bodyFont}
+            </span>
+          </div>
+        </div>
+        <a href={href} className={btn}>
+          {kit.saved ? "Edit brand kit" : "Set up brand kit"}
+        </a>
+      </div>
+      <p className="!mb-0 mt-2 text-[12px] text-[var(--muted)]">
+        {kit.saved ? `Your ${what} use your Brand kit: logo, colours and fonts.` : `Your ${what} use these starting colours until you save a Brand kit.`}
+      </p>
+    </div>
+  )
+}
