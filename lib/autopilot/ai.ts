@@ -77,3 +77,28 @@ export async function rewrite(o: { kind: string; text: string; title?: string; h
   if (text.length < 20) throw new Error("The rewrite came back empty. Try again.")
   return { text: text.slice(0, o.limit), ...(o.title !== undefined && out.title ? { title: String(out.title).trim().slice(0, 120) } : {}) }
 }
+
+// ---------- designs for image and carousel posts ----------
+
+export const SLIDES_RULES =
+  "Slide 1 is the cover: a scroll-stopping title of at most 8 words and a subtitle of at most 14 words. Then 4 to 6 slides with one idea each: a title of at most 7 words and a body of at most 32 words. The last slide is the takeaway or call to action (title at most 7 words, body at most 25 words). Same language as the post. Plain text, no hashtags, no emojis, no numbering in titles."
+
+/** A short headline for a designed image, from a post's text. */
+export async function makeHeadline(text: string): Promise<string> {
+  const o = await askJson<{ headline?: string }>(
+    `Write the words printed big on an image that goes with this social media post: 4 to 10 words, max 70 characters, a strong hook or the key tip. Same language as the post. No hashtags, emojis or quotes.\n\nPOST:\n${text.slice(0, 3000)}\n\nReturn JSON only: {"headline": "..."}`,
+  )
+  const h = String(o.headline || "").replace(/[#*"]/g, "").trim()
+  if (h.length < 3) throw new Error("Couldn't write a headline. Try again.")
+  return h.slice(0, 90)
+}
+
+/** Carousel slides from a post's text. */
+export async function makeSlides(text: string): Promise<{ title: string; body: string }[]> {
+  const o = await askJson<{ slides?: { title?: string; body?: string }[] }>(
+    `Turn this social media post into a swipeable carousel. ${SLIDES_RULES} ${HONEST}\n\nPOST:\n${text.slice(0, 4000)}\n\nReturn JSON only: {"slides": [{"title": "...", "body": "..."}]}`,
+  )
+  const slides = (o.slides || []).map((s) => ({ title: String(s.title || "").trim().slice(0, 80), body: String(s.body || "").trim().slice(0, 260) })).filter((s) => s.title || s.body)
+  if (slides.length < 3) throw new Error("Couldn't make the slides. Try again.")
+  return slides.slice(0, 10)
+}

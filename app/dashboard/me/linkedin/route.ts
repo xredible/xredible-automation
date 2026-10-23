@@ -12,11 +12,23 @@ import { razorpayConfigured, razorpayKeyId } from "@/lib/autopilot/razorpay"
 import { tokenKeySet } from "@/lib/autopilot/crypto"
 import { upiOptions } from "@/lib/autopilot/upi"
 import { ownerKey } from "@/lib/autopilot/brands"
-import { rememberVoice, rewrite, voiceOf } from "@/lib/autopilot/ai"
+import { makeHeadline, makeSlides, rememberVoice, rewrite, voiceOf } from "@/lib/autopilot/ai"
+import { liCardUrl } from "@/lib/autopilot/tools"
+import { isFormat, type Format } from "@/lib/autopilot/formats"
+import type { LiPost } from "@/lib/autopilot/service"
 
 export const runtime = "nodejs"
 export const dynamic = "force-dynamic"
 export const maxDuration = 120
+
+/** The images a post will show (designed image, carousel slides or the customer's photos). */
+function previews(p: LiPost): string[] {
+  const v = p.updatedAt || ""
+  if (p.format === "image") return p.design.photos?.length ? [p.design.photos[0]] : [liCardUrl(p.id, 0, v)]
+  if (p.format === "carousel") return (p.design.slides || []).map((_, n) => liCardUrl(p.id, n, v))
+  if (p.format === "photo") return p.design.photos || []
+  return []
+}
 
 async function state(email: string) {
   const [sub, profile, posts, upi] = await Promise.all([ensureTrial(email, "linkedin"), profileFor(email), postsFor(email), upiOptions("linkedin", email)])
@@ -24,7 +36,7 @@ async function state(email: string) {
     ok: true,
     sub,
     profile: viewProfile(profile),
-    posts: posts.filter((p) => p.status !== "rejected"),
+    posts: posts.filter((p) => p.status !== "rejected").map((p) => ({ ...p, previews: previews(p) })),
     ready: { linkedin: linkedinConfigured() && tokenKeySet(), payments: razorpayConfigured(), razorpayKey: razorpayKeyId(), upi },
   }
 }
@@ -62,6 +74,16 @@ export async function POST(request: Request) {
       await requestDrafts(owner, Math.min(5, Math.max(1, Number(b.count) || 3)))
     } else if (op === "disconnect") {
       await disconnectLinkedIn(owner)
+    } else if (op === "format") {
+      // Switch a draft's type; writes the image headline or the carousel slides it needs.
+      const post = (await postsFor(owner)).find((p) => p.id === Number(b.id))
+      if (!post) throw new Error("That post isn't yours.")
+      if (!isFormat(b.format)) throw new Error("Pick a post type.")
+      const format: Format = b.format
+      const design = { ...post.design }
+      if (format === "image" && !design.headline && !design.photos?.length) design.headline = await makeHeadline(post.text)
+      if (format === "carousel" && !(design.slides && design.slides.length >= 2)) design.slides = await makeSlides(post.text)
+      await postAction(owner, { op: "design", id: post.id, format, design })
     } else if (op === "rewrite") {
       // A suggestion only: the dashboard shows it in the editor and nothing changes until they save.
       const post = (await postsFor(owner)).find((p) => p.id === Number(b.id))

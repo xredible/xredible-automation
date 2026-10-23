@@ -5,6 +5,7 @@
 // n8n isn't involved here: the queue comes from the Autopilot data tables, and the numbers
 // from the customer's connected Instagram / Facebook (Graph API) and our own newsletter events.
 
+import { isFormat, parseDesign } from "./formats"
 import type { Column, ItemRow, Kpi, Point, QueueData, QueueItem, Range, SectionData, ToolSummary } from "@/lib/dashboard/types"
 import { rows } from "./db"
 import { open } from "./crypto"
@@ -108,6 +109,8 @@ async function itemsOf(email: string): Promise<Item[]> {
     ref: String(r.ref || ""),
     progress: Number(r.progress) || 0,
     error: String(r.error || ""),
+    format: isFormat(r.format) ? r.format : r.product === "meta" ? "image" : "text",
+    design: parseDesign(r.design),
     createdAt: (r.createdAt as string) || undefined,
   }))
 }

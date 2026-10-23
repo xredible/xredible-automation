@@ -6,7 +6,9 @@
 import { insert, rows, update, type Table } from "./db"
 import { open, seal } from "./crypto"
 import { planOf, PRODUCTS, canPublish, isProduct, type PlanKey, type ProductKey, type Subscription } from "./products"
-import { publishPost, postUrl } from "./linkedin"
+import { liUpload, publishPost, postUrl, type LiMedia } from "./linkedin"
+import { cleanDesign, isFormat, LI_MIXES, mixKey, parseDesign, type Design, type Format } from "./formats"
+import { carouselPdf, renderCard, safeColor, type Look } from "./render"
 
 export type LiProfile = {
   id: number
@@ -23,6 +25,8 @@ export type LiProfile = {
   tokenEnc: string
   tokenExpires: string | null
   connected: boolean
+  /** Post designs: format mix the writer aims for, brand colour and name on images. */
+  prefs: { mix: string; color: string; brand: string }
 }
 
 export type LiPost = {
@@ -35,7 +39,10 @@ export type LiPost = {
   postedAt: string | null
   postUrn: string
   error: string
+  format: Format
+  design: Design
   createdAt?: string
+  updatedAt?: string
 }
 
 /** What the browser gets: never the token. */
@@ -122,7 +129,16 @@ function asProfile(r: Record<string, unknown>): LiProfile {
     tokenEnc: String(r.tokenEnc || ""),
     tokenExpires: (r.tokenExpires as string) || null,
     connected: r.connected === true,
+    prefs: asPrefs(r.prefs),
   }
+}
+
+function asPrefs(raw: unknown): LiProfile["prefs"] {
+  let o: Record<string, unknown> = {}
+  try {
+    o = JSON.parse(String(raw || "{}")) || {}
+  } catch {}
+  return { mix: mixKey(LI_MIXES, o.mix), color: safeColor(o.color, "#10203f"), brand: String(o.brand || "").slice(0, 60) }
 }
 
 export async function profileFor(email: string): Promise<LiProfile | null> {
@@ -150,11 +166,12 @@ export async function saveProfile(email: string, input: Record<string, unknown>)
     language: ["English", "Hinglish", "Hindi"].includes(String(input.language)) ? String(input.language) : "English",
     postsPerWeek: Math.min(7, Math.max(1, num(input.postsPerWeek, 3))),
     postTime: /^\d{2}:\d{2}$/.test(String(input.postTime)) ? String(input.postTime) : "09:05",
+    prefs: JSON.stringify({ mix: mixKey(LI_MIXES, input.mix), color: safeColor(input.color, "#10203f"), brand: clip(input.brand, 60) }),
   }
   const have = await profileFor(email)
   if (have) {
     await update("li_profiles", have.id, fields)
-    return { ...have, ...fields }
+    return { ...have, ...fields, prefs: asPrefs(fields.prefs) }
   }
   return asProfile(await insert("li_profiles", { email, ...fields, liName: "", liSub: "", tokenEnc: "", connected: false }))
 }
@@ -196,7 +213,10 @@ function asPost(r: Record<string, unknown>): LiPost {
     postedAt: (r.postedAt as string) || null,
     postUrn: String(r.postUrn || ""),
     error: String(r.error || ""),
+    format: isFormat(r.format) ? r.format : "text",
+    design: parseDesign(r.design),
     createdAt: (r.createdAt as string) || undefined,
+    updatedAt: (r.updatedAt as string) || undefined,
   }
 }
 
@@ -227,7 +247,13 @@ export async function postAction(email: string, input: Record<string, unknown>) 
     const text = String(input.text ?? "").trim()
     if (text.length < 20) throw new Error("A post needs at least a couple of sentences.")
     if (text.length > 2900) throw new Error("LinkedIn posts can be at most 3,000 characters.")
-    return update("li_posts", id, { text })
+    const extra = input.design !== undefined ? { design: JSON.stringify(cleanDesign(input.design)) } : {}
+    return update("li_posts", id, { text, ...extra })
+  }
+  if (op === "design") {
+    const format = isFormat(input.format) ? input.format : post.format
+    const design = input.design !== undefined ? cleanDesign(input.design) : post.design
+    return update("li_posts", id, { format, design: JSON.stringify(design) })
   }
   if (op === "reschedule") {
     const when = String(input.when || "")
@@ -255,7 +281,8 @@ export async function publishOne(id: number): Promise<{ ok: boolean; status: str
   try {
     if (!prof || !prof.connected || !prof.tokenEnc) throw new Error("LinkedIn isn't connected. Connect LinkedIn on the Autopilot page.")
     if (prof.tokenExpires && Date.parse(prof.tokenExpires) < Date.now()) throw new Error("LinkedIn access expired. Reconnect LinkedIn.")
-    const urn = await publishPost(open(prof.tokenEnc), prof.liSub, post.text)
+    const token = open(prof.tokenEnc)
+    const urn = await publishPost(token, prof.liSub, post.text, await liMedia(post, prof, token))
     await update("li_posts", id, { status: "posted", postedAt: new Date().toISOString(), postUrn: urn, error: "" })
     // Count it (re-read so two posts at once don't overwrite each other's count by much).
     const fresh = await subFor(post.email, "linkedin")
@@ -266,6 +293,45 @@ export async function publishOne(id: number): Promise<{ ok: boolean; status: str
     await update("li_posts", id, { status: "failed", error: msg.slice(0, 300) })
     return { ok: false, status: "failed", error: msg }
   }
+}
+
+/** The look of a LinkedIn customer's designs. */
+export const liLook = (prof: LiProfile | null): Look => ({ color: prof?.prefs.color || "#10203f", brand: prof?.prefs.brand || prof?.liName || "" })
+
+async function photoBytes(url: string): Promise<{ bytes: ArrayBuffer; type: string }> {
+  const r = await fetch(url, { cache: "no-store" })
+  if (!r.ok) throw new Error("One of your photos couldn't be loaded. Upload it again.")
+  return { bytes: await r.arrayBuffer(), type: r.headers.get("content-type") || "image/jpeg" }
+}
+
+/** Uploads what a post needs (designed image, carousel PDF or the customer's photos) before posting. */
+async function liMedia(post: LiPost, prof: LiProfile, token: string): Promise<LiMedia | undefined> {
+  const d = post.design
+  const alt = (d.headline || post.topic || post.text.split("\n")[0] || "").slice(0, 200)
+  if (post.format === "image") {
+    if (d.photos?.[0]) {
+      const p = await photoBytes(d.photos[0])
+      return { kind: "image", urn: await liUpload(token, prof.liSub, "images", p.bytes, p.type), alt }
+    }
+    const png = await renderCard({ kind: "single", title: d.headline || post.topic || post.text.split("\n")[0].slice(0, 90) }, liLook(prof))
+    return { kind: "image", urn: await liUpload(token, prof.liSub, "images", png, "image/png"), alt }
+  }
+  if (post.format === "carousel") {
+    if (!d.slides || d.slides.length < 2) throw new Error("This carousel has no slides. Open it and add slides, or switch it to Text.")
+    const pdf = await carouselPdf(d.slides, liLook(prof))
+    return { kind: "document", urn: await liUpload(token, prof.liSub, "documents", pdf, "application/pdf"), title: d.slides[0].title || post.topic }
+  }
+  if (post.format === "photo") {
+    const photos = d.photos || []
+    if (!photos.length) throw new Error("Add your photos to this post first, or switch it to another type.")
+    const urns: string[] = []
+    for (const url of photos) {
+      const p = await photoBytes(url)
+      urns.push(await liUpload(token, prof.liSub, "images", p.bytes, p.type))
+    }
+    return urns.length === 1 ? { kind: "image", urn: urns[0], alt } : { kind: "images", urns, alt }
+  }
+  return undefined
 }
 
 export type { Table }

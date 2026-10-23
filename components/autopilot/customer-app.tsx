@@ -9,6 +9,8 @@ import { Linkedin as LinkedinIcon } from "@/components/dashboard/brand"
 import type { Subscription } from "@/lib/autopilot/products"
 import { card, field, ghost, istTime, Notice, PlanCard, primary, small, toLocalInput, type Upi } from "./ui"
 import { RewriteMenu } from "./rewrite"
+import { DesignFields, DesignPreview, FormatPicker } from "./design-editor"
+import { LI_FORMATS, LI_MIXES, type Design, type Format } from "@/lib/autopilot/formats"
 
 type Profile = {
   about: string
@@ -22,8 +24,9 @@ type Profile = {
   connected: boolean
   tokenExpiringSoon: boolean
   tokenExpires: string | null
+  prefs: { mix: string; color: string; brand: string }
 }
-type Post = { id: number; status: "draft" | "approved" | "posted" | "failed" | "blocked"; text: string; topic: string; scheduledAt: string | null; postedAt: string | null; postUrn: string; error: string }
+type Post = { id: number; status: "draft" | "approved" | "posted" | "failed" | "blocked"; text: string; topic: string; scheduledAt: string | null; postedAt: string | null; postUrn: string; error: string; format: Format; design: Design; previews: string[] }
 type LiState = { ok: true; sub: Subscription; profile: Profile | null; posts: Post[]; ready: { linkedin: boolean; payments: boolean; razorpayKey: string; upi: Upi | null } }
 
 // ---------- LinkedIn Autopilot ----------
@@ -101,6 +104,9 @@ function ProfileCard({ profile, busy, onSave }: { profile: Profile | null; busy:
     language: profile?.language || "English",
     postsPerWeek: profile?.postsPerWeek || 3,
     postTime: profile?.postTime || "09:05",
+    mix: profile?.prefs?.mix || "balanced",
+    color: profile?.prefs?.color || "#10203f",
+    brand: profile?.prefs?.brand || "",
   })
   const [saved, setSaved] = useState(false)
   const set = (k: keyof typeof f) => (e: { target: { value: string } }) => setF({ ...f, [k]: k === "postsPerWeek" ? Number(e.target.value) : e.target.value })
@@ -158,6 +164,26 @@ function ProfileCard({ profile, busy, onSave }: { profile: Profile | null; busy:
         <label className="block">
           <span className={small}>Time (India)</span>
           <input type="time" value={f.postTime} onChange={set("postTime")} className={field} />
+        </label>
+      </div>
+      <label className="mt-3 block">
+        <span className={small}>Mix of post types</span>
+        <select value={f.mix} onChange={set("mix")} className={field}>
+          {LI_MIXES.map((m) => (
+            <option key={m.key} value={m.key}>
+              {m.label}
+            </option>
+          ))}
+        </select>
+      </label>
+      <div className="mt-3 grid grid-cols-[1fr_auto] gap-3">
+        <label className="block">
+          <span className={small}>Name on your images and carousels</span>
+          <input value={f.brand} onChange={set("brand")} maxLength={60} className={field} placeholder="Your name or brand" />
+        </label>
+        <label className="block">
+          <span className={small}>Colour</span>
+          <input type="color" value={f.color} onChange={set("color")} className="mt-1 h-[38px] w-16 cursor-pointer rounded-lg border border-[var(--line)] bg-[var(--panel)] p-1" />
         </label>
       </div>
       <div className="mt-4 flex items-center gap-3">
@@ -272,6 +298,7 @@ function Section({ title, posts, busy, act }: { title: string; posts: Post[]; bu
 function PostItem({ p, busy, act }: { p: Post; busy: boolean; act: (b: Record<string, unknown>) => Promise<boolean> }) {
   const [editing, setEditing] = useState(false)
   const [text, setText] = useState(p.text)
+  const [design, setDesign] = useState<Design>(p.design)
   const [when, setWhen] = useState(toLocalInput(p.scheduledAt))
   const [moving, setMoving] = useState(false)
   const open = p.status !== "posted"
@@ -286,20 +313,32 @@ function PostItem({ p, busy, act }: { p: Post; busy: boolean; act: (b: Record<st
           </a>
         ) : null}
       </div>
+      {open && !editing ? (
+        <div className="mt-2">
+          <FormatPicker formats={LI_FORMATS} value={p.format} busy={busy} onPick={(format) => act({ op: "format", id: p.id, format })} />
+        </div>
+      ) : null}
       {editing ? (
-        <textarea value={text} onChange={(e) => setText(e.target.value)} rows={10} className={field + " mt-2 font-[inherit] leading-relaxed"} />
+        <div className="mt-2 space-y-3">
+          <textarea value={text} onChange={(e) => setText(e.target.value)} rows={10} className={field + " font-[inherit] leading-relaxed"} aria-label="Post text" />
+          <DesignFields format={p.format} design={design} onChange={setDesign} />
+        </div>
       ) : (
-        <div className="mt-2 whitespace-pre-wrap text-sm leading-relaxed">{p.text}</div>
+        <>
+          {p.format === "photo" && !p.previews.length ? <div className="mt-3 text-[13px] text-[var(--muted)]">Tap Edit to add your photos.</div> : null}
+          <DesignPreview urls={p.previews} alt={p.design.headline || p.topic} />
+          <div className="mt-2 whitespace-pre-wrap text-sm leading-relaxed">{p.text}</div>
+        </>
       )}
       {p.error && p.status !== "posted" ? <div className="mt-2"><Notice tone="bad">{p.error}</Notice></div> : null}
       {open ? (
         <div className="mt-3 flex flex-wrap items-center gap-2">
           {editing ? (
             <>
-              <button type="button" className={primary} disabled={busy} onClick={async () => (await act({ op: "edit", id: p.id, text })) && setEditing(false)}>
+              <button type="button" className={primary} disabled={busy} onClick={async () => (await act({ op: "edit", id: p.id, text, design })) && setEditing(false)}>
                 Save text
               </button>
-              <button type="button" className={ghost} onClick={() => { setText(p.text); setEditing(false) }}>
+              <button type="button" className={ghost} onClick={() => { setText(p.text); setDesign(p.design); setEditing(false) }}>
                 Cancel
               </button>
               <RewriteMenu endpoint="/dashboard/me/linkedin" id={p.id} text={text} onResult={(r) => setText(r.text)} />
@@ -315,7 +354,7 @@ function PostItem({ p, busy, act }: { p: Post; busy: boolean; act: (b: Record<st
                   Hold back
                 </button>
               )}
-              <button type="button" className={ghost} onClick={() => setEditing(true)}>
+              <button type="button" className={ghost} onClick={() => { setDesign(p.design); setEditing(true) }}>
                 <PenLine className="h-3.5 w-3.5" /> Edit
               </button>
               <RewriteMenu endpoint="/dashboard/me/linkedin" id={p.id} text={p.text} onResult={(r) => { setText(r.text); setEditing(true) }} />
