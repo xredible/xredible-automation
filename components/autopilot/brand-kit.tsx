@@ -179,19 +179,16 @@ export function BrandKitView() {
         </Card>
       </div>
 
-      <Card
-        title="Design templates"
-        sub="Tap one to use it for every post, or rotate all five for variety. You can still change the design on any single post."
-        action={
-          <div className="inline-flex rounded-lg border border-[var(--line)] p-0.5 text-[12.5px]" role="group" aria-label="Preview">
+      <Card title="Design templates" sub="Tap one to use it for every post, or rotate all five for variety. You can still change the design on any single post.">
+        <div className="mb-3 flex flex-wrap items-center gap-2">
+          <div className="inline-flex max-w-full overflow-x-auto rounded-lg border border-[var(--line)] p-0.5 text-[12.5px]" role="group" aria-label="Preview">
             {(["single", "cover", "slide"] as const).map((v) => (
-              <button key={v} type="button" aria-pressed={variant === v} onClick={() => setVariant(v)} className={`rounded-md px-2.5 py-1 font-medium ${variant === v ? "bg-[var(--nav)] text-white" : "text-[var(--muted)]"}`}>
+              <button key={v} type="button" aria-pressed={variant === v} onClick={() => setVariant(v)} className={`whitespace-nowrap rounded-md px-2.5 py-1 font-medium ${variant === v ? "bg-[var(--nav)] text-white" : "text-[var(--muted)]"}`}>
                 {v === "single" ? "Image" : v === "cover" ? "Carousel cover" : "Carousel slide"}
               </button>
             ))}
           </div>
-        }
-      >
+        </div>
         <button type="button" onClick={() => set({ template: "rotate" })} aria-pressed={kit.template === "rotate"} className={`mb-3 inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-[13px] font-medium ${kit.template === "rotate" ? "border-[var(--brand)] bg-[var(--brand-soft)] text-[var(--brand)]" : "border-[var(--line)] text-[var(--muted)]"}`}>
           {kit.template === "rotate" ? <Check className="h-4 w-4" /> : null} Rotate all five templates (recommended)
         </button>
@@ -217,9 +214,10 @@ export function BrandKitView() {
         </div>
       </Card>
 
-      <div className="sticky bottom-3 z-10 flex flex-wrap items-center gap-3 rounded-xl border border-[var(--line)] bg-[var(--panel)] px-4 py-3 shadow-sm">
-        <span className="text-sm text-[var(--muted)]">{kit.saved ? "Changes apply to every design from now on, including drafts not yet posted." : "Not saved yet: your designs use these defaults until you save."}</span>
-        <button type="button" className={primaryBtn + " ml-auto"} disabled={!!busy} onClick={() => run("save", { op: "save", kit }, () => "Saved. Your next designs use this brand kit.")}>
+      {/* Leaves room on the right for the chat button on phones. */}
+      <div className="sticky bottom-3 z-10 mr-[76px] flex flex-col gap-2 rounded-xl border border-[var(--line)] bg-[var(--panel)] px-4 py-3 shadow-sm sm:mr-[88px] sm:flex-row sm:items-center sm:gap-3">
+        <span className="text-[13px] text-[var(--muted)]">{msg && kit.saved ? msg : kit.saved ? "Changes apply to every design, including drafts not yet posted." : "Not saved yet: your designs use these defaults until you save."}</span>
+        <button type="button" className={primaryBtn + " justify-center sm:ml-auto sm:shrink-0"} disabled={!!busy} onClick={() => run("save", { op: "save", kit }, () => "Saved. Your next designs use this brand kit.")}>
           {busy === "save" ? "Saving…" : "Save brand kit"}
         </button>
       </div>
