@@ -28,6 +28,18 @@ export async function GET(request: Request) {
     raw = JSON.parse(Buffer.from(q.get("k") || "", "base64url").toString("utf8") || "{}")
   } catch {}
   const kit = cleanKit(raw, defaultKit())
-  const png = await renderCard(SAMPLE[q.get("v") || "single"] || SAMPLE.single, { kit: { ...kit, name: kit.name || "Your brand" }, template: t })
-  return new Response(png, { headers: { "Content-Type": "image/png", "Cache-Control": "private, max-age=600" } })
+  const card = SAMPLE[q.get("v") || "single"] || SAMPLE.single
+  const png = (k: typeof kit) => renderCard(card, { kit: { ...k, name: k.name || "Your brand" }, template: t })
+  try {
+    return new Response(await png(kit), { headers: { "Content-Type": "image/png", "Cache-Control": "private, max-age=600" } })
+  } catch (e) {
+    console.error("brand preview failed", t, e)
+    try {
+      // Without the logos, in case one of them is what broke it.
+      return new Response(await png({ ...kit, logo: "", logoDark: "" }), { headers: { "Content-Type": "image/png", "Cache-Control": "no-store", "X-Preview": "no-logo" } })
+    } catch (e2) {
+      console.error("brand preview failed again", t, e2)
+      return new Response(`Preview failed: ${e2 instanceof Error ? e2.message : "unknown error"}`, { status: 500, headers: { "Content-Type": "text/plain; charset=utf-8", "Cache-Control": "no-store" } })
+    }
+  }
 }

@@ -74,24 +74,26 @@ export function DesignPreview({ urls, alt }: { urls: string[]; alt: string }) {
 }
 
 /** Shrinks a photo to at most 1600 px as JPEG, then uploads it. */
-async function upload(file: File): Promise<string> {
+/** Photos are shrunk to a 1600 px JPEG; logos to a 1000 px PNG so a transparent background stays transparent. */
+async function upload(file: File, logo = false): Promise<string> {
   const bmp = await createImageBitmap(file)
-  const scale = Math.min(1, 1600 / Math.max(bmp.width, bmp.height))
+  const scale = Math.min(1, (logo ? 1000 : 1600) / Math.max(bmp.width, bmp.height))
   const canvas = document.createElement("canvas")
   canvas.width = Math.round(bmp.width * scale)
   canvas.height = Math.round(bmp.height * scale)
   canvas.getContext("2d")!.drawImage(bmp, 0, 0, canvas.width, canvas.height)
-  const blob = await new Promise<Blob | null>((r) => canvas.toBlob(r, "image/jpeg", 0.86))
-  if (!blob) throw new Error("Couldn't read that photo.")
+  const type = logo ? "image/png" : "image/jpeg"
+  const blob = await new Promise<Blob | null>((r) => canvas.toBlob(r, type, 0.86))
+  if (!blob) throw new Error("Couldn't read that picture.")
   const fd = new FormData()
-  fd.append("file", new File([blob], "photo.jpg", { type: "image/jpeg" }))
+  fd.append("file", new File([blob], logo ? "logo.png" : "photo.jpg", { type }))
   const res = await fetch("/dashboard/me/upload", { method: "POST", body: fd })
   const j = (await res.json().catch(() => ({}))) as { ok?: boolean; url?: string; error?: string }
   if (!j.ok || !j.url) throw new Error(j.error || "Upload failed.")
   return j.url
 }
 
-export function PhotoPicker({ photos, max, onChange }: { photos: string[]; max: number; onChange: (p: string[]) => void }) {
+export function PhotoPicker({ photos, max, onChange, logo = false, dark = false }: { photos: string[]; max: number; onChange: (p: string[]) => void; logo?: boolean; dark?: boolean }) {
   const [busy, setBusy] = useState(false)
   const [err, setErr] = useState("")
   const add = async (files: FileList | null) => {
@@ -101,7 +103,7 @@ export function PhotoPicker({ photos, max, onChange }: { photos: string[]; max: 
     const out = [...photos]
     for (const f of Array.from(files).slice(0, max - photos.length)) {
       try {
-        out.push(await upload(f))
+        out.push(await upload(f, logo))
       } catch (e) {
         setErr(e instanceof Error ? e.message : "Upload failed.")
         break
@@ -116,7 +118,7 @@ export function PhotoPicker({ photos, max, onChange }: { photos: string[]; max: 
         {photos.map((p, i) => (
           <div key={p} className="relative">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={p} alt={`Photo ${i + 1}`} className="h-24 w-24 rounded-lg border border-[var(--line)] object-cover" />
+            <img src={p} alt={logo ? "Logo" : `Photo ${i + 1}`} className={`h-24 w-24 rounded-lg border border-[var(--line)] ${logo ? `object-contain p-2 ${dark ? "bg-[#10203f]" : "bg-white"}` : "object-cover"}`} />
             <button type="button" onClick={() => onChange(photos.filter((x) => x !== p))} className="absolute -right-2 -top-2 rounded-full bg-[var(--nav)] p-1 text-white" aria-label={`Remove photo ${i + 1}`}>
               <X className="h-3 w-3" />
             </button>
@@ -125,7 +127,7 @@ export function PhotoPicker({ photos, max, onChange }: { photos: string[]; max: 
         {photos.length < max ? (
           <label className={`flex h-24 w-24 cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border border-dashed border-[var(--line)] text-[12px] text-[var(--muted)] hover:border-[var(--brand)] ${busy ? "opacity-60" : ""}`}>
             <ImagePlus className="h-5 w-5" />
-            {busy ? "Uploading…" : "Add photos"}
+            {busy ? "Uploading…" : logo ? "Add logo" : "Add photos"}
             <input type="file" accept="image/jpeg,image/png,image/webp" multiple className="sr-only" disabled={busy} onChange={(e) => add(e.target.files)} />
           </label>
         ) : null}

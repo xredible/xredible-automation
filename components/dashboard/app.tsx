@@ -176,7 +176,7 @@ export function DashboardApp({ allowed, me }: { allowed: BusinessKey[]; me: Me }
 
         {/* Main */}
         <div className="min-w-0">
-          <header className="sticky top-0 z-20 border-b border-[var(--line)] bg-[color-mix(in_srgb,var(--bg)_88%,transparent)] pt-[env(safe-area-inset-top)] backdrop-blur-md">
+          <header className="sticky top-0 z-20 border-b border-[var(--line)] bg-[color-mix(in_srgb,var(--bg)_97%,transparent)] pt-[env(safe-area-inset-top)] backdrop-blur-md">
             <div className="mx-auto max-w-[1280px] px-4 py-3 sm:px-6 lg:px-8">
               <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
                 <button type="button" onClick={() => setMenu(true)} className="-ml-1 rounded-md p-1.5 text-[var(--muted)] hover:bg-[var(--chip)] lg:hidden" aria-label="Open menu">

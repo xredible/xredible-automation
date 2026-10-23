@@ -70,6 +70,8 @@ const hsl = (h: string) => {
 export async function readWebsite(url: string): Promise<Partial<BrandKit> & { found: string[] }> {
   if (/^http:\/\//i.test(url)) url = "https://" + url.slice(7)
   if (!/^https:\/\/\S+$/i.test(url)) throw new Error("Enter your website address, starting with https://")
+  if (/^https:\/\/([a-z0-9-]+\.)*(linkedin\.com|instagram\.com|facebook\.com|fb\.com|x\.com|twitter\.com|youtube\.com|threads\.net|tiktok\.com|pinterest\.com|linktr\.ee)(\/|$)/i.test(url))
+    throw new Error("That's a social media page, so it would pick up that site's logo and colours, not yours. Enter your own website, or use Suggest a look.")
   const get = (x: string, n: number) => safeText(x, n, { headers: { "User-Agent": "Mozilla/5.0 (compatible; XredibleBot/1.0; +https://www.xredible.in)" } })
   let html = ""
   try {
