@@ -591,6 +591,85 @@ export function AdminPayments() {
   )
 }
 
+// ---------- Demo requests (from xredible.in/demo) ----------
+
+type Lead = { id: number; name: string; email: string; phone: string; business: string; website: string; interests: string[]; when: string; note: string; consent: boolean; at: string; status: string }
+const LEAD_STATUSES = ["new", "contacted", "demo done", "customer", "not a fit"]
+
+export function AdminLeads() {
+  const { data, error, load } = useLoad<{ leads: Lead[] }>("/dashboard/admin?section=leads")
+  const [busy, setBusy] = useState<number | null>(null)
+  const [msg, setMsg] = useState<string | null>(null)
+  const [show, setShow] = useState<"open" | "all">("open")
+  if (!data) return <Loading error={error} />
+  const leads = data.leads.filter((l) => show === "all" || ["new", "contacted"].includes(l.status))
+  const counts = Object.fromEntries(LEAD_STATUSES.map((s) => [s, data.leads.filter((l) => l.status === s).length]))
+  const wa = (l: Lead) => `https://wa.me/${l.phone.replace(/\D/g, "").replace(/^(\d{10})$/, "91$1")}?text=${encodeURIComponent(`Hi ${l.name.split(" ")[0]}, this is Abhijit from Xredible. Thanks for booking a demo! When suits you for a 15-minute call?`)}`
+  return (
+    <div className="space-y-4">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
+        {LEAD_STATUSES.map((s) => (
+          <Tile key={s} label={s} value={String(counts[s] || 0)} />
+        ))}
+      </div>
+      <Card
+        title="Demo requests"
+        sub={
+          <>
+            From <a href="/demo" target="_blank" className="underline">xredible.in/demo</a>. You also get each one on Telegram and by email.
+          </>
+        }
+        pad={false}
+      >
+        <div className="flex gap-2 px-4 pb-3 sm:px-5">
+          {(["open", "all"] as const).map((v) => (
+            <button key={v} type="button" onClick={() => setShow(v)} className={btn + (show === v ? " !border-[var(--brand)] !text-[var(--brand)]" : "")}>
+              {v === "open" ? "To follow up" : "All"}
+            </button>
+          ))}
+        </div>
+        {msg ? <div className="px-5 pb-2 text-sm text-[var(--bad)]">{msg}</div> : null}
+        <ul className="divide-y divide-[var(--line-soft)]">
+          {!leads.length ? <li className="px-5 py-5 text-sm text-[var(--faint)]">{data.leads.length ? "Nothing to follow up. Nice." : "No demo requests yet. Share xredible.in/demo in your posts and bio."}</li> : null}
+          {leads.map((l) => (
+            <li key={l.id} className="px-4 py-3 text-sm sm:px-5">
+              <div className="flex flex-wrap items-center gap-2">
+                <b>{l.name}</b>
+                {l.business ? <span className="text-[var(--muted)]">· {l.business}</span> : null}
+                <span className="text-[12px] text-[var(--faint)]">{when(l.at)}</span>
+                <select value={l.status} disabled={busy === l.id} onChange={async (e) => { setBusy(l.id); const r = await postTo("/dashboard/admin", { op: "lead-status", id: l.id, status: e.target.value }); setBusy(null); setMsg(r.ok ? null : String(r.error || "That didn't work.")); load() }} className={input + " ml-auto !py-1 text-[13px]"} aria-label="Status">
+                  {LEAD_STATUSES.map((s) => (
+                    <option key={s} value={s}>
+                      {s}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-[13px] text-[var(--muted)]">
+                <span>{l.email}</span>
+                <span>{l.phone}</span>
+                {l.when ? <span>Best time: {l.when}</span> : null}
+                {l.interests.length ? <span>Wants: {l.interests.join(", ")}</span> : null}
+                {l.website ? <span>{l.website}</span> : null}
+                {l.consent ? <Pill tone="good">tips by email: yes</Pill> : null}
+              </div>
+              {l.note ? <div className="mt-1 text-[13px]">“{l.note}”</div> : null}
+              <div className="mt-2 flex flex-wrap gap-2">
+                <a href={wa(l)} target="_blank" rel="noreferrer" className={btn}>
+                  WhatsApp
+                </a>
+                <a href={`mailto:${l.email}?subject=${encodeURIComponent("Your Xredible demo")}`} className={btn}>
+                  Email
+                </a>
+              </div>
+            </li>
+          ))}
+        </ul>
+      </Card>
+    </div>
+  )
+}
+
 // ---------- Coupons ----------
 
 type CouponRow = { id: number; code: string; percent: number; products: string; maxUses: number; used: number; expires: string | null; active: boolean }

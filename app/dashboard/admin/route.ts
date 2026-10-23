@@ -1,5 +1,5 @@
 // /dashboard/admin — admins only. Data and actions for the Admin section of the dashboard.
-// GET ?section=revenue | people | person&email= | payments | health | announcements
+// GET ?section=revenue | people | person&email= | payments | health | announcements | leads
 // POST { op: "view-as", key } | { op: "view-as-stop" } | { op: "verify", email } | { op: "reset-link", email }
 //      { op: "active", email, active } | { op: "set-used", subId, used } | { op: "extend", subId, days }
 //      { op: "announce", title, message, until?, audience, email } | { op: "announce-delete", id }
@@ -14,6 +14,7 @@ import { subById } from "@/lib/autopilot/billing"
 import { update } from "@/lib/autopilot/db"
 import { SITE } from "@/lib/autopilot/linkedin"
 import { PRODUCTS, rupees } from "@/lib/autopilot/products"
+import { demoRequests, setDemoStatus } from "@/lib/autopilot/demo"
 
 export const runtime = "nodejs"
 export const dynamic = "force-dynamic"
@@ -30,6 +31,7 @@ export async function GET(request: Request) {
   const section = q.get("section") || "revenue"
   try {
     if (section === "announcements") return json({ ok: true, announcements: await announcements() })
+    if (section === "leads") return json({ ok: true, leads: await demoRequests() })
     const all = await loadAll()
     if (section === "revenue") return json({ ok: true, stats: revenueStats(all.subs, all.payments) })
     if (section === "people") return json({ ok: true, people: people(all) })
@@ -104,6 +106,10 @@ export async function POST(request: Request) {
     if (op === "announce") {
       const emailed = await createAnnouncement(b, await loadAll())
       return json({ ok: true, emailed, announcements: await announcements() })
+    }
+    if (op === "lead-status") {
+      await setDemoStatus(Number(b.id), b.status)
+      return json({ ok: true, leads: await demoRequests() })
     }
     if (op === "announce-delete") {
       await removeNotice(Number(b.id))

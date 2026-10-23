@@ -123,6 +123,27 @@ export function ToolApp({ product, bare = false }: { product: Tool; bare?: boole
     return null
   }
 
+  // "Write new drafts" starts the writer in n8n and returns at once; the drafts land a minute or two later.
+  const [writing, setWriting] = useState<string | null>(null)
+  const generate = async () => {
+    const drafts = (st: State) => st.items.filter((i) => i.status === "draft").length
+    const before = s ? drafts(s) : 0
+    if (!(await act({ op: "generate", count: product === "meta" ? 3 : 2 }))) return
+    setWriting(product === "blog" ? "Writing your articles. Long articles take two or three minutes." : "Writing your drafts. They appear here in about a minute.")
+    for (let i = 0; i < (product === "blog" ? 20 : 10); i++) {
+      await new Promise((r) => setTimeout(r, 10_000))
+      const r = await call(product)
+      if (!r.ok) continue
+      setS(r)
+      if (drafts(r) > before) {
+        setWriting(null)
+        return
+      }
+    }
+    setWriting(null)
+    setError("No new drafts yet: either your queue is already full for your plan, or the AI writer is busy. Approve or discard a draft, or try again in a few minutes.")
+  }
+
   const p = PRODUCTS[product]
   if (!s) return <div className={card + " text-sm text-[var(--muted)]"}>{error || `Loading ${p.name}…`}</div>
   const c = COPY[product]
@@ -165,7 +186,8 @@ export function ToolApp({ product, bare = false }: { product: Tool; bare?: boole
             </div>
           </div>
           {product === "newsletter" && ready ? <CampaignCard onDone={load} /> : null}
-          <Items product={product} s={s} busy={busy} ready={ready} act={act} />
+          {writing ? <Notice tone="info">{writing}</Notice> : null}
+          <Items product={product} s={s} busy={busy || !!writing} ready={ready} act={act} onGenerate={generate} />
         </>
       ) : null}
     </>
@@ -529,7 +551,7 @@ function SmtpConnect({ busy, act }: { busy: boolean; act: Act }) {
 
 // ---------- subscribers ----------
 
-function Items({ product, s, busy, ready, act }: { product: Tool; s: State; busy: boolean; ready: boolean; act: Act }) {
+function Items({ product, s, busy, ready, act, onGenerate }: { product: Tool; s: State; busy: boolean; ready: boolean; act: Act; onGenerate: () => void }) {
   const c = COPY[product]
   const groups = useMemo(() => {
     const g = { draft: [] as Item[], approved: [] as Item[], problem: [] as Item[], posted: [] as Item[] }
@@ -547,7 +569,7 @@ function Items({ product, s, busy, ready, act }: { product: Tool; s: State; busy
     <div className={card}>
       <div className="flex flex-wrap items-center gap-3">
         <Step n={n}>Your {c.item}s</Step>
-        <button type="button" className={ghost + " ml-auto"} disabled={busy || !ready} onClick={() => act({ op: "generate", count: product === "meta" ? 3 : 2 })} title={ready ? "" : `Fill in your details and connect ${c.account} first`}>
+        <button type="button" className={ghost + " ml-auto"} disabled={busy || !ready} onClick={onGenerate} title={ready ? "" : `Fill in your details and connect ${c.account} first`}>
           <Sparkles className="h-3.5 w-3.5" /> Write new drafts
         </button>
       </div>

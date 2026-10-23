@@ -75,6 +75,28 @@ export function LinkedInAutopilot({ bare = false }: { bare?: boolean }) {
     return false
   }
 
+  // "Write new drafts" starts the writer in n8n and returns at once; the drafts land about a minute later.
+  const [writing, setWriting] = useState<string | null>(null)
+  const generate = async () => {
+    const drafts = (st: LiState) => st.posts.filter((p) => p.status === "draft").length
+    const before = s ? drafts(s) : 0
+    if (!(await act({ op: "generate", count: 3 }))) return
+    setWriting("Writing your drafts. They appear here in about a minute.")
+    for (let i = 0; i < 10; i++) {
+      await new Promise((r) => setTimeout(r, 10_000))
+      const r = await liCall()
+      if (!r.ok) continue
+      setS(r)
+      const added = drafts(r) - before
+      if (added > 0) {
+        setWriting(null)
+        return
+      }
+    }
+    setWriting(null)
+    setError("No new drafts yet: the AI writer may be busy. Try again in a few minutes. New drafts are also written for you every morning.")
+  }
+
   if (!s) return <div className={card + " text-sm text-[var(--muted)]"}>{error || "Loading LinkedIn Autopilot…"}</div>
   const hasProfile = !!s.profile?.about
   return (
@@ -91,7 +113,8 @@ export function LinkedInAutopilot({ bare = false }: { bare?: boolean }) {
         <ProfileCard profile={s.profile} busy={busy} onSave={(f) => act({ op: "profile", ...f })} />
         <ConnectCard s={s} busy={busy} onDisconnect={() => act({ op: "disconnect" })} />
       </div>
-      <Posts s={s} busy={busy} canGenerate={hasProfile && !!s.profile?.connected} act={act} />
+      {writing ? <Notice tone="info">{writing}</Notice> : null}
+      <Posts s={s} busy={busy || !!writing} canGenerate={hasProfile && !!s.profile?.connected} act={act} onGenerate={generate} />
     </>
   )
 }
@@ -241,7 +264,7 @@ function ConnectCard({ s, busy, onDisconnect }: { s: LiState; busy: boolean; onD
   )
 }
 
-function Posts({ s, busy, canGenerate, act }: { s: LiState; busy: boolean; canGenerate: boolean; act: (b: Record<string, unknown>) => Promise<boolean> }) {
+function Posts({ s, busy, canGenerate, act, onGenerate }: { s: LiState; busy: boolean; canGenerate: boolean; act: (b: Record<string, unknown>) => Promise<boolean>; onGenerate: () => void }) {
   const groups = useMemo(() => {
     const g = { draft: [] as Post[], approved: [] as Post[], problem: [] as Post[], posted: [] as Post[] }
     for (const p of s.posts) {
@@ -260,7 +283,7 @@ function Posts({ s, busy, canGenerate, act }: { s: LiState; busy: boolean; canGe
           <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--brandsoft)] text-xs text-[var(--brand)]">3</span>
           Your posts
         </h2>
-        <button type="button" className={ghost + " ml-auto"} disabled={busy || !canGenerate} onClick={() => act({ op: "generate", count: 3 })} title={canGenerate ? "" : "Fill in About you and connect LinkedIn first"}>
+        <button type="button" className={ghost + " ml-auto"} disabled={busy || !canGenerate} onClick={onGenerate} title={canGenerate ? "" : "Fill in About you and connect LinkedIn first"}>
           <Sparkles className="h-3.5 w-3.5" /> Write 3 new drafts
         </button>
       </div>

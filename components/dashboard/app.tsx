@@ -10,7 +10,7 @@ import { ACCOUNT_VIEWS, ADMIN_VIEWS, BUSINESSES, TOOL_VIEW, type BusinessKey } f
 import { AnnouncementBanner, BillingView, BrandSwitcher, ChatWidget, HelpView, SettingsView, VerifyBanner, ViewAsBanner } from "@/components/autopilot/account-views"
 import { IdeasView } from "@/components/autopilot/ideas-view"
 import { BrandKitView } from "@/components/autopilot/brand-kit"
-import { AdminAnnounce, AdminCoupons, AdminCustomers, AdminHealth, AdminPayments, AdminRevenue } from "./admin-views"
+import { AdminAnnounce, AdminCoupons, AdminCustomers, AdminHealth, AdminLeads, AdminPayments, AdminRevenue } from "./admin-views"
 import { LinkedInAutopilot } from "@/components/autopilot/customer-app"
 import { ToolApp } from "@/components/autopilot/tool-app"
 import { CSS as TOOL_CSS } from "@/components/autopilot/ui"
@@ -260,6 +260,8 @@ export function DashboardApp({ allowed, me }: { allowed: BusinessKey[]; me: Me }
               <AdminCustomers key={tick} />
             ) : view === "admin-payments" ? (
               <AdminPayments key={tick} />
+            ) : view === "admin-leads" ? (
+              <AdminLeads key={tick} />
             ) : view === "admin-coupons" ? (
               <AdminCoupons key={tick} />
             ) : view === "admin-announce" ? (

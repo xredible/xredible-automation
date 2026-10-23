@@ -121,6 +121,13 @@ export default function XredibleAutomationWebsite() {
             </a>
 
             <a
+              href="/demo"
+              className="text-cyan-300 hover:text-cyan-200 transition font-semibold"
+            >
+              Autopilot demo
+            </a>
+
+            <a
               href="#contact"
               className="text-zinc-300 hover:text-cyan-400 transition"
             >
