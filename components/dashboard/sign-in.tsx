@@ -1,5 +1,6 @@
 "use client"
 
+import Link from "next/link"
 import { useActionState, useEffect, useState, type ReactNode } from "react"
 import { requestReset, resetPassword, setupFirstAdmin, signIn, signUp, type FormState } from "@/app/dashboard/actions"
 
@@ -9,12 +10,21 @@ const label = "mt-4 block text-sm font-medium text-slate-700"
 
 function Shell({ title, sub, children }: { title: string; sub: string; children: ReactNode }) {
   return (
-    <div className="flex min-h-[100dvh] items-center justify-center bg-[#10203f] px-4 py-10">
-      <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl sm:p-8">
-        <img src="/dashboard/xredible.svg" alt="" width={56} height={56} className="mb-5 h-14 w-14 rounded-xl" />
+    <div className="relative flex min-h-[100dvh] flex-col items-center justify-center overflow-hidden bg-[#0b1530] px-4 py-10">
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-[#d4ad4b]/15 via-[#6f93f0]/10 to-[#35c2a7]/10" />
+      <Link href="/" className="relative mb-7" aria-label="Xredible home">
+        <img src="/brand/xredible-logo-white.png" alt="Xredible Automation" width={709} height={224} className="h-11 w-auto" />
+      </Link>
+      <div className="relative w-full max-w-sm rounded-3xl bg-white p-6 shadow-2xl shadow-black/30 sm:p-8">
+        <img src="/dashboard/xredible.svg" alt="" width={56} height={56} className="mb-5 h-14 w-14 rounded-2xl" />
         <h1 className="text-[1.375rem] font-semibold leading-tight text-[#10203f]">{title}</h1>
         <div className="mt-1 text-sm text-slate-500">{sub}</div>
         {children}
+      </div>
+      <div className="relative mt-6 flex gap-5 text-sm text-slate-400">
+        <Link href="/" className="hover:text-white">← xredible.in</Link>
+        <Link href="/pricing" className="hover:text-white">Pricing</Link>
+        <Link href="/demo" className="hover:text-white">See a demo</Link>
       </div>
     </div>
   )

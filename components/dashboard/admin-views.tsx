@@ -593,7 +593,7 @@ export function AdminPayments() {
 
 // ---------- Demo requests (from xredible.in/demo) ----------
 
-type Lead = { id: number; name: string; email: string; phone: string; business: string; website: string; interests: string[]; when: string; note: string; consent: boolean; at: string; status: string }
+type Lead = { id: number; kind?: "demo" | "inquiry"; name: string; email: string; phone: string; business: string; website: string; interests: string[]; when: string; note: string; consent: boolean; at: string; status: string }
 const LEAD_STATUSES = ["new", "contacted", "demo done", "customer", "not a fit"]
 
 export function AdminLeads() {
@@ -604,7 +604,7 @@ export function AdminLeads() {
   if (!data) return <Loading error={error} />
   const leads = data.leads.filter((l) => show === "all" || ["new", "contacted"].includes(l.status))
   const counts = Object.fromEntries(LEAD_STATUSES.map((s) => [s, data.leads.filter((l) => l.status === s).length]))
-  const wa = (l: Lead) => `https://wa.me/${l.phone.replace(/\D/g, "").replace(/^(\d{10})$/, "91$1")}?text=${encodeURIComponent(`Hi ${l.name.split(" ")[0]}, this is Abhijit from Xredible. Thanks for booking a demo! When suits you for a 15-minute call?`)}`
+  const wa = (l: Lead) => `https://wa.me/${l.phone.replace(/\D/g, "").replace(/^(\d{10})$/, "91$1")}?text=${encodeURIComponent(`Hi ${l.name.split(" ")[0]}, this is Abhijit from Xredible. Thanks for getting in touch! When suits you for a quick 15-minute call?`)}`
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
@@ -613,10 +613,10 @@ export function AdminLeads() {
         ))}
       </div>
       <Card
-        title="Demo requests"
+        title="Leads"
         sub={
           <>
-            From <a href="/demo" target="_blank" className="underline">xredible.in/demo</a>. You also get each one on Telegram and by email.
+            Demo requests from <a href="/demo" target="_blank" className="underline">xredible.in/demo</a> and inquiries from the homepage contact form. You also get each one on Telegram and by email.
           </>
         }
         pad={false}
@@ -630,11 +630,12 @@ export function AdminLeads() {
         </div>
         {msg ? <div className="px-5 pb-2 text-sm text-[var(--bad)]">{msg}</div> : null}
         <ul className="divide-y divide-[var(--line-soft)]">
-          {!leads.length ? <li className="px-5 py-5 text-sm text-[var(--faint)]">{data.leads.length ? "Nothing to follow up. Nice." : "No demo requests yet. Share xredible.in/demo in your posts and bio."}</li> : null}
+          {!leads.length ? <li className="px-5 py-5 text-sm text-[var(--faint)]">{data.leads.length ? "Nothing to follow up. Nice." : "No leads yet. Share xredible.in/demo in your posts and bio."}</li> : null}
           {leads.map((l) => (
             <li key={l.id} className="px-4 py-3 text-sm sm:px-5">
               <div className="flex flex-wrap items-center gap-2">
                 <b>{l.name}</b>
+                <Pill tone={l.kind === "inquiry" ? "info" : "plain"}>{l.kind === "inquiry" ? "inquiry" : "demo"}</Pill>
                 {l.business ? <span className="text-[var(--muted)]">· {l.business}</span> : null}
                 <span className="text-[12px] text-[var(--faint)]">{when(l.at)}</span>
                 <select value={l.status} disabled={busy === l.id} onChange={async (e) => { setBusy(l.id); const r = await postTo("/dashboard/admin", { op: "lead-status", id: l.id, status: e.target.value }); setBusy(null); setMsg(r.ok ? null : String(r.error || "That didn't work.")); load() }} className={input + " ml-auto !py-1 text-[13px]"} aria-label="Status">
