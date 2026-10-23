@@ -35,6 +35,8 @@ export type BrandKit = {
   name: string
   handle: string
   logo: string
+  /** Optional version of the logo for dark backgrounds (usually white). */
+  logoDark: string
   primary: string
   secondary: string
   accent: string
@@ -73,6 +75,7 @@ export function defaultKit(o: { name?: string; color?: string; niche?: string } 
     name: o.name || "",
     handle: "",
     logo: "",
+    logoDark: "",
     primary: isHex(o.color) ? String(o.color) : p.primary,
     secondary: p.secondary,
     accent: p.accent,
@@ -88,11 +91,13 @@ export function cleanKit(input: unknown, base: BrandKit): BrandKit {
   const o = (input && typeof input === "object" ? input : {}) as Record<string, unknown>
   const str = (v: unknown, n: number, d: string) => (v === undefined ? d : String(v ?? "").trim().slice(0, n))
   const logo = str(o.logo, 600, base.logo)
+  const logoDark = str(o.logoDark, 600, base.logoDark || "")
   const website = str(o.website, 200, base.website)
   return {
     name: str(o.name, 60, base.name),
     handle: str(o.handle, 60, base.handle),
     logo: logo && !/^https:\/\/\S+$/i.test(logo) ? base.logo : logo,
+    logoDark: logoDark && !/^https:\/\/\S+$/i.test(logoDark) ? base.logoDark || "" : logoDark,
     primary: isHex(o.primary) ? String(o.primary) : base.primary,
     secondary: isHex(o.secondary) ? String(o.secondary) : base.secondary,
     accent: isHex(o.accent) ? String(o.accent) : base.accent,

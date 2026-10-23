@@ -50,7 +50,7 @@ export const EMAIL_TEMPLATES: { key: EmailTemplate; name: string; blurb: string 
 ]
 export const isEmailTemplate = (v: unknown): v is EmailTemplate => typeof v === "string" && EMAIL_TEMPLATES.some((t) => t.key === v)
 
-export type EmailKit = { name?: string; logo?: string; primary?: string; secondary?: string; accent?: string; headFont?: string; bodyFont?: string }
+export type EmailKit = { name?: string; logo?: string; logoDark?: string; primary?: string; secondary?: string; accent?: string; headFont?: string; bodyFont?: string }
 
 const hex = (v: string | undefined, d: string) => (/^#[0-9a-f]{6}$/i.test(v || "") ? v! : d)
 const onColour = (h: string) => {
@@ -92,8 +92,12 @@ You're getting this because you subscribed to ${name}.<br>${esc(o.address)}<br><
   let card: string
   if (tpl === "header") {
     const fg = onColour(color)
+    // On a dark band: the dark-background logo, or the normal one on a small white plate so it stays visible.
+    const darkLogo = k.logoDark && /^https:\/\//.test(k.logoDark)
+      ? `<img src="${esc(k.logoDark)}" alt="${name}" height="40" style="display:block;height:40px;max-width:220px;border:0">`
+      : logo ? `<table role="presentation" cellpadding="0" cellspacing="0"><tr><td style="background:#ffffff;border-radius:8px;padding:6px 10px">${logo.replace('height="40"', 'height="30"').replace("height:40px", "height:30px")}</td></tr></table>` : ""
     card = `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;background:#ffffff;border-radius:12px;overflow:hidden">
-<tr><td style="background:${color};padding:22px 28px">${logo || `<span style="font-family:${head};font-size:20px;font-weight:bold;color:${fg}">${name}</span>`}</td></tr>
+<tr><td style="background:${color};padding:22px 28px">${(fg === "#ffffff" ? darkLogo : logo) || `<span style="font-family:${head};font-size:20px;font-weight:bold;color:${fg}">${name}</span>`}</td></tr>
 <tr><td style="height:4px;background:${accent};font-size:0;line-height:0">&nbsp;</td></tr>
 <tr><td style="padding:28px 28px 12px">${body}</td></tr></table>`
   } else if (tpl === "letter") {

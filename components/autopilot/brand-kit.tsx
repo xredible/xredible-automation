@@ -11,6 +11,31 @@ import { PhotoPicker } from "./design-editor"
 
 type Kit = BrandKit & { saved: boolean }
 
+const SOCIAL = /^https?:\/\/([a-z0-9-]+\.)*(linkedin\.com|instagram\.com|facebook\.com|fb\.com|x\.com|twitter\.com|youtube\.com|youtu\.be|threads\.net|tiktok\.com|pinterest\.com|wa\.me|whatsapp\.com|linktr\.ee)(\/|$)/i
+
+/** A template preview: shows a placeholder while drawing, and a retry if it fails. */
+function Preview({ src, name }: { src: string; name: string }) {
+  const [state, setState] = useState<"load" | "ok" | "bad">("load")
+  const [tries, setTries] = useState(0)
+  const url = tries ? `${src}&r=${tries}` : src
+  return (
+    <div className="relative aspect-[4/5] w-full overflow-hidden rounded-lg bg-[var(--chip)]">
+      {state !== "bad" ? (
+        <img key={url} src={url} ref={(el) => { if (el?.complete && el.naturalWidth && state === "load") setState("ok") }} alt={`${name} template preview`} width={216} height={270} onLoad={() => setState("ok")} onError={() => setState("bad")} className={`h-full w-full object-cover transition-opacity ${state === "ok" ? "opacity-100" : "opacity-0"}`} />
+      ) : null}
+      {state === "load" ? <div className="absolute inset-0 animate-pulse bg-[var(--chip)]" /> : null}
+      {state === "bad" ? (
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 p-3 text-center text-[12px] text-[var(--muted)]">
+          Preview didn&apos;t load.
+          <span role="button" tabIndex={0} onClick={(e) => { e.stopPropagation(); setTries((n) => n + 1); setState("load") }} onKeyDown={(e) => { if (e.key === "Enter") { e.stopPropagation(); setTries((n) => n + 1); setState("load") } }} className="rounded-md border border-[var(--line)] bg-[var(--panel)] px-2.5 py-1 font-medium text-[var(--ink-2)]">
+            Try again
+          </span>
+        </div>
+      ) : null}
+    </div>
+  )
+}
+
 const btn = "inline-flex items-center gap-1.5 rounded-lg border border-[var(--line)] bg-[var(--panel)] px-3 py-2 text-[13px] font-medium text-[var(--ink-2)] hover:border-[var(--line-strong)] disabled:opacity-50"
 const primaryBtn = "inline-flex items-center gap-1.5 rounded-lg bg-[var(--nav)] px-4 py-2 text-[13px] font-semibold text-white hover:opacity-90 disabled:opacity-50"
 const input = "mt-1 w-full rounded-lg border border-[var(--line)] bg-[var(--panel)] px-3 py-2 text-sm text-[var(--ink)] outline-none focus:border-[var(--brand)]"
@@ -99,7 +124,7 @@ export function BrandKitView() {
             <span className={label}>Your website</span>
             <div className="mt-1 flex gap-2">
               <input value={site} onChange={(e) => setSite(e.target.value)} placeholder="https://www.yourbusiness.com" className={input + " mt-0"} aria-label="Your website" />
-              <button type="button" className={btn + " shrink-0"} disabled={!!busy || !/^https?:\/\//.test(site)} onClick={() => run("site", { op: "website", url: site }, (r) => (r.found?.length ? `Found your ${r.found.join(", ")}. Check below, then Save.` : "Couldn't find much there. Fill it in below."))}>
+              <button type="button" className={btn + " shrink-0"} disabled={!!busy || !/^https?:\/\//.test(site)} onClick={() => (SOCIAL.test(site) ? setErr("That's a social media page, so it would pick up that site's logo and colours, not yours. Enter your own website, or use Suggest a look.") : run("site", { op: "website", url: site }, (r) => (r.found?.length ? `Found your ${r.found.join(", ")}. Check below, then Save.` : "Couldn't find much there. Fill it in below.")))}>
                 <Globe className="h-4 w-4" /> {busy === "site" ? "Reading…" : "Read my brand"}
               </button>
             </div>
@@ -139,15 +164,23 @@ export function BrandKitView() {
           <div className="mt-3">
             <span className={label}>Logo (PNG with a transparent background looks best)</span>
             <div className="mt-1.5 flex flex-wrap items-start gap-3">
-              <PhotoPicker photos={kit.logo ? [kit.logo] : []} max={1} onChange={(p) => set({ logo: p[0] || "" })} />
+              <PhotoPicker logo photos={kit.logo ? [kit.logo] : []} max={1} onChange={(p) => set({ logo: p[0] || "" })} />
               <input value={kit.logo} onChange={(e) => set({ logo: e.target.value.trim() })} placeholder="or paste a link: https://…/logo.png" className={input + " mt-0 min-w-0 flex-1"} aria-label="Logo link" />
             </div>
+          </div>
+          <div className="mt-3">
+            <span className={label}>Logo for dark backgrounds (optional, usually a white version)</span>
+            <div className="mt-1.5 flex flex-wrap items-start gap-3">
+              <PhotoPicker logo dark photos={kit.logoDark ? [kit.logoDark] : []} max={1} onChange={(p) => set({ logoDark: p[0] || "" })} />
+              <input value={kit.logoDark} onChange={(e) => set({ logoDark: e.target.value.trim() })} placeholder="or paste a link: https://…/logo-white.png" className={input + " mt-0 min-w-0 flex-1"} aria-label="Dark background logo link" />
+            </div>
+            <p className="!mb-0 mt-1.5 text-[12px] text-[var(--muted)]">Bold, Split and Spark put your logo on your main colour. Without a version for dark backgrounds, your logo sits on a small white tile there so it stays visible.</p>
           </div>
         </Card>
         <Card title="Colours and fonts">
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
             <Colour name="Main" value={kit.primary} onChange={(v) => set({ primary: v })} />
-            <Colour name="Light" value={kit.secondary} onChange={(v) => set({ secondary: v })} />
+            <Colour name="Light background" value={kit.secondary} onChange={(v) => set({ secondary: v })} />
             <Colour name="Accent" value={kit.accent} onChange={(v) => set({ accent: v })} />
           </div>
           <div className="mt-3 grid gap-3 sm:grid-cols-2">
@@ -198,8 +231,7 @@ export function BrandKitView() {
             return (
               <button key={t.key} type="button" onClick={() => set({ template: on ? "rotate" : t.key })} aria-pressed={on} className={`rounded-xl border p-2 text-left transition ${on ? "border-[var(--brand)] ring-2 ring-[var(--brand)]" : "border-[var(--line)] hover:border-[var(--line-strong)]"}`}>
                 {stamp ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={`/dashboard/me/brand/preview?t=${t.key}&v=${variant}&k=${stamp}`} alt={`${t.name} template preview`} width={216} height={270} className="aspect-[4/5] w-full rounded-lg bg-[var(--chip)] object-cover" />
+                  <Preview key={`${t.key}-${variant}-${stamp}`} src={`/dashboard/me/brand/preview?t=${t.key}&v=${variant}&k=${stamp}`} name={t.name} />
                 ) : (
                   <div className="aspect-[4/5] w-full animate-pulse rounded-lg bg-[var(--chip)]" />
                 )}

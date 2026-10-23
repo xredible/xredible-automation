@@ -29,9 +29,12 @@ function googleFont(family: string, weight: 400 | 700): Promise<ArrayBuffer | nu
       key,
       (async () => {
         try {
-          const css = await (await fetch(`https://fonts.googleapis.com/css2?family=${family.replace(/ /g, "+")}:wght@${weight}`, { headers: { "User-Agent": "Mozilla/4.0" } })).text()
-          const src = /src:\s*url\(([^)]+)\)\s*format\('(truetype|opentype)'\)/.exec(css)?.[1]
-          return src ? await (await fetch(src)).arrayBuffer() : null
+          const r = await fetch(`https://fonts.googleapis.com/css2?family=${family.replace(/ /g, "+")}:wght@${weight}`, { headers: { "User-Agent": "Mozilla/4.0" }, signal: AbortSignal.timeout(5000) })
+          if (!r.ok) return null
+          const src = /src:\s*url\(([^)]+)\)\s*format\('(truetype|opentype)'\)/.exec(await r.text())?.[1]
+          if (!src) return null
+          const f = await fetch(src, { signal: AbortSignal.timeout(8000) })
+          return f.ok ? await f.arrayBuffer() : null
         } catch {
           return null
         }
@@ -162,13 +165,20 @@ const body = (c: Card) => ("body" in c ? c.body : "")
 const pos = (c: Card) => (c.kind === "slide" ? c.n : c.kind === "end" ? c.total - 1 : 0)
 const total = (c: Card) => ("total" in c ? c.total : 1)
 
-type Ctx = { kit: BrandKit; logo: Logo | null; head: string; text: string }
+type Ctx = { kit: BrandKit; logo: Logo | null; logoDark: Logo | null; head: string; text: string }
 
-function LogoMark({ ctx, height, color }: { ctx: Ctx; height: number; color: string }) {
-  if (ctx.logo) {
-    const w = Math.min(320, Math.round((ctx.logo.w / ctx.logo.h) * height))
+/** The logo. On a dark background it uses the dark-background version, or puts the normal logo on a white plate so it stays visible. */
+function LogoMark({ ctx, height, color, dark = false }: { ctx: Ctx; height: number; color: string; dark?: boolean }) {
+  const logo = dark ? ctx.logoDark || ctx.logo : ctx.logo
+  if (logo) {
+    const plate = dark && !ctx.logoDark
+    const h = plate ? Math.round(height * 0.72) : height
+    const w = Math.min(plate ? 260 : 320, Math.round((logo.w / logo.h) * h))
     // eslint-disable-next-line @next/next/no-img-element
-    return <img src={ctx.logo.src} width={w} height={height} style={{ width: w, height, objectFit: "contain" }} alt="" />
+    const img = <img src={logo.src} width={w} height={h} style={{ width: w, height: h, objectFit: "contain" }} alt="" />
+    if (!plate) return img
+    const pad = Math.round(height * 0.14)
+    return <div style={{ display: "flex", alignSelf: "flex-start", flexShrink: 0, padding: `${pad}px ${Math.round(pad * 1.4)}px`, borderRadius: Math.round(height * 0.22), background: "#ffffff" }}>{img}</div>
   }
   return <div style={{ display: "flex", fontFamily: ctx.head, fontSize: Math.round(height * 0.55), fontWeight: 700, color }}>{ctx.kit.name}</div>
 }
@@ -215,7 +225,7 @@ function Bold(c: Card, ctx: Ctx) {
   return (
     <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", justifyContent: "space-between", padding: "92px 88px 84px", backgroundImage: `linear-gradient(160deg, ${mix(k.primary, "#ffffff", 0.12)} 0%, ${k.primary} 45%, ${mix(k.primary, "#000000", 0.35)} 100%)`, color: fg }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        {ctx.logo ? <LogoMark ctx={ctx} height={84} color={fg} /> : <div style={{ display: "flex", width: 120, height: 12, borderRadius: 6, background: k.accent }} />}
+        {ctx.logo || ctx.logoDark ? <LogoMark ctx={ctx} height={84} color={fg} dark={fg === "#ffffff"} /> : <div style={{ display: "flex", width: 120, height: 12, borderRadius: 6, background: k.accent }} />}
         {c.kind === "slide" ? <div style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 92, height: 92, borderRadius: 46, background: k.accent, color: textOn(k.accent), fontFamily: ctx.head, fontSize: 38, fontWeight: 700 }}>{num(c)}</div> : null}
       </div>
       <div style={{ display: "flex", flexDirection: "column", gap: 30 }}>
@@ -247,7 +257,7 @@ function Minimal(c: Card, ctx: Ctx) {
       </div>
       <div style={{ display: "flex", flexDirection: "column", gap: 26 }}>
         <div style={{ display: "flex", height: 2, background: mix(INK, bg, 0.88) }} />
-        <Footer ctx={{ ...ctx, logo: null }} c={c} color={INK} faint={muted} on={k.primary} off={mix(INK, bg, 0.8)} swipe={{ bg: k.primary, fg: textOn(k.primary) }} />
+        <Footer ctx={{ ...ctx, logo: null, logoDark: null }} c={c} color={INK} faint={muted} on={k.primary} off={mix(INK, bg, 0.8)} swipe={{ bg: k.primary, fg: textOn(k.primary) }} />
       </div>
     </div>
   )
@@ -296,7 +306,7 @@ function Split(c: Card, ctx: Ctx) {
     <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", background: lower, color: INK }}>
       <div style={{ display: "flex", flexDirection: "column", justifyContent: "space-between", height: `${top}%`, padding: "84px 88px 64px", background: k.primary, color: fg }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <LogoMark ctx={ctx} height={76} color={fg} />
+          <LogoMark ctx={ctx} height={76} color={fg} dark={fg === "#ffffff"} />
           {c.kind === "slide" ? <div style={{ display: "flex", padding: "10px 24px", borderRadius: 999, background: k.accent, color: textOn(k.accent), fontFamily: ctx.head, fontSize: 32, fontWeight: 700 }}>{num(c)}</div> : null}
         </div>
         <div style={{ display: "flex", fontFamily: ctx.head, fontSize: titleSize(c), lineHeight: 1.1, fontWeight: 700, letterSpacing: -1.2 }}>{c.title}</div>
@@ -322,7 +332,7 @@ function Spark(c: Card, ctx: Ctx) {
       <div style={{ display: "flex", position: "absolute", width: 360, height: 360, borderRadius: 180, left: -150, bottom: -120, background: mix(k.primary, "#ffffff", 0.25), opacity: 0.25 }} />
       <div style={{ display: "flex", position: "absolute", width: 34, height: 34, borderRadius: 17, right: 120, top: 470, background: k.accent }} />
       <div style={{ display: "flex", flexDirection: "column", justifyContent: "space-between", width: "100%", height: "100%", padding: "92px 88px 84px" }}>
-        <LogoMark ctx={ctx} height={80} color="#ffffff" />
+        <LogoMark ctx={ctx} height={80} color="#ffffff" dark />
         <div style={{ display: "flex", flexDirection: "column", gap: 30 }}>
           <div style={{ display: "flex" }}>
             <div style={{ display: "flex", padding: "10px 24px", borderRadius: 999, background: k.accent, color: textOn(k.accent), fontFamily: ctx.text, fontSize: 28, fontWeight: 700, letterSpacing: 2 }}>{chip}</div>
@@ -330,7 +340,7 @@ function Spark(c: Card, ctx: Ctx) {
           <div style={{ display: "flex", fontFamily: ctx.head, fontSize: titleSize(c), lineHeight: 1.1, fontWeight: 700, letterSpacing: -1.2 }}>{c.title}</div>
           {body(c) ? <div style={{ display: "flex", fontFamily: ctx.text, fontSize: bodySize(c), lineHeight: 1.45, color: soft }}>{body(c)}</div> : null}
         </div>
-        <Footer ctx={{ ...ctx, logo: null }} c={c} color="#ffffff" faint={soft} on={k.accent} off="rgba(255,255,255,0.3)" swipe={{ bg: k.accent, fg: textOn(k.accent) }} />
+        <Footer ctx={{ ...ctx, logo: null, logoDark: null }} c={c} color="#ffffff" faint={soft} on={k.accent} off="rgba(255,255,255,0.3)" swipe={{ bg: k.accent, fg: textOn(k.accent) }} />
       </div>
     </div>
   )
@@ -342,16 +352,16 @@ const TEMPLATE_FN: Record<TemplateKey, (c: Card, ctx: Ctx) => ReactNode> = { bol
 export async function renderCard(card: Card, look: Look): Promise<ArrayBuffer> {
   const kit = look.kit
   const all = [card.title, body(card), kit.name, kit.handle].join(" ")
-  const [fonts, logo] = await Promise.all([fontsFor(kit, all), loadLogo(kit.logo)])
+  const [fonts, logo, logoDark] = await Promise.all([fontsFor(kit, all), loadLogo(kit.logo), loadLogo(kit.logoDark || "")])
   const deva = /[ऀ-ॿ]/.test(all) ? ", Noto Sans Devanagari" : ""
   const fam = (f: string) => (fonts.some((x) => x.name === f) ? `"${f}"${deva}` : deva ? "Noto Sans Devanagari" : "sans-serif")
   const draw = (f: Font[], c: Card, ctx: Ctx) => new ImageResponse(TEMPLATE_FN[look.template](c, ctx) as ReactElement, { width: W, height: H, ...(f.length ? { fonts: f } : {}) }).arrayBuffer()
   try {
-    return await draw(fonts, card, { kit, logo, head: fam(kit.headFont), text: fam(kit.bodyFont) })
+    return await draw(fonts, card, { kit, logo, logoDark, head: fam(kit.headFont), text: fam(kit.bodyFont) })
   } catch {
     const strip = (t: string) => t.replace(/[^\p{L}\p{N}\p{P}\p{Zs}]/gu, "")
     const plain = { ...card, title: strip(card.title), ...("body" in card ? { body: strip(card.body) } : {}) } as Card
-    return draw([], plain, { kit: { ...kit, name: strip(kit.name), handle: strip(kit.handle) }, logo: null, head: "sans-serif", text: "sans-serif" })
+    return draw([], plain, { kit: { ...kit, name: strip(kit.name), handle: strip(kit.handle) }, logo: null, logoDark: null, head: "sans-serif", text: "sans-serif" })
   }
 }
 
