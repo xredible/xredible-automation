@@ -116,14 +116,10 @@ export async function POST(request: Request, ctx: Ctx) {
       const ch = await channelFor(owner, product)
       if (!ch?.settings.about) return json({ ok: false, error: "Fill in 'About' first so the drafts fit you." }, 400)
       if (!ch.connected) return json({ ok: false, error: "Connect your account first." }, 400)
-      const drafts = async () => (await itemsFor(owner, product)).filter((x) => x.status === "draft").length
-      const before = await drafts()
+      const sub = await ensureTrial(owner, product)
+      if (sub.used >= sub.postLimit) return json({ ok: false, error: "You've used this month's posts on your plan. Upgrade or wait for next month to get new drafts." }, 400)
+      // n8n starts writing and answers at once; the dashboard watches for the new drafts.
       await requestToolDrafts(owner, product, Math.min(5, Math.max(1, Number(b.count) || 3)))
-      if ((await drafts()) <= before) {
-        const sub = await ensureTrial(owner, product)
-        const full = sub.used >= sub.postLimit
-        return json({ ...(await state(owner, product)), ok: false, error: full ? "You've used this month's posts on your plan. Upgrade or wait for next month to get new drafts." : "No new drafts this time: either your queue is already full, or the AI writer is busy. Approve or discard a draft, or try again in a few minutes." })
-      }
     } else if (op === "contacts-add" && product === "newsletter") {
       extra = { added: await addContacts(owner, String(b.text || "")) }
     } else if (op === "contact-remove" && product === "newsletter") {

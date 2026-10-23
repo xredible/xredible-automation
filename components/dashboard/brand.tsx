@@ -1,7 +1,7 @@
 // Platform names, colours and icons used across the dashboard.
 
 import type { ReactNode } from "react"
-import { Palette, BadgeIndianRupee, CalendarDays, CircleQuestionMark, CreditCard, HeartPulse, Lightbulb, Megaphone, Receipt, TicketPercent, Users, FileText, Globe, LayoutDashboard, Mail, MailOpen, Newspaper, PenLine, Pin, Search, Settings, TrendingUp } from "lucide-react"
+import { Palette, BadgeIndianRupee, CalendarDays, CircleQuestionMark, CreditCard, HeartPulse, Lightbulb, Megaphone, Receipt, TicketPercent, Users, CalendarCheck, FileText, Globe, LayoutDashboard, Mail, MailOpen, Newspaper, PenLine, Pin, Search, Settings, TrendingUp } from "lucide-react"
 
 // lucide-react 1.x has no brand icons, so these are simple line glyphs in the same style.
 type IconProps = { className?: string; "aria-hidden"?: boolean }
@@ -53,6 +53,7 @@ export const PLATFORM: Record<string, PlatformMeta> = {
   "admin-customers": { label: "Customers", short: "Customers", color: "#10203f", ...i(Users) },
   "admin-payments": { label: "Payments", short: "Payments", color: "#10203f", ...i(Receipt) },
   "admin-coupons": { label: "Coupons", short: "Coupons", color: "#10203f", ...i(TicketPercent) },
+  "admin-leads": { label: "Demo requests", short: "Demos", color: "#10203f", ...i(CalendarCheck) },
   "admin-announce": { label: "Announcements", short: "Announcements", color: "#10203f", ...i(Megaphone) },
   "admin-health": { label: "System health", short: "Health", color: "#10203f", ...i(HeartPulse) },
 }
