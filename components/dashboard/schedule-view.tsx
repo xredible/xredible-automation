@@ -3,7 +3,8 @@
 // A business's content queue: list or month calendar, with platform / status / search filters.
 
 import { useMemo, useState } from "react"
-import { ChevronLeft, ChevronRight, ExternalLink, Search } from "lucide-react"
+import { ChevronLeft, ChevronRight, ExternalLink, Layers, Maximize2, Play, Search } from "lucide-react"
+import { isVideoUrl, MediaViewer } from "./media-viewer"
 import type { QueueData, QueueItem } from "@/lib/dashboard/types"
 import { addDays, dayKey, timeOf, todayIST, weekdayDate } from "./format"
 import { Card, Segmented } from "./ui"
@@ -33,6 +34,9 @@ export function StatusPill({ status }: { status: string }) {
 export function QueueRow({ item, showDate, actions = true }: { item: QueueItem; showDate?: boolean; actions?: boolean }) {
   const p = PLATFORM[platformKey(item.platform)] ?? PLATFORM.ga4
   const when = item.status.toLowerCase() === "posted" ? item.postedAt || item.when : item.when
+  const [view, setView] = useState(false)
+  const media = item.media?.length ? item.media : item.preview ? [item.preview] : []
+  const video = item.isVideo || (media.length === 1 && isVideoUrl(media[0]))
   return (
     <li className="flex gap-3 py-3">
       <div className="w-[4.6rem] shrink-0 pt-0.5 text-xs tabular-nums text-[var(--muted)]">
@@ -45,8 +49,20 @@ export function QueueRow({ item, showDate, actions = true }: { item: QueueItem; 
           <div>{item.whenText || "No date"}</div>
         )}
       </div>
-      {item.preview ? (
-        <img onError={(e) => { e.currentTarget.style.visibility = "hidden" }} src={item.preview} alt="" loading="lazy" className="h-14 w-14 shrink-0 rounded-lg bg-[var(--chip)] object-cover" />
+      {media.length ? (
+        <button type="button" onClick={() => setView(true)} aria-label={`View ${media.length > 1 ? `all ${media.length} slides` : "full size"}`} className="group relative h-20 w-20 shrink-0 overflow-hidden rounded-xl bg-[var(--chip)] ring-1 ring-[var(--line)] transition hover:ring-[var(--brand)] sm:h-24 sm:w-24">
+          {video && isVideoUrl(media[0]) ? (
+            <video src={media[0]} muted playsInline preload="metadata" className="h-full w-full object-cover" />
+          ) : (
+            <img onError={(e) => { e.currentTarget.style.visibility = "hidden" }} src={item.preview || media[0]} alt="" loading="lazy" className="h-full w-full object-cover transition group-hover:scale-105" />
+          )}
+          {video ? (
+            <span className="absolute inset-0 flex items-center justify-center bg-black/25"><Play className="h-7 w-7 fill-white text-white" /></span>
+          ) : media.length > 1 ? (
+            <span className="absolute right-1 top-1 inline-flex items-center gap-0.5 rounded-md bg-black/65 px-1.5 py-0.5 text-[10px] font-semibold text-white"><Layers className="h-3 w-3" />{media.length}</span>
+          ) : null}
+          <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-1 pb-1 pt-3 text-center text-[10px] font-semibold text-white opacity-90"><Maximize2 className="mr-0.5 inline h-2.5 w-2.5" />View</span>
+        </button>
       ) : (
         <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg" style={{ background: `color-mix(in srgb, ${p.color} 10%, transparent)`, color: p.color }}>
           {p.icon}
@@ -78,6 +94,16 @@ export function QueueRow({ item, showDate, actions = true }: { item: QueueItem; 
         {item.error ? <div className="mt-1 text-xs leading-snug text-[var(--bad)]">{item.error}</div> : null}
         {actions ? <RowActions item={item} /> : null}
       </div>
+      {view ? (
+        <MediaViewer
+          media={media}
+          video={video}
+          title={`${item.platform} · ${FORMAT[item.format] ?? item.format}${when ? ` · ${weekdayDate(when)}, ${timeOf(when)}` : ""}`}
+          caption={item.caption || item.title}
+          url={item.url}
+          onClose={() => setView(false)}
+        />
+      ) : null}
     </li>
   )
 }
