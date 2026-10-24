@@ -100,6 +100,8 @@ export type QueueItem = {
   error: string | null
   caption: string
   preview: string | null
+  /** Every image (or the video) the post shows, for the full-screen viewer; falls back to preview. */
+  media?: string[]
   slides: number
   isVideo: boolean
   /** Where Open/Edit goes, when it isn't the business's rowUrl (e.g. a blog post in a sheet calendar). */
