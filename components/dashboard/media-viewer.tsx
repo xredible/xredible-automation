@@ -55,7 +55,8 @@ export function MediaViewer({
 
   if (typeof document === "undefined" || !n) return null
   const src = media[i]
-  const isVid = video || isVideoUrl(src)
+  // A post can mix a video with a cover image, so decide per item; `video` covers a lone link without an extension.
+  const isVid = isVideoUrl(src) || (video && n === 1)
 
   return createPortal(
     <div role="dialog" aria-modal="true" aria-label={title || "Post preview"} className="fixed inset-0 z-[100] flex flex-col bg-black/90 backdrop-blur-sm" onClick={onClose}>

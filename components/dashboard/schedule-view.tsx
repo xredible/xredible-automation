@@ -38,6 +38,7 @@ export function QueueRow({ item, showDate, actions = true }: { item: QueueItem; 
   const [start, setStart] = useState(0)
   const media = item.media?.length ? item.media : item.preview ? [item.preview] : []
   const video = item.isVideo || (media.length === 1 && isVideoUrl(media[0]))
+  const isVid = (m: string) => isVideoUrl(m) || (video && media.length === 1)
   return (
     <li className="flex gap-3 py-3">
       <div className="w-[4.6rem] shrink-0 pt-0.5 text-xs tabular-nums text-[var(--muted)]">
@@ -86,14 +87,14 @@ export function QueueRow({ item, showDate, actions = true }: { item: QueueItem; 
                 type="button"
                 onClick={() => { setStart(k); setView(true) }}
                 aria-label={media.length > 1 ? `View slide ${k + 1} of ${media.length} full screen` : "View full screen"}
-                className={`group relative shrink-0 snap-start overflow-hidden rounded-xl bg-[var(--chip)] ring-1 ring-[var(--line)] transition hover:ring-[var(--brand)] ${media.length > 1 ? "aspect-[4/5] w-[min(13rem,62%)]" : video ? "aspect-[9/16] w-[min(12rem,60%)]" : "aspect-[4/5] w-full max-w-[18rem]"}`}
+                className={`group relative shrink-0 snap-start overflow-hidden rounded-xl bg-[var(--chip)] ring-1 ring-[var(--line)] transition hover:ring-[var(--brand)] ${media.length > 1 ? (isVid(m) ? "aspect-[9/16] w-[min(11rem,52%)]" : "aspect-[4/5] w-[min(13rem,62%)]") : video ? "aspect-[9/16] w-[min(12rem,60%)]" : "aspect-[4/5] w-full max-w-[18rem]"}`}
               >
-                {video && isVideoUrl(m) ? (
+                {isVid(m) ? (
                   <video src={m} muted playsInline preload="metadata" className="h-full w-full object-cover" />
                 ) : (
                   <img onError={(e) => { e.currentTarget.style.visibility = "hidden" }} src={m} alt="" loading="lazy" className="h-full w-full object-contain" />
                 )}
-                {video ? (
+                {isVid(m) ? (
                   <span className="absolute inset-0 flex items-center justify-center bg-black/20"><Play className="h-10 w-10 fill-white text-white drop-shadow" /></span>
                 ) : null}
                 {media.length > 1 ? (
@@ -113,7 +114,7 @@ export function QueueRow({ item, showDate, actions = true }: { item: QueueItem; 
           start={start}
           video={video}
           title={`${item.platform} · ${FORMAT[item.format] ?? item.format}${when ? ` · ${weekdayDate(when)}, ${timeOf(when)}` : ""}`}
-          caption={item.caption || item.title}
+          caption={item.fullCaption || item.caption || item.title}
           url={item.url}
           onClose={() => setView(false)}
         />
