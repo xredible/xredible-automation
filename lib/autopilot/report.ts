@@ -11,8 +11,8 @@ import { rows } from "./db"
 import { open } from "./crypto"
 import { graph } from "./meta"
 import { postUrl } from "./linkedin"
-import { postsFor, subsFor } from "./service"
-import { cardUrl, channelFor, contactsFor, TOOL_KEYS, type Channel, type Item } from "./tools"
+import { postsFor, subsFor, type LiPost } from "./service"
+import { cardUrl, channelFor, contactsFor, liCardUrl, TOOL_KEYS, type Channel, type Item } from "./tools"
 import { canPublish, lapsed, PRODUCTS, remaining } from "./products"
 
 type Result = { status: number; body: unknown }
@@ -115,6 +115,15 @@ async function itemsOf(email: string): Promise<Item[]> {
   }))
 }
 
+/** First image of a LinkedIn post for the calendar: the designed image, carousel cover or the customer's photo. */
+function liPreview(p: LiPost): string | null {
+  const v = p.updatedAt || ""
+  if (p.format === "photo") return p.design.photos?.[0] || null
+  if (p.format === "image") return p.design.photos?.[0] || liCardUrl(p.id, 0, v)
+  if (p.format === "carousel") return p.design.slides?.length ? liCardUrl(p.id, 0, v) : null
+  return null
+}
+
 async function queue(email: string): Promise<QueueData & { tools: ToolSummary[] }> {
   const [posts, items, subs, profile, ...channels] = await Promise.all([
     postsFor(email),
@@ -131,7 +140,7 @@ async function queue(email: string): Promise<QueueData & { tools: ToolSummary[] 
       row: rowOf("li", p.id),
       title: p.topic || p.text.split("\n")[0].slice(0, 90),
       platform: "LinkedIn",
-      format: "text",
+      format: p.format,
       postType: "",
       mode: "auto",
       status: STATUS[p.status] || "Draft",
@@ -142,8 +151,8 @@ async function queue(email: string): Promise<QueueData & { tools: ToolSummary[] 
       url: p.postUrn.startsWith("urn:li:") ? postUrl(p.postUrn) : null,
       error: p.status === "posted" ? null : p.error || null,
       caption: p.text,
-      preview: null,
-      slides: 1,
+      preview: liPreview(p),
+      slides: p.format === "carousel" ? p.design.slides?.length || 1 : p.format === "photo" ? p.design.photos?.length || 1 : 1,
       isVideo: false,
       editUrl: "/dashboard?biz=autopilot&view=ap-linkedin",
       ref: "LinkedIn Autopilot",
@@ -158,7 +167,7 @@ async function queue(email: string): Promise<QueueData & { tools: ToolSummary[] 
       row: rowOf("item", it.id),
       title: it.title,
       platform: meta ? (targets === "facebook" ? "Facebook" : "Instagram") : it.product === "blog" ? "WordPress" : "Email",
-      format: meta ? "image" : it.product === "blog" ? "post" : "newsletter",
+      format: meta ? (it.format === "carousel" || it.format === "photo" ? it.format : "image") : it.product === "blog" ? "post" : "newsletter",
       postType: meta && targets === "both" ? "Instagram + Facebook" : "",
       mode: it.product === "blog" ? "wordpress" : it.product === "newsletter" ? "email" : "auto",
       status: sending ? "Processing" : STATUS[it.status] || "Draft",
@@ -170,7 +179,7 @@ async function queue(email: string): Promise<QueueData & { tools: ToolSummary[] 
       error: it.status === "posted" ? null : it.error || null,
       caption: meta ? it.text : it.title,
       preview: meta ? (/^https:\/\//.test(it.image) ? it.image : cardUrl(it.id)) : null,
-      slides: 1,
+      slides: meta && it.format === "carousel" ? it.design.slides?.length || 1 : 1,
       isVideo: false,
       editUrl: `/dashboard?biz=autopilot&view=ap-${it.product}`,
       ref: it.product === "newsletter" && it.ref.startsWith("sent:") ? `Sent to ${it.ref.slice(5)}` : PRODUCTS[it.product].name,
