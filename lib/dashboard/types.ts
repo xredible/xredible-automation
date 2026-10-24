@@ -99,6 +99,8 @@ export type QueueItem = {
   url: string | null
   error: string | null
   caption: string
+  /** The whole caption, for the full-screen viewer, when `caption` is only its first line. */
+  fullCaption?: string
   preview: string | null
   /** Every image (or the video) the post shows, for the full-screen viewer; falls back to preview. */
   media?: string[]
