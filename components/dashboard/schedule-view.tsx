@@ -11,7 +11,7 @@ import { PLATFORM, platformKey } from "./brand"
 import { BulkActions, RowActions, useItems } from "./actions"
 import { BUSINESSES, type BusinessKey } from "@/lib/dashboard/businesses"
 
-const FORMAT: Record<string, string> = { reel: "Reel", carousel: "Carousel", fb_post: "Post", pin: "Pin", youtube_short: "Short", text: "Text post", post: "Blog post", image: "Image post", newsletter: "Newsletter" }
+const FORMAT: Record<string, string> = { reel: "Reel", carousel: "Carousel", fb_post: "Post", pin: "Pin", youtube_short: "Short", text: "Text post", post: "Blog post", image: "Image post", photo: "Photo post", newsletter: "Newsletter" }
 const MODE: Record<string, string> = { auto: "Posts automatically", "pinterest csv": "Pinterest publishes it", manual: "Post by hand", wordpress: "Publishes on the website", email: "Sends to your subscribers" }
 export const STATUS_STYLE: Record<string, string> = {
   posted: "bg-emerald-50 text-emerald-700 ring-emerald-600/20",
