@@ -35,6 +35,7 @@ export function QueueRow({ item, showDate, actions = true }: { item: QueueItem; 
   const p = PLATFORM[platformKey(item.platform)] ?? PLATFORM.ga4
   const when = item.status.toLowerCase() === "posted" ? item.postedAt || item.when : item.when
   const [view, setView] = useState(false)
+  const [start, setStart] = useState(0)
   const media = item.media?.length ? item.media : item.preview ? [item.preview] : []
   const video = item.isVideo || (media.length === 1 && isVideoUrl(media[0]))
   return (
@@ -49,21 +50,7 @@ export function QueueRow({ item, showDate, actions = true }: { item: QueueItem; 
           <div>{item.whenText || "No date"}</div>
         )}
       </div>
-      {media.length ? (
-        <button type="button" onClick={() => setView(true)} aria-label={`View ${media.length > 1 ? `all ${media.length} slides` : "full size"}`} className="group relative h-20 w-20 shrink-0 overflow-hidden rounded-xl bg-[var(--chip)] ring-1 ring-[var(--line)] transition hover:ring-[var(--brand)] sm:h-24 sm:w-24">
-          {video && isVideoUrl(media[0]) ? (
-            <video src={media[0]} muted playsInline preload="metadata" className="h-full w-full object-cover" />
-          ) : (
-            <img onError={(e) => { e.currentTarget.style.visibility = "hidden" }} src={item.preview || media[0]} alt="" loading="lazy" className="h-full w-full object-cover transition group-hover:scale-105" />
-          )}
-          {video ? (
-            <span className="absolute inset-0 flex items-center justify-center bg-black/25"><Play className="h-7 w-7 fill-white text-white" /></span>
-          ) : media.length > 1 ? (
-            <span className="absolute right-1 top-1 inline-flex items-center gap-0.5 rounded-md bg-black/65 px-1.5 py-0.5 text-[10px] font-semibold text-white"><Layers className="h-3 w-3" />{media.length}</span>
-          ) : null}
-          <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-1 pb-1 pt-3 text-center text-[10px] font-semibold text-white opacity-90"><Maximize2 className="mr-0.5 inline h-2.5 w-2.5" />View</span>
-        </button>
-      ) : (
+      {media.length ? null : (
         <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg" style={{ background: `color-mix(in srgb, ${p.color} 10%, transparent)`, color: p.color }}>
           {p.icon}
         </span>
@@ -91,12 +78,39 @@ export function QueueRow({ item, showDate, actions = true }: { item: QueueItem; 
             </a>
           ) : null}
         </div>
+        {media.length ? (
+          <div className="-mr-1 mt-2.5 flex snap-x gap-2 overflow-x-auto pb-1.5 pr-1">
+            {media.map((m, k) => (
+              <button
+                key={m + k}
+                type="button"
+                onClick={() => { setStart(k); setView(true) }}
+                aria-label={media.length > 1 ? `View slide ${k + 1} of ${media.length} full screen` : "View full screen"}
+                className={`group relative shrink-0 snap-start overflow-hidden rounded-xl bg-[var(--chip)] ring-1 ring-[var(--line)] transition hover:ring-[var(--brand)] ${media.length > 1 ? "aspect-[4/5] w-[min(13rem,62%)]" : video ? "aspect-[9/16] w-[min(12rem,60%)]" : "aspect-[4/5] w-full max-w-[18rem]"}`}
+              >
+                {video && isVideoUrl(m) ? (
+                  <video src={m} muted playsInline preload="metadata" className="h-full w-full object-cover" />
+                ) : (
+                  <img onError={(e) => { e.currentTarget.style.visibility = "hidden" }} src={m} alt="" loading="lazy" className="h-full w-full object-contain" />
+                )}
+                {video ? (
+                  <span className="absolute inset-0 flex items-center justify-center bg-black/20"><Play className="h-10 w-10 fill-white text-white drop-shadow" /></span>
+                ) : null}
+                {media.length > 1 ? (
+                  <span className="absolute left-1.5 top-1.5 inline-flex items-center gap-0.5 rounded-md bg-black/65 px-1.5 py-0.5 text-[10px] font-semibold text-white"><Layers className="h-3 w-3" />{k + 1}/{media.length}</span>
+                ) : null}
+                <span className="absolute bottom-1.5 right-1.5 inline-flex items-center gap-1 rounded-md bg-black/65 px-1.5 py-0.5 text-[10px] font-semibold text-white opacity-90 transition group-hover:opacity-100"><Maximize2 className="h-3 w-3" />Full screen</span>
+              </button>
+            ))}
+          </div>
+        ) : null}
         {item.error ? <div className="mt-1 text-xs leading-snug text-[var(--bad)]">{item.error}</div> : null}
         {actions ? <RowActions item={item} /> : null}
       </div>
       {view ? (
         <MediaViewer
           media={media}
+          start={start}
           video={video}
           title={`${item.platform} · ${FORMAT[item.format] ?? item.format}${when ? ` · ${weekdayDate(when)}, ${timeOf(when)}` : ""}`}
           caption={item.caption || item.title}
