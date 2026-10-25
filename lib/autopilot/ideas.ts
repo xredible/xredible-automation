@@ -101,7 +101,7 @@ const SPEC: Record<Channel, { kind: string; spec: string; json: string; tokens: 
   },
   blog: {
     kind: "SEO blog article",
-    spec: "About 800 words. title max 65 characters with the main search phrase; metaDescription 140 to 155 characters; body in markdown using only ## and ### headings, - bullets, 1. lists and **bold** (no H1, links, tables or images): a 2-3 sentence intro, 4 to 6 ## sections, a ## Frequently asked questions section with 3 ### questions, a short ## Conclusion.",
+    spec: "About 800 words. title max 65 characters with the main search phrase; metaDescription 140 to 155 characters; body in markdown using only ## and ### headings, - bullets, 1. lists and **bold** (no H1, links, tables or images): a 2-3 sentence intro, 4 to 6 ## sections, a ## Frequently asked questions section with 3 ### questions, a short closing ## section with a natural heading of its own (not 'Conclusion' or 'Summary') that ends on a tip or a nudge to act.",
     json: '{"topic": "<main search phrase>", "title": "...", "metaDescription": "...", "body": "..."}',
     tokens: 12000,
   },

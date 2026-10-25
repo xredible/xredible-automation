@@ -5,20 +5,55 @@
 
 import { gateway } from "@/lib/dashboard/gateway"
 import { addNotice, noticesFor, removeNotice } from "./account"
+import { HUMAN, aiPhrases, polish } from "./style"
 
-export async function ask(prompt: string, o: { json?: boolean; maxTokens?: number; temperature?: number } = {}): Promise<string> {
-  const r = await gateway({ kind: "ai", prompt, json: !!o.json, maxTokens: o.maxTokens ?? 2048, temperature: o.temperature ?? 0.8 }, 95_000)
+export async function ask(prompt: string, o: { json?: boolean; maxTokens?: number; temperature?: number; timeoutMs?: number } = {}): Promise<string> {
+  const r = await gateway({ kind: "ai", prompt, json: !!o.json, maxTokens: o.maxTokens ?? 2048, temperature: o.temperature ?? 0.8 }, o.timeoutMs ?? 95_000)
   const b = r.body as { ok?: boolean; text?: string; error?: string }
   if (r.status !== 200 || !b?.ok || !b.text) throw new Error(b?.error || "The AI didn't answer. Try again in a minute.")
   return b.text
 }
 
-export async function askJson<T>(prompt: string, maxTokens = 8000): Promise<T> {
-  const text = await ask(prompt, { json: true, maxTokens })
+function parseJson<T>(text: string): T {
   try {
     return JSON.parse(text.replace(/^```(json)?|```$/g, "").trim()) as T
   } catch {
     throw new Error("The AI answer came back broken. Try again.")
+  }
+}
+
+/** All the text in an answer, for the style check. */
+const strings = (v: unknown): string => (typeof v === "string" ? v : Array.isArray(v) ? v.map(strings).join("\n") : v && typeof v === "object" ? Object.values(v).map(strings).join("\n") : "")
+
+/** Every string in an answer, passed through `f`. */
+const mapStrings = (v: unknown, f: (s: string) => string): unknown =>
+  typeof v === "string" ? f(v) : Array.isArray(v) ? v.map((x) => mapStrings(x, f)) : v && typeof v === "object" ? Object.fromEntries(Object.entries(v).map(([k, x]) => [k, mapStrings(x, f)])) : v
+
+/**
+ * A JSON answer from the AI. Every answer is checked for stock AI phrases (see style.ts); if it has
+ * any the customer didn't use themselves, the AI rewords just those once (only when the first answer
+ * came back quickly, so the request still fits the route's time limit; otherwise the first answer stands). Then the commonest
+ * tells are reworded in place (polish).
+ */
+export async function askJson<T>(prompt: string, maxTokens = 8000, o: { check?: boolean } = {}): Promise<T> {
+  const t0 = Date.now()
+  const first = parseJson<T>(await ask(prompt, { json: true, maxTokens }))
+  if (o.check === false) return first
+  // Phrases from their own About, tone or brief are fine; the text being edited doesn't count as theirs.
+  const own = prompt.replace(HUMAN, "").split(/\n(?:CURRENT TEXT|POST):\n/)[0]
+  const done = (v: T) => mapStrings(v, (x) => polish(x, own)) as T
+  const found = aiPhrases(strings(first), own)
+  if (!found.length || Date.now() - t0 > 35_000) return done(first)
+  try {
+    const fixed = parseJson<T>(
+      await ask(
+        `${prompt}\n\nYOUR LAST ANSWER:\n${JSON.stringify(first)}\n\nIt uses phrases that read as AI-written: ${found.map((f) => `"${f}"`).join(", ")}. Return the same JSON with only those phrases reworded in plain, everyday words. Change nothing else.`,
+        { json: true, maxTokens, timeoutMs: 50_000 },
+      ),
+    )
+    return done(strings(fixed).length > strings(first).length * 0.6 ? fixed : first)
+  } catch {
+    return done(first)
   }
 }
 
@@ -28,7 +63,7 @@ export const LANG: Record<string, string> = {
   Hindi: "Hindi in Devanagari script (common English words can stay in English)",
 }
 
-export const HONEST = 'Do not invent facts about them: no made-up prices, offers, numbers, awards, testimonials or client names. No hype words like "game-changer", "unlock", "delve", "elevate".'
+export const HONEST = `Do not invent facts about them: no made-up prices, offers, numbers, awards, testimonials or client names.\n${HUMAN}`
 
 // ---------- learning the customer's voice ----------
 // When someone edits a draft, the finished text is kept (the last 4 per tool) as an example of how
