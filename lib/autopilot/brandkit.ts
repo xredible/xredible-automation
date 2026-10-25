@@ -138,6 +138,7 @@ export async function suggestNiche(about: string): Promise<string> {
   const o = await askJson<{ niche?: string }>(
     `Which one of these niches best fits this business or person? Answer with the key only.\n\nNICHES:\n${keys.map((k) => `${k}: ${NICHES[k].label}`).join("\n")}\n\nABOUT THEM:\n${about.slice(0, 1500)}\n\nReturn JSON only: {"niche": "<key>"}`,
     1024,
+    { check: false },
   )
   return keys.includes(String(o.niche)) ? String(o.niche) : "agency"
 }
