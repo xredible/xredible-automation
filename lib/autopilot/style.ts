@@ -25,7 +25,7 @@ export const HUMAN = `WRITE LIKE A PERSON, NOT A TEMPLATE:
 - Be specific: real numbers, times, amounts and names of things from what they told you. Specific beats general.
 - Every paragraph and list item starts differently. No summary or moral at the end of a section; end on a tip, an aside or a nudge.
 - Never use: ${BANNED.map((b) => `"${b}"`).join(", ")}.
-- Never invent a personal story, a test, a result, a statistic or a quote.`
+- Never invent a personal story, a test, a result, a statistic, a percentage or a quote. Don't claim something happened to them ("It happened to me", "a client once…", "every weekend I see…") unless ABOUT THEM says so; give the tip as plain advice instead.`
 
 /** Banned phrases in `text`, ignoring any the customer used themselves (`own`, e.g. their About text or brief). */
 export function aiPhrases(text: string, own = ""): string[] {
