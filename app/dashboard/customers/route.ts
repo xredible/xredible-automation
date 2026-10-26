@@ -12,7 +12,7 @@ import { NextResponse } from "next/server"
 import { currentUser, listUsers } from "@/lib/dashboard/auth"
 import { rows, update } from "@/lib/autopilot/db"
 import { errText, json } from "@/lib/autopilot/guard"
-import { isCycle, pendingUpi, planOf, priceOf, PRODUCTS, type PlanKey, type Subscription } from "@/lib/autopilot/products"
+import { isCycle, isFree, pendingUpi, planOf, priceOf, PRODUCTS, type PlanKey, type Subscription } from "@/lib/autopilot/products"
 import { asSub } from "@/lib/autopilot/service"
 import { activatePlan, allCoupons, allPayments, saveCoupon, setCouponActive, subById } from "@/lib/autopilot/billing"
 import { realEmail } from "@/lib/autopilot/account"
@@ -27,8 +27,9 @@ async function admin() {
 }
 
 /** Monthly recurring revenue, conversion and churn from the subscriptions and payments tables. */
-function revenue(subs: Subscription[], payments: Awaited<ReturnType<typeof allPayments>>) {
+function revenue(all: Subscription[], payments: Awaited<ReturnType<typeof allPayments>>) {
   const now = Date.now()
+  const subs = all.filter((s) => !isFree(s) && !(s.plan !== "trial" && s.status === "cancelled" && !payments.some((p) => p.email === s.email && p.product === s.product)))
   const live = subs.filter((s) => s.status === "active" && s.periodEnd && Date.parse(s.periodEnd) > now)
   const mrr = live.reduce((t, s) => t + (s.plan === "trial" ? 0 : priceOf(s.product, s.plan, s.cycle) / (s.cycle === "yearly" ? 12 : 1)), 0)
   const people = new Set(subs.map((s) => realEmail(s.email)))

@@ -8,7 +8,8 @@ import { fromN8n } from "@/lib/autopilot/guard"
 import { rows } from "@/lib/autopilot/db"
 import { addNotice, allNotices, EMAILS, mailConfigured, realEmail, send, type Notice } from "@/lib/autopilot/account"
 import { asSub } from "@/lib/autopilot/service"
-import { PRODUCTS, type ProductKey } from "@/lib/autopilot/products"
+import { isFree, PRODUCTS, type ProductKey } from "@/lib/autopilot/products"
+import { makeFree } from "@/lib/autopilot/free"
 import { listUsers } from "@/lib/dashboard/auth"
 import { noteCronRun } from "@/lib/autopilot/admin"
 import { quickUrl } from "@/lib/autopilot/quick"
@@ -27,7 +28,15 @@ export async function POST(request: Request) {
   if (!fromN8n(request)) return NextResponse.json({ ok: false, error: "Not allowed." }, { status: 403 })
   // Customers' email sequences go out from their own accounts, so they run whatever Xredible's email is.
   const sequences = await runSequences().catch((e) => ({ error: e instanceof Error ? e.message : "failed" }))
-  if (!mailConfigured()) return NextResponse.json({ ok: true, sequences, skipped: "XD_SMTP_PASS is not set" })
+  // Free access: start the next free month (fresh Pro post limit) once the current one is over.
+  const renewedFree = await rows<Record<string, unknown>>("subs")
+    .then(async (all) => {
+      let n = 0
+      for (const s of all.map(asSub)) if (isFree(s) && (!s.periodEnd || Date.parse(s.periodEnd) <= Date.now())) await makeFree(s).then(() => n++)
+      return n
+    })
+    .catch(() => -1)
+  if (!mailConfigured()) return NextResponse.json({ ok: true, sequences, renewedFree, skipped: "XD_SMTP_PASS is not set" })
   const [subsRaw, liPosts, items, notices, { users }] = await Promise.all([rows<Record<string, unknown>>("subs"), rows<Record<string, unknown>>("li_posts"), rows<Record<string, unknown>>("ap_items"), allNotices(), listUsers(true)])
   const subs = subsRaw.map(asSub)
   const people = new Map((users || []).filter((u) => u.active).map((u) => [u.email, u]))
@@ -79,7 +88,7 @@ export async function POST(request: Request) {
           await mark(person, "trial-used", s.email + "|" + s.product)
           sent.push(`trial ${person} ${s.product}`)
         }
-        if (s.status !== "active" || !s.periodEnd) continue
+        if (s.status !== "active" || !s.periodEnd || isFree(s)) continue
         const end = Date.parse(s.periodEnd)
         // 3. UPI plans don't renew: remind 3 days before the end.
         if (!s.rzpSubId && end > now && end - now < 3 * 864e5 && !had(mine, "renew", `${s.email}|${s.product}|${s.periodEnd}`)) {
@@ -113,5 +122,5 @@ export async function POST(request: Request) {
     }
   }
   await noteCronRun().catch(() => {})
-  return NextResponse.json({ ok: true, people: byPerson.size, sent, sequences })
+  return NextResponse.json({ ok: true, people: byPerson.size, sent, sequences, renewedFree })
 }

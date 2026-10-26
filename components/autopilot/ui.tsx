@@ -5,7 +5,7 @@
 
 import { useEffect, useState, type ReactNode } from "react"
 import { useInApp } from "@/lib/dashboard/app-mode"
-import { lapsed, limitOf, pendingUpi, priceOf, PRODUCTS, remaining, rupees, type Cycle, type PlanKey, type ProductKey, type Subscription } from "@/lib/autopilot/products"
+import { isFree, lapsed, limitOf, pendingUpi, priceOf, PRODUCTS, remaining, rupees, type Cycle, type PlanKey, type ProductKey, type Subscription } from "@/lib/autopilot/products"
 
 export type Upi = { id: string; plans: { key: PlanKey; link: string; qr: string }[] }
 export type PlanState = { sub: Subscription; ready: { payments: boolean; razorpayKey: string; upi: Upi | null } }
@@ -47,7 +47,8 @@ export function PlanCard({ product, s, onChanged }: { product: ProductKey; s: Pl
   const active = sub.status === "active" && !lapsed(sub)
   const pend = pendingUpi(sub)
   const inApp = useInApp()
-  const showPlans = !inApp && (!active || renewSoon(sub) || changing)
+  const free = isFree(sub)
+  const showPlans = !free && !inApp && (!active || renewSoon(sub) || changing)
 
   const subscribe = async (plan: PlanKey) => {
     setBusy(plan)
@@ -97,22 +98,22 @@ export function PlanCard({ product, s, onChanged }: { product: ProductKey; s: Pl
       <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
         <div>
           <div className={small}>Plan</div>
-          <div className="text-base font-semibold">{trial ? "Free trial" : `${planName(sub.plan)}${sub.cycle === "yearly" ? " · yearly" : ""} · ${active ? "active" : lapsed(sub) ? "ended" : sub.status}`}</div>
+          <div className="text-base font-semibold">{free ? "Pro · free access" : trial ? "Free trial" : `${planName(sub.plan)}${sub.cycle === "yearly" ? " · yearly" : ""} · ${active ? "active" : lapsed(sub) ? "ended" : sub.status}`}</div>
         </div>
         <div>
-          <div className={small}>{trial ? `Free ${p.unit} left` : `${p.unit[0].toUpperCase() + p.unit.slice(1)} left this ${sub.cycle === "yearly" ? "year" : "period"}`}</div>
+          <div className={small}>{trial ? `Free ${p.unit} left` : `${p.unit[0].toUpperCase() + p.unit.slice(1)} left this ${free ? "month" : sub.cycle === "yearly" ? "year" : "period"}`}</div>
           <div className="text-base font-semibold tabular-nums">
             {left} of {sub.postLimit}
           </div>
         </div>
         {sub.periodEnd && !trial ? (
           <div>
-            <div className={small}>{sub.rzpSubId && active ? "Renews" : "Paid until"}</div>
+            <div className={small}>{free ? "New month starts" : sub.rzpSubId && active ? "Renews" : "Paid until"}</div>
             <div className="text-base font-semibold">{istTime(sub.periodEnd).split(",").slice(0, 2).join(",")}</div>
           </div>
         ) : null}
         <div className="ml-auto flex flex-wrap gap-2">
-          {active && !changing && !inApp ? (
+          {active && !free && !changing && !inApp ? (
             <button type="button" className={ghost} onClick={() => setChanging(true)}>
               Change plan
             </button>
@@ -126,7 +127,7 @@ export function PlanCard({ product, s, onChanged }: { product: ProductKey; s: Pl
       </div>
       {sub.note && !sub.note.startsWith("checkout:") && !pend ? <div className="mt-3"><Notice tone="info">{sub.note}</Notice></div> : null}
       {lapsed(sub) ? <div className="mt-3"><Notice tone="bad">{inApp ? "Your paid period has ended." : "Your paid period has ended. Renew to keep posting."}</Notice></div> : null}
-      {inApp && (!active || renewSoon(sub)) ? <div className="mt-3"><Notice tone="info">Plans can&rsquo;t be bought or changed in the app.</Notice></div> : null}
+      {inApp && !free && (!active || renewSoon(sub)) ? <div className="mt-3"><Notice tone="info">Plans can&rsquo;t be bought or changed in the app.</Notice></div> : null}
       {pend ? (
         <div className="mt-3">
           <Notice tone="info">
@@ -195,7 +196,7 @@ export function PlanCard({ product, s, onChanged }: { product: ProductKey; s: Pl
   )
 }
 
-const renewSoon = (s: Subscription) => s.status === "active" && !s.rzpSubId && !!s.periodEnd && Date.parse(s.periodEnd) - Date.now() < 5 * 864e5
+const renewSoon = (s: Subscription) => !isFree(s) && s.status === "active" && !s.rzpSubId && !!s.periodEnd && Date.parse(s.periodEnd) - Date.now() < 5 * 864e5
 
 type Quote = { amount: number; full: number; couponError: string | null; percent: number; upi: { id: string; link: string; qr: string } | null }
 

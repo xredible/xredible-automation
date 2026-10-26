@@ -4,6 +4,7 @@
 //      { op: "update", email, name?, role?, businesses?, active? }
 //      { op: "reset", email, password }      new password; signs that account out everywhere
 //      { op: "delete", email }
+//      { op: "free", email, on }             free access: every Autopilot tool on Pro without payment
 
 import { NextResponse } from "next/server"
 import { isBusiness } from "@/lib/dashboard/businesses"
@@ -20,6 +21,10 @@ import {
   type Role,
   type StoredUser,
 } from "@/lib/dashboard/auth"
+import { allNotices, realEmail } from "@/lib/autopilot/account"
+import { rows } from "@/lib/autopilot/db"
+import { setFreeAccess } from "@/lib/autopilot/free"
+import { asSub } from "@/lib/autopilot/service"
 
 export const runtime = "nodejs"
 export const dynamic = "force-dynamic"
@@ -34,9 +39,10 @@ async function admin() {
 
 export async function GET() {
   if (!(await admin())) return json({ ok: false, error: "Only admins can manage accounts." }, 403)
-  const { users, error } = await listUsers(true)
+  const [{ users, error }, notes] = await Promise.all([listUsers(true), allNotices().catch(() => [])])
   if (!users) return json({ ok: false, error }, 502)
-  return json({ ok: true, users: users.map(toPublic).sort((a, b) => a.name.localeCompare(b.name)) })
+  const free = new Set(notes.filter((n) => n.kind === "free-access").map((n) => n.email))
+  return json({ ok: true, users: users.map((u) => ({ ...toPublic(u), free: free.has(u.email) })).sort((a, b) => a.name.localeCompare(b.name)) })
 }
 
 export async function POST(request: Request) {
@@ -99,6 +105,16 @@ export async function POST(request: Request) {
     if (bad) return json({ ok: false, error: bad }, 400)
     const err = await saveUser({ ...existing, passHash: await hashPassword(password), sessionVersion: existing.sessionVersion + 1 })
     return err ? json({ ok: false, error: err }, 502) : json({ ok: true })
+  }
+
+  if (op === "free") {
+    try {
+      const subs = (await rows<Record<string, unknown>>("subs")).map(asSub).filter((s) => realEmail(s.email) === email)
+      await setFreeAccess(email, b.on === true, me.email, subs)
+      return json({ ok: true })
+    } catch (e) {
+      return json({ ok: false, error: e instanceof Error ? e.message : "Could not change free access." }, 502)
+    }
   }
 
   if (op === "delete") {
