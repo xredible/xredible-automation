@@ -13,7 +13,7 @@ function Shell({ title, sub, children }: { title: string; sub: string; children:
     <div className="relative flex min-h-[100dvh] flex-col items-center justify-center overflow-hidden bg-[#0b1530] px-4 py-10">
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-[#d4ad4b]/15 via-[#6f93f0]/10 to-[#35c2a7]/10" />
       <Link href="/" className="relative mb-7" aria-label="Xredible home">
-        <img src="/brand/xredible-logo-white.png" alt="Xredible Automation" width={709} height={224} className="h-11 w-auto" />
+        <img src="/brand/xredible-logo-white.webp" alt="Xredible Automation" width={709} height={224} className="h-11 w-auto" />
       </Link>
       <div className="relative w-full max-w-sm rounded-3xl bg-white p-6 shadow-2xl shadow-black/30 sm:p-8">
         <img src="/dashboard/xredible.svg" alt="" width={56} height={56} className="mb-5 h-14 w-14 rounded-2xl" />

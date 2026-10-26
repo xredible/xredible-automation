@@ -19,7 +19,7 @@ const NAV = [
 
 export function Logo({ className = "h-9 w-auto" }: { className?: string }) {
   // eslint-disable-next-line @next/next/no-img-element
-  return <img src="/brand/xredible-logo-white.png" alt="Xredible Automation" width={709} height={224} className={className} />
+  return <img src="/brand/xredible-logo-white.webp" alt="Xredible Automation" width={709} height={224} className={className} />
 }
 
 export function SiteHeader({ active }: { active?: string }) {

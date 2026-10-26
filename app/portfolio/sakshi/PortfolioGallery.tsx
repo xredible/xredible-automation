@@ -2,39 +2,39 @@ import Image from "next/image";
 
 const images = [
   {
-    src: "/portfolio/sakshi/image-01.jpg",
+    src: "/portfolio/sakshi/image-01.webp",
     title: "SEO & Analytics",
   },
   {
-    src: "/portfolio/sakshi/image-02.jpg",
+    src: "/portfolio/sakshi/image-02.webp",
     title: "Content Strategy",
   },
   {
-    src: "/portfolio/sakshi/image-03.jpg",
+    src: "/portfolio/sakshi/image-03.webp",
     title: "Editorial Growth",
   },
   {
-    src: "/portfolio/sakshi/image-04.jpg",
+    src: "/portfolio/sakshi/image-04.webp",
     title: "Content & Publishing",
   },
   {
-    src: "/portfolio/sakshi/image-05.jpg",
+    src: "/portfolio/sakshi/image-05.webp",
     title: "Digital Strategy",
   },
   {
-    src: "/portfolio/sakshi/image-06.jpg",
+    src: "/portfolio/sakshi/image-06.webp",
     title: "Audience Growth",
   },
   {
-    src: "/portfolio/sakshi/image-07.png",
+    src: "/portfolio/sakshi/image-07.webp",
     title: "Editorial Work",
   },
   {
-    src: "/portfolio/sakshi/image-08.png",
+    src: "/portfolio/sakshi/image-08.webp",
     title: "SEO Performance",
   },
   {
-    src: "/portfolio/sakshi/image-09.png",
+    src: "/portfolio/sakshi/image-09.webp",
     title: "Digital Content",
   },
 ];
