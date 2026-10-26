@@ -108,7 +108,7 @@ export function TrendChart({
       <div className="flex gap-2">
         <div className="relative flex w-10 shrink-0 flex-col justify-between pb-[28px] pt-[4px] text-right text-[10.5px] tabular-nums text-[var(--faint)]" style={{ height: H }} aria-hidden>
           {[...ticks].reverse().map((t, i) => (
-            <span key={i}>{fmt(t, format === "duration" ? "duration" : format === "percent" ? "percent" : "number", true)}</span>
+            <span key={i}>{fmt(t, format === "duration" || format === "percent" || format === "inr" || format === "usd" ? format : "number", true)}</span>
           ))}
         </div>
         <div

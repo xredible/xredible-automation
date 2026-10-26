@@ -6,7 +6,8 @@
 
 export type Point = { d: string; v: number | null }
 
-export type Format = "number" | "percent" | "decimal" | "duration" | "date"
+/** "inr" / "usd": money in that currency (AdSense reports in the account's currency). */
+export type Format = "number" | "percent" | "decimal" | "duration" | "date" | "inr" | "usd"
 
 export type Kpi = {
   key: string
@@ -18,6 +19,8 @@ export type Kpi = {
   cseries?: Point[] | null
   help?: string
   invert?: boolean
+  /** An average (e.g. RPM), not a total: missing days stay empty instead of 0. */
+  avg?: boolean
 }
 
 export type Column = {
