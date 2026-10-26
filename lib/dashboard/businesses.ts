@@ -18,6 +18,7 @@ export type ViewName =
   | "pinterest"
   | "ga4"
   | "gsc"
+  | "adsense"
   | "results"
   | "newsletters"
   | "email"
@@ -109,10 +110,10 @@ export const BUSINESSES: Record<BusinessKey, Business> = {
     nav: [
       { group: "", items: ["overview", "schedule", "blog"] },
       { group: "Social", items: ["instagram", "facebook", "pinterest"] },
-      { group: "Website", items: ["ga4", "gsc"] },
+      { group: "Website", items: ["ga4", "gsc", "adsense"] },
       { group: "Email", items: ["email"] },
     ],
-    sections: ["queue", "blog", "blogpost", "ga4", "gsc", "instagram", "facebook", "pinterest", "email"],
+    sections: ["queue", "blog", "blogpost", "ga4", "gsc", "adsense", "instagram", "facebook", "pinterest", "email"],
     picks: [
       { section: "ga4", key: "activeUsers", label: "Website visitors" },
       { section: "ga4", key: "views", label: "Page views" },
@@ -122,6 +123,7 @@ export const BUSINESSES: Record<BusinessKey, Business> = {
       { section: "facebook", key: "views", label: "Facebook views" },
       { section: "pinterest", key: "impression", label: "Pinterest impressions" },
       { section: "email", key: "subscribers", label: "Email subscribers" },
+      { section: "adsense", key: "earnings", label: "Ad earnings" },
     ],
     // The Content Queue sheet's id lives in n8n (NST_SHEET_ID), so every item brings its own editUrl.
     sheet: "",

@@ -35,6 +35,9 @@ export const FILTERS: Record<string, FilterDef[]> = {
     { key: "contentType", label: "Content", all: "All content", options: fixed([["shorts", "Shorts"], ["videoOnDemand", "Videos"], ["liveStream", "Live streams"]]) },
     { key: "country", label: "Country", all: "All countries", options: fromTable("country", "code", (r) => countryName(String(r.code))) },
   ],
+  adsense: [
+    { key: "country", label: "Country", all: "All countries", options: fromTable("countries", "code", (r) => String(r.k || countryName(String(r.code)))) },
+  ],
   pinterest: [
     { key: "appType", label: "Device", all: "All devices", options: fixed([["MOBILE", "Phone"], ["TABLET", "Tablet"], ["WEB", "Computer"]]) },
     { key: "pinFormat", label: "Pin format", all: "All formats", options: fixed([["ORGANIC_IMAGE", "Image pins"], ["ORGANIC_VIDEO", "Video pins"], ["ORGANIC_PRODUCT", "Product pins"]]) },
@@ -100,7 +103,7 @@ function mergePages(t: DataTable): DataTable {
 }
 
 function prepare(d: SectionData) {
-  const avg = (k: Kpi) => k.format === "percent" || k.format === "duration" || k.format === "decimal"
+  const avg = (k: Kpi) => k.avg === true || k.format === "percent" || k.format === "duration" || k.format === "decimal"
   const kpis = d.kpis.map((k) => {
     const clean = (s: typeof k.series) => (k.key === "position" ? (s || []).map((p) => ({ ...p, v: p.v === 0 ? null : p.v })) : s)
     return {

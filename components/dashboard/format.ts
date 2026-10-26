@@ -6,6 +6,7 @@ export const TZ = "Asia/Kolkata"
 const nf = new Intl.NumberFormat("en-IN")
 const nf1 = new Intl.NumberFormat("en-IN", { maximumFractionDigits: 1 })
 const cf = new Intl.NumberFormat("en-IN", { notation: "compact", maximumFractionDigits: 1 })
+const money = new Intl.NumberFormat("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 
 export function fmt(v: unknown, format: Format = "number", compact = false): string {
   if (v === null || v === undefined || v === "" || (typeof v === "number" && !Number.isFinite(v))) return "—"
@@ -15,6 +16,11 @@ export function fmt(v: unknown, format: Format = "number", compact = false): str
   if (format === "percent") return `${(n * 100).toFixed(n !== 0 && Math.abs(n) < 0.1 ? 1 : 0)}%`
   if (format === "duration") return duration(n)
   if (format === "decimal") return nf1.format(n)
+  if (format === "inr" || format === "usd") {
+    const sym = format === "inr" ? "₹" : "$"
+    if (compact && Math.abs(n) >= 100000) return sym + cf.format(n)
+    return sym + (Math.abs(n) >= 1000 ? nf.format(Math.round(n)) : money.format(n))
+  }
   if (compact && Math.abs(n) >= 100000) return cf.format(n)
   return nf.format(Math.round(n))
 }
