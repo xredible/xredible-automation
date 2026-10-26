@@ -94,8 +94,12 @@ export type Subscription = {
   note: string
 }
 
-/** A paid month ended (manual UPI plans aren't renewed automatically). 2 days' grace. */
-export const lapsed = (s: Subscription | null) => !!s && s.status === "active" && !!s.periodEnd && Date.parse(s.periodEnd) + 2 * 864e5 < Date.now()
+/** "Free access" given by an admin (Accounts → Edit): the Pro plan without payment, renewed every 30 days. */
+export const FREE_NOTE = "Free access from Xredible: no payment needed."
+export const isFree = (s: Subscription | null) => !!s && s.note === FREE_NOTE
+
+/** A paid month ended (manual UPI plans aren't renewed automatically). 2 days' grace. Free access never lapses. */
+export const lapsed = (s: Subscription | null) => !!s && !isFree(s) && s.status === "active" && !!s.periodEnd && Date.parse(s.periodEnd) + 2 * 864e5 < Date.now()
 
 /** Can this subscription publish one more? */
 export const canPublish = (s: Subscription | null) => !!s && (s.status === "trial" || s.status === "active") && !lapsed(s) && s.used < s.postLimit

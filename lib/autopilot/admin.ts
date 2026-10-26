@@ -7,7 +7,7 @@ import { rows } from "./db"
 import { addNotice, allNotices, isVerified, mailConfigured, realEmail, removeNotice, send, type Notice } from "./account"
 import { asSub } from "./service"
 import { allPayments, type Payment } from "./billing"
-import { pendingUpi, priceOf, PRODUCTS, rupees, type ProductKey, type Subscription } from "./products"
+import { isFree, pendingUpi, priceOf, PRODUCTS, rupees, type ProductKey, type Subscription } from "./products"
 import { listUsers, type StoredUser } from "@/lib/dashboard/auth"
 import { linkedinConfigured } from "./linkedin"
 import { metaConfigured } from "./meta"
@@ -20,8 +20,10 @@ const istDay = (t: number) => new Date(t + 330 * 60_000).toISOString().slice(0, 
 
 // ---------- revenue ----------
 
-export function revenueStats(subs: Subscription[], payments: Payment[]) {
+export function revenueStats(all: Subscription[], payments: Payment[]) {
   const now = Date.now()
+  // Free access (given by an admin) isn't revenue, and isn't a lost customer when it ends.
+  const subs = all.filter((s) => !isFree(s) && !(s.plan !== "trial" && s.status === "cancelled" && !payments.some((p) => p.email === s.email && p.product === s.product)))
   const live = subs.filter((s) => s.status === "active" && s.periodEnd && Date.parse(s.periodEnd) > now && s.plan !== "trial")
   const mrr = live.reduce((t, s) => t + (s.plan === "trial" ? 0 : priceOf(s.product, s.plan, s.cycle) / (s.cycle === "yearly" ? 12 : 1)), 0)
   const people = new Set(subs.map((s) => realEmail(s.email)))

@@ -7,7 +7,7 @@
 
 import { NextResponse } from "next/server"
 import { errText, json, signedIn } from "@/lib/autopilot/guard"
-import { isCycle, isProduct, planOf, priceOf, PRODUCTS, rupees, type Cycle, type PlanKey } from "@/lib/autopilot/products"
+import { isCycle, isFree, isProduct, planOf, priceOf, PRODUCTS, rupees, type Cycle, type PlanKey } from "@/lib/autopilot/products"
 import { upiConfigured, upiId, upiLink, upiQr, validUtr } from "@/lib/autopilot/upi"
 import { notify, update } from "@/lib/autopilot/db"
 import { cancelSubscription, checkoutSignatureOk, createSubscription, razorpayConfigured, razorpayKeyId } from "@/lib/autopilot/razorpay"
@@ -20,6 +20,7 @@ export const runtime = "nodejs"
 export const dynamic = "force-dynamic"
 export const maxDuration = 30
 
+const FREE_ALREADY = "You have free access to this tool, so there's nothing to pay."
 const NEED_VERIFY = "Confirm your email first (check your inbox, or resend the link from the banner at the top of Overview). We send receipts there."
 
 export async function POST(request: Request) {
@@ -51,6 +52,7 @@ export async function POST(request: Request) {
       const utr = String(b.utr || "").replace(/\s/g, "")
       if (!validUtr(utr)) return json({ ok: false, error: "Enter the 12-digit UTR / reference number from your UPI app." }, 400)
       const sub = await ensureTrial(owner, b.product)
+      if (isFree(sub)) return json({ ok: false, error: FREE_ALREADY }, 400)
       const code = q.coupon ? q.coupon.code : ""
       await update("subs", sub.id, { note: `upi:${plan}:${utr}:${new Date().toISOString()}|${cycle}|${code}|${q.amount}` })
       await notify(`💳 UPI payment to check: ${me.name} <${owner}> · ${PRODUCTS[b.product].name} ${p.name} ${cycle} ${rupees(q.amount)}${code ? ` (coupon ${code})` : ""} · UTR ${utr}. Activate it in xredible.in/dashboard → Customers.`)
@@ -65,6 +67,7 @@ export async function POST(request: Request) {
       if (!(await verified())) return json({ ok: false, error: NEED_VERIFY }, 400)
       if (cleanCode(b.coupon)) return json({ ok: false, error: "Coupon codes work with UPI payments for now." }, 400)
       const sub = await ensureTrial(owner, b.product)
+      if (isFree(sub)) return json({ ok: false, error: FREE_ALREADY }, 400)
       if (sub.status === "active" && sub.plan === plan && sub.cycle === cycle && sub.rzpSubId) return json({ ok: false, error: "You're already on this plan." }, 400)
       const r = await createSubscription(b.product, plan, owner, cycle)
       await markPending(sub, r.id, `${plan}:${cycle}` as PlanKey)

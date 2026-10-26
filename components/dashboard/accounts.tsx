@@ -12,7 +12,7 @@ import { changeMyPassword, type FormState } from "@/app/dashboard/actions"
 
 export type Me = { name: string; email: string; role: "admin" | "member" | "customer" }
 
-type Account = { email: string; name: string; role: "admin" | "member"; businesses: BusinessKey[]; active: boolean; lastLogin: string | null }
+type Account = { email: string; name: string; role: "admin" | "member"; businesses: BusinessKey[]; active: boolean; lastLogin: string | null; free?: boolean }
 
 const field = "mt-1 w-full rounded-lg border border-[var(--line)] bg-[var(--panel)] px-3 py-2 text-sm text-[var(--ink)] outline-none focus:border-[var(--brand)]"
 const small = "text-[12px] font-medium text-[var(--muted)]"
@@ -92,6 +92,20 @@ function BusinessPicks({ value, onChange, disabled }: { value: BusinessKey[]; on
   )
 }
 
+/** A member's own "My automations" (Autopilot workspace), next to the businesses they help with. Admins always have it. */
+function OwnAutomations({ value, onChange, admin }: { value: BusinessKey[]; onChange: (v: BusinessKey[]) => void; admin: boolean }) {
+  const on = admin || value.includes("autopilot")
+  return (
+    <label className={`mt-3 flex items-start gap-2 text-sm ${admin ? "opacity-70" : ""}`}>
+      <input type="checkbox" className="mt-0.5" checked={on} disabled={admin} onChange={(e) => onChange(e.target.checked ? [...value.filter((x) => x !== "autopilot"), "autopilot"] : value.filter((x) => x !== "autopilot"))} />
+      <span>
+        Their own <b>My automations</b>
+        <span className="block text-[12px] text-[var(--muted)]">A private Autopilot workspace for their own brand (posts, blog, newsletter). Nobody else sees it.</span>
+      </span>
+    </label>
+  )
+}
+
 async function send(body: Record<string, unknown>): Promise<string | null> {
   try {
     const r = await fetch("/dashboard/accounts", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) })
@@ -128,7 +142,7 @@ export function AccountsPanel({ me, onClose }: { me: Me; onClose: () => void }) 
 
   return (
     <Modal title="Accounts" onClose={onClose} wide>
-      <p className="text-sm text-[var(--muted)]">Everyone signs in at xredible.in/dashboard with their email and password, and sees only the businesses ticked for them. Admins see every business and can manage accounts.</p>
+      <p className="text-sm text-[var(--muted)]">Everyone signs in at xredible.in/dashboard with their email and password, and sees only the businesses ticked for them, plus their own My automations when ticked. Admins see every business and can manage accounts. Free access lets someone use every Autopilot tool on Pro without paying.</p>
       {error ? <div className="mt-3 rounded-lg bg-[var(--bad-bg)] px-3 py-2 text-sm text-[var(--bad)]">{error}</div> : null}
       <div className="mt-4 flex justify-end">
         {!adding ? (
@@ -147,6 +161,7 @@ export function AccountsPanel({ me, onClose }: { me: Me; onClose: () => void }) 
                 <div className="flex items-center gap-2">
                   <span className="truncate text-sm font-semibold">{a.name || a.email}</span>
                   {a.role === "admin" ? <span className="rounded bg-[var(--brand-soft)] px-1.5 py-px text-[10.5px] font-semibold text-[var(--brand)]">Admin</span> : null}
+                  {a.free ? <span className="rounded bg-[var(--good-bg)] px-1.5 py-px text-[10.5px] font-semibold text-[var(--good)]">Free access</span> : null}
                   {!a.active ? <span className="rounded bg-[var(--bad-bg)] px-1.5 py-px text-[10.5px] font-semibold text-[var(--bad)]">Switched off</span> : null}
                   {a.email === me.email ? <span className="text-[11px] text-[var(--faint)]">(you)</span> : null}
                 </div>
@@ -231,6 +246,7 @@ function NewAccount({ onDone }: { onDone: (saved: boolean) => void }) {
       <div className="mt-3">
         <span className={small}>Businesses</span>
         <BusinessPicks value={biz} onChange={setBiz} disabled={role === "admin"} />
+        <OwnAutomations value={biz} onChange={setBiz} admin={role === "admin"} />
       </div>
       {error ? <div className="mt-3 rounded-lg bg-[var(--bad-bg)] px-3 py-2 text-sm text-[var(--bad)]">{error}</div> : null}
       <div className="mt-4 flex gap-2">
@@ -279,6 +295,7 @@ function EditAccount({ a, self, onSaved }: { a: Account; self: boolean; onSaved:
       <div className="mt-3">
         <span className={small}>Businesses</span>
         <BusinessPicks value={biz} onChange={setBiz} disabled={role === "admin"} />
+        <OwnAutomations value={biz} onChange={setBiz} admin={role === "admin"} />
       </div>
       <label className="mt-3 flex items-center gap-2 text-sm">
         <input type="checkbox" checked={active} disabled={self} onChange={(e) => setActive(e.target.checked)} />
@@ -287,6 +304,18 @@ function EditAccount({ a, self, onSaved }: { a: Account; self: boolean; onSaved:
       <div className="mt-4 flex flex-wrap gap-2">
         <button type="button" className={primary} disabled={busy} onClick={() => run({ op: "update", name, role, businesses: biz, active }, "Saved.")}>
           Save changes
+        </button>
+      </div>
+
+      <div className="mt-5 border-t border-[var(--line-soft)] pt-4">
+        <span className={small}>Free access</span>
+        <p className="mt-1 text-[13px] text-[var(--ink-2)]">
+          {a.free
+            ? "On: every Autopilot tool runs on the Pro plan without payment. The post limit resets every 30 days. It doesn't count as revenue."
+            : "Let them use every Autopilot tool on the Pro plan without paying, with no end date. You can switch it off anytime."}
+        </p>
+        <button type="button" className={ghost + " mt-2"} disabled={busy} onClick={() => run({ op: "free", on: !a.free }, a.free ? "Free access switched off." : "Free access switched on.")}>
+          {a.free ? "Switch off free access" : "Give free access"}
         </button>
       </div>
 

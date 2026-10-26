@@ -12,6 +12,7 @@ import { carouselPdf, renderCard, safeColor, type Look } from "./render"
 import { kitFor } from "./brandkit"
 import { templateFor } from "./brand-presets"
 import { safeFetch } from "./safe-fetch"
+import { hasFreeAccess, makeFree } from "./free"
 
 export type LiProfile = {
   id: number
@@ -80,12 +81,11 @@ export async function subFor(email: string, product: ProductKey): Promise<Subscr
   return (await subsFor(email)).find((s) => s.product === product) || null
 }
 
-/** Every customer gets one free trial per product. */
+/** Every customer gets one free trial per product (or free Pro, when an admin gave them free access). */
 export async function ensureTrial(email: string, product: ProductKey): Promise<Subscription> {
-  const have = await subFor(email, product)
-  if (have) return have
-  const row = await insert<Record<string, unknown>>("subs", { email, product, plan: "trial", status: "trial", postLimit: PRODUCTS[product].trial, used: 0, rzpSubId: "", note: "" })
-  return asSub(row)
+  const [have, free] = await Promise.all([subFor(email, product), hasFreeAccess(email)])
+  const sub = have || asSub(await insert<Record<string, unknown>>("subs", { email, product, plan: "trial", status: "trial", postLimit: PRODUCTS[product].trial, used: 0, rzpSubId: "", note: "" }))
+  return free ? makeFree(sub) : sub
 }
 
 export async function markPending(sub: Subscription, rzpSubId: string, plan: PlanKey) {

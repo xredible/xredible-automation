@@ -20,7 +20,7 @@ const scrypt = promisify(scryptCb) as (pw: string, salt: Buffer, len: number, op
 export const COOKIE = "xd_dash"
 const SESSION_DAYS = 60
 
-/** admin: every business + accounts. member: chosen businesses. customer: self-signed-up Autopilot customer. */
+/** admin: every business + accounts. member: chosen businesses (and their own automations when ticked). customer: self-signed-up Autopilot customer. */
 export type Role = "admin" | "member" | "customer"
 
 export type StoredUser = {
@@ -46,10 +46,10 @@ export const toPublic = (u: StoredUser): PublicUser => ({
   lastLogin: u.lastLogin,
 })
 
-/** A member's businesses; one with none gets their own automations instead of an empty dashboard. */
+/** A member's businesses, plus "My automations" when ticked; one with none gets their own automations instead of an empty dashboard. */
 function memberBusinesses(list: string[]): BusinessKey[] {
   const b = list.filter((x): x is BusinessKey => isBusiness(x) && x !== "autopilot")
-  return b.length ? b : ["autopilot"]
+  return b.length ? (list.includes("autopilot") ? [...b, "autopilot"] : b) : ["autopilot"]
 }
 
 export const normEmail = (e: unknown) => String(e ?? "").trim().toLowerCase().slice(0, 190)
