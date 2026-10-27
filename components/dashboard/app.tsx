@@ -21,6 +21,7 @@ import { PLATFORM } from "./brand"
 import { FilterBar, SectionView } from "./section-view"
 import { ScheduleView } from "./schedule-view"
 import { BlogView } from "./blog-view"
+import { PrintablesView } from "./printables-view"
 import { Overview } from "./overview"
 import { Notice, SectionSkeleton, ViewBoundary } from "./ui"
 import { QueueActionsProvider } from "./actions"
@@ -68,7 +69,8 @@ export function DashboardApp({ allowed, me }: { allowed: BusinessKey[]; me: Me }
   const filters = state?.filters[view] || {}
   const tool = TOOL_VIEW[view]
   const account = ACCOUNT_VIEWS.includes(view) || ADMIN_VIEWS.includes(view)
-  const page = !!tool || account
+  // Pages that load their own data (no date range).
+  const page = !!tool || account || view === "printables"
   const key = state && view !== "overview" && !page ? (view === "schedule" ? sectionKey(biz, "queue", state.start, state.end, state.cmp) : sectionKey(biz, view, state.start, state.end, state.cmp, filters)) : null
   const { data, loading, refresh } = useSection(key)
   const compareLabel = state?.cmp === "prev" ? "previous period" : state?.cmp === "yoy" ? "last year" : null
@@ -289,6 +291,8 @@ export function DashboardApp({ allowed, me }: { allowed: BusinessKey[]; me: Me }
                 ) : null}
                 {tool === "linkedin" ? <LinkedInAutopilot bare /> : <ToolApp product={tool} bare />}
               </div>
+            ) : view === "printables" ? (
+              <PrintablesView key={`${biz}-${tick}`} />
             ) : view === "overview" ? (
               <Overview key={biz} biz={biz} start={state.start} end={state.end} cmp={state.cmp} compareLabel={compareLabel} go={go} refreshTick={tick} />
             ) : !data ? (
