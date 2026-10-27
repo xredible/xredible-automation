@@ -10,7 +10,7 @@
 
 import { gateway } from "@/lib/dashboard/gateway"
 
-export type Table = "subs" | "li_profiles" | "li_posts" | "ap_channels" | "ap_items" | "ap_contacts" | "ap_events" | "notices" | "payments" | "coupons" | "ap_seqs"
+export type Table = "subs" | "li_profiles" | "li_posts" | "ap_channels" | "ap_items" | "ap_contacts" | "ap_events" | "notices" | "payments" | "coupons" | "ap_seqs" | "printables"
 type Row = Record<string, unknown> & { id: number }
 
 async function call<T>(payload: Record<string, unknown>): Promise<T> {

@@ -22,6 +22,7 @@ import { FilterBar, SectionView } from "./section-view"
 import { ScheduleView } from "./schedule-view"
 import { BlogView } from "./blog-view"
 import { PrintablesView } from "./printables-view"
+import { GenericPrintables } from "./printables-generic"
 import { Overview } from "./overview"
 import { Notice, SectionSkeleton, ViewBoundary } from "./ui"
 import { QueueActionsProvider } from "./actions"
@@ -88,7 +89,7 @@ export function DashboardApp({ allowed, me }: { allowed: BusinessKey[]; me: Me }
   }
   const setFilters = (f: Filters) => setState((s) => (s ? { ...s, filters: { ...s.filters, [s.view]: Object.fromEntries(Object.entries(f).filter(([, v]) => v)) } } : s))
   const doRefresh = () => (view === "overview" || page ? setTick((t) => t + 1) : refresh())
-  const meta = PLATFORM[view]
+  const meta = { ...PLATFORM[view], label: business.labels?.[view] || PLATFORM[view]?.label }
   const sectionData = data && data.ok && "kpis" in data ? (data as SectionData) : null
   const updated = data && data.ok ? (data as SectionData | QueueData).generatedAt : null
 
@@ -118,7 +119,7 @@ export function DashboardApp({ allowed, me }: { allowed: BusinessKey[]; me: Me }
                   {g.group ? <div className="px-2.5 pb-1.5 text-[10.5px] font-semibold uppercase tracking-[0.1em] text-white/40">{g.group}</div> : null}
                   <ul className="space-y-0.5">
                     {g.items.map((v) => {
-                      const m = PLATFORM[v]
+                      const m = { ...PLATFORM[v], label: business.labels?.[v] || PLATFORM[v].label }
                       const on = view === v
                       return (
                         <li key={v}>
@@ -292,7 +293,7 @@ export function DashboardApp({ allowed, me }: { allowed: BusinessKey[]; me: Me }
                 {tool === "linkedin" ? <LinkedInAutopilot bare /> : <ToolApp product={tool} bare />}
               </div>
             ) : view === "printables" ? (
-              <PrintablesView key={`${biz}-${tick}`} />
+              biz === "nestoodle" ? <PrintablesView key={`${biz}-${tick}`} /> : <GenericPrintables key={`${biz}-${tick}`} biz={biz} />
             ) : view === "overview" ? (
               <Overview key={biz} biz={biz} start={state.start} end={state.end} cmp={state.cmp} compareLabel={compareLabel} go={go} refreshTick={tick} />
             ) : !data ? (

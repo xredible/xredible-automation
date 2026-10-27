@@ -1,11 +1,12 @@
 // lib/printables/spec.ts
 //
-// What a Nestoodle printable is made of. Safe to import from client code.
+// What a printable is made of. Safe to import from client code.
 //
 // A printable is a list of blocks (cards, a checklist, a tick chart, a planner, steps,
-// write-in prompts, cut-out shapes…). The AI drafts one from the article, Sakshi edits it
-// on the dashboard's Printables page, and lib/printables/pdf.ts lays it out on the
-// Nestoodle page design (Letter size, safe for A4).
+// write-in prompts, a key verse, fill-in-the-blank notes, cut-out shapes…). The AI drafts one
+// from an article or a sermon, someone edits it on the dashboard's Printables page, and
+// lib/printables/pdf.ts lays it out in the workspace's own design (lib/printables/themes.ts;
+// Letter size, safe for A4).
 
 import { ICON_NAMES } from "./icons"
 import { SHAPE_NAMES } from "./shapes"
@@ -34,6 +35,10 @@ export type Block =
   | { type: "list"; title?: string; items: string[]; columns?: 1 | 2 }
   | { type: "tip"; title?: string; text: string }
   | { type: "shapes"; title?: string; size?: "small" | "medium" | "large"; shapes: { shape: string; label?: string }[] }
+  /** A Bible verse (or any quotation) in a highlighted box, word for word, with its reference. */
+  | { type: "verse"; text: string; ref?: string }
+  /** Fill-in-the-blank points: [[answer]] becomes a blank line; the answers are printed small at the end. */
+  | { type: "blanks"; title?: string; items: string[]; answers?: boolean }
   | { type: "pagebreak" }
 
 export type BlockType = Block["type"]
@@ -44,6 +49,8 @@ export type Spec = {
   intro?: string
   /** Small labels under the title, e.g. "Ages 3–8", "12 crafts", "Paper only". */
   chips?: string[]
+  /** Written in Hindi: laid out with a Devanagari font and Hindi page words. */
+  lang?: "en" | "hi"
   blocks: Block[]
 }
 
@@ -93,7 +100,9 @@ export const BLOCK_TYPES:{ type: BlockType; label: string; hint: string }[] = [
   { type: "table", label: "Table", hint: "Heading row and rows of text, columns separated by |." },
   { type: "lines", label: "Write-in prompts", hint: "Each prompt gets lines to write on." },
   { type: "list", label: "Bullet list", hint: "One item per line." },
-  { type: "tip", label: "Tip box", hint: "A short tip for parents." },
+  { type: "tip", label: "Tip box", hint: "A short tip, prayer or note in a colored box." },
+  { type: "verse", label: "Key verse", hint: "A Bible verse word for word, with its reference, in a highlighted box." },
+  { type: "blanks", label: "Fill-in-the-blank notes", hint: "One point per line; put the missing word in [[double brackets]]. The answers print small at the end." },
   { type: "shapes", label: "Cut-out shapes", hint: "Outline templates to trace and cut." },
   { type: "pagebreak", label: "Page break", hint: "Starts a new page." },
 ]
@@ -199,6 +208,14 @@ function block(v: unknown): Block | null {
       const size = ["small", "medium", "large"].includes(String(b.size)) ? (b.size as "small" | "medium" | "large") : "medium"
       return shapes.length ? { type: "shapes", title, size, shapes } : null
     }
+    case "verse": {
+      const text = str(b.text, 700)
+      return text ? { type: "verse", text, ref: opt(str(b.ref, 80)) } : null
+    }
+    case "blanks": {
+      const items = strs(b.items, 300, 20)
+      return items.length ? { type: "blanks", title, items, answers: b.answers === false ? false : undefined } : null
+    }
     case "pagebreak":
       return { type: "pagebreak" }
   }
@@ -214,35 +231,36 @@ export function cleanSpec(v: unknown): Spec | null {
   // No page breaks at the very start or twice in a row.
   const tidy = blocks.filter((b, i) => b.type !== "pagebreak" || (i > 0 && blocks[i - 1].type !== "pagebreak" && i < blocks.length - 1))
   if (!tidy.some((b) => b.type !== "section" && b.type !== "pagebreak")) return null
-  return { title, subtitle: opt(str(s.subtitle, LIMIT.sub)), intro: opt(str(s.intro, LIMIT.intro)), chips: opt(strs(s.chips, LIMIT.chip, LIMIT.chips)), blocks: tidy }
+  return { title, subtitle: opt(str(s.subtitle, LIMIT.sub)), intro: opt(str(s.intro, LIMIT.intro)), chips: opt(strs(s.chips, LIMIT.chip, LIMIT.chips)), lang: s.lang === "hi" ? "hi" : undefined, blocks: tidy }
 }
 
 // ---------- names ----------
 
-/** "Nestoodle - Diwali Craft Templates" style words, without "Nestoodle", "Free" or "Printable(s)". */
-export function cleanLinkText(s: string): string {
+/** "Nestoodle - Diwali Craft Templates" style words, without the brand, "Free" or "Printable(s)". */
+export function cleanLinkText(s: string, brand = "Nestoodle"): string {
+  const b = brand.replace(/[-_]+/g, " ").replace(/[.*+?^${}()|[\]\\]/g, "\\$&").replace(/\s+/g, "[\\s-]*")
   return str(s, 90)
-    .replace(/^nestoodle\s*[-–—:|]\s*/i, "")
+    .replace(new RegExp(`^${b}\\s*[-–—:|]\\s*`, "i"), "")
     .replace(/^free\s+/i, "")
     .replace(/[\[\]]/g, "")
     .trim()
 }
 
-/** The file name parents' downloads are saved as: Nestoodle-Diwali-Craft-Templates.pdf */
-export function fileNameFor(title: string): string {
-  const base = cleanLinkText(title)
+/** The file name downloads are saved as: Nestoodle-Diwali-Craft-Templates.pdf (Latin letters only). */
+export function fileNameFor(title: string, prefix = "Nestoodle"): string {
+  const base = cleanLinkText(title, prefix)
     .normalize("NFKD")
     .replace(/[̀-ͯ]/g, "")
     .replace(/&|\+/g, " and ")
     .replace(/[^A-Za-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "")
     .split("-")
-    .filter((w) => w && !/^(printables?|free|nestoodle)$/i.test(w))
+    .filter((w) => w && !/^(printables?|free|nestoodle)$/i.test(w) && !prefix.toLowerCase().split("-").includes(w.toLowerCase()))
     .map((w) => (/^[a-z]/.test(w) && w.length > 2 && !/^(and|for|the|with|to|of|in|on|at)$/.test(w) ? w[0].toUpperCase() + w.slice(1) : w))
     .join("-")
     .slice(0, 70)
     .replace(/-+$/, "")
-  return `Nestoodle-${base || "Printable"}.pdf`
+  return `${prefix}-${base || "Printable"}.pdf`
 }
 
 /** A short summary for lists: "12 cards · checklist · tick chart". */
@@ -250,7 +268,7 @@ export function describe(spec: Spec): string {
   const parts: string[] = []
   for (const b of spec.blocks) {
     if (b.type === "cards") parts.push(`${b.cards.length} card${b.cards.length === 1 ? "" : "s"}`)
-    else if (b.type !== "section" && b.type !== "pagebreak" && b.type !== "tip") parts.push(BLOCK_TYPES.find((t) => t.type === b.type)!.label.toLowerCase())
+    else if (b.type !== "section" && b.type !== "pagebreak" && b.type !== "tip" && b.type !== "verse") parts.push(BLOCK_TYPES.find((t) => t.type === b.type)!.label.toLowerCase())
   }
   return [...new Set(parts)].slice(0, 5).join(" · ")
 }

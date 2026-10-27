@@ -51,6 +51,8 @@ export type Business = {
   name: string
   subtitle: string
   icon: string
+  /** A view's name here when it differs from the usual one (Printables → Sermon Notes). */
+  labels?: Partial<Record<ViewName, string>>
   /** Sidebar groups; the first group has no heading. */
   nav: { group: string; items: ViewName[] }[]
   /** Sections the n8n Dashboard API answers ("queue" backs the calendar view). */
@@ -78,8 +80,9 @@ export const BUSINESSES: Record<BusinessKey, Business> = {
     name: "Elevating CHRIST",
     subtitle: "Ministry dashboard",
     icon: "/dashboard/elevating-christ.png",
+    labels: { printables: "Sermon Notes" },
     nav: [
-      { group: "", items: ["overview", "schedule"] },
+      { group: "", items: ["overview", "schedule", "printables"] },
       { group: "Social", items: ["instagram", "facebook", "youtube", "pinterest"] },
       { group: "Website", items: ["ga4", "sessions", "gsc"] },
       { group: "Members", items: ["email"] },
