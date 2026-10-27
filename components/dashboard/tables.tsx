@@ -70,7 +70,7 @@ export function ReportTable({ t, onFilter }: { t: DataTable; onFilter?: (key: st
   }
 
   const head = (c: Column, i: number) => (
-    <th key={c.key} scope="col" className={`whitespace-nowrap px-3 py-2 text-[11.5px] font-medium text-[var(--muted)] ${i === 0 ? "text-left" : "text-right"}`}>
+    <th key={c.key} scope="col" className={`px-2 py-2 leading-tight sm:whitespace-nowrap text-[11.5px] sm:px-3 font-medium text-[var(--muted)] ${i === 0 ? "text-left" : "text-right"}`}>
       {i === 0 ? (
         c.label
       ) : (
@@ -116,7 +116,7 @@ export function ReportTable({ t, onFilter }: { t: DataTable; onFilter?: (key: st
                 const fv = first.filterKey ? String(r[first.filterKey] ?? "") : String(r[first.key] ?? "")
                 return (
                   <tr key={ri} className="group border-b border-[var(--line-soft)] last:border-0 hover:bg-[var(--hover)]">
-                    <td className="relative max-w-[340px] px-3 py-2 align-middle">
+                    <td className="relative max-w-[40vw] px-2 py-2 align-middle sm:max-w-[340px] sm:px-3">
                       {barCol ? <span className="absolute inset-y-1 left-0 rounded-r bg-[var(--bar)]" style={{ width: `${(Math.max(0, Number(r[barCol.key]) || 0) / max) * 100}%` }} aria-hidden /> : null}
                       <span className="relative flex min-w-0 items-center gap-2">
                         {first.thumb && r[first.thumb] ? <img onError={(e) => { e.currentTarget.style.visibility = "hidden" }} src={String(r[first.thumb])} alt="" loading="lazy" referrerPolicy="no-referrer" className="h-8 w-12 shrink-0 rounded object-cover" /> : null}
@@ -149,7 +149,7 @@ export function ReportTable({ t, onFilter }: { t: DataTable; onFilter?: (key: st
                       </span>
                     </td>
                     {numeric.map((c) => (
-                      <td key={c.key} className="whitespace-nowrap px-3 py-2 text-right tabular-nums text-[var(--ink-2)]">
+                      <td key={c.key} className="whitespace-nowrap px-2 py-2 text-right tabular-nums text-[var(--ink-2)] sm:px-3">
                         {c.format === "date" && typeof r[c.key] === "string" ? dateTime(String(r[c.key])) : c.format === "change" ? <ChangeCell v={r[c.key]} /> : fmt(r[c.key], c.format)}
                       </td>
                     ))}
