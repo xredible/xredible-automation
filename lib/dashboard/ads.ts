@@ -25,7 +25,8 @@ type AdsCfg = { platforms: Platform[]; metaHow?: string; pinterest?: string; goo
 const ADS: Partial<Record<BusinessKey, AdsCfg>> = {
   "elevating-christ": {
     platforms: ["meta", "google", "pinterest"],
-    metaHow: 'Make a new token for the n8n login "Meta Graph Token" with the same permissions as now plus ads_read (Meta Business settings → Users → System users → Generate token), and paste it into that login.',
+    metaHow:
+      'In Meta Business settings → Users → System users → n8n Publisher, generate a new token for the app with ads_read ticked, and paste it into the n8n login "[EC] Meta Ads" (Authorization: Bearer …). Leave "Meta Graph Token" as it is: the posting workflows use it.',
     pinterest: "Pinterest - Elevating CHRIST",
     googleEnv: "GOOGLE_ADS_ID_EC",
   },
