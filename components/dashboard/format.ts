@@ -12,6 +12,13 @@ export function fmt(v: unknown, format: Format = "number", compact = false): str
   if (v === null || v === undefined || v === "" || (typeof v === "number" && !Number.isFinite(v))) return "—"
   const n = Number(v)
   if (format === "date") return typeof v === "string" ? shortDate(v) : "—"
+  if (format === "change") {
+    if (v === "new") return "New"
+    const p = Number(v)
+    if (Number.isNaN(p)) return String(v)
+    const pct = Math.abs(p * 100)
+    return pct < 0.5 ? "0%" : `${p > 0 ? "+" : "−"}${pct >= 100 ? nf.format(Math.round(pct)) : pct.toFixed(pct < 10 ? 1 : 0)}%`
+  }
   if (Number.isNaN(n)) return String(v)
   if (format === "percent") return `${(n * 100).toFixed(n !== 0 && Math.abs(n) < 0.1 ? 1 : 0)}%`
   if (format === "duration") return duration(n)

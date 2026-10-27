@@ -3,8 +3,8 @@
 // One platform's report: account strip, KPI tiles, trend chart, breakdown tables, posts.
 
 import { useEffect, useMemo, useState, type ReactNode } from "react"
-import { ExternalLink, X } from "lucide-react"
-import type { DataTable, Kpi, SectionData } from "@/lib/dashboard/types"
+import { ExternalLink, Info, Lightbulb, TrendingDown, TrendingUp, X } from "lucide-react"
+import type { DataTable, Insight, Kpi, SectionData } from "@/lib/dashboard/types"
 import { countryName, fillDays, fmt, rangeLabel } from "./format"
 import { TrendChart, Heatmap } from "./charts"
 import { Card, KpiTile, Notice, Segmented } from "./ui"
@@ -22,6 +22,11 @@ const fixed = (opts: [string, string][]) => () => opts.map(([value, label]) => (
 
 export const FILTERS: Record<string, FilterDef[]> = {
   ga4: [
+    { key: "device", label: "Device", all: "All devices", options: fixed([["mobile", "Phone"], ["desktop", "Computer"], ["tablet", "Tablet"]]) },
+    { key: "channel", label: "Channel", all: "All channels", options: fromTable("channels", "k") },
+    { key: "country", label: "Country", all: "All countries", options: fromTable("countries", "k") },
+  ],
+  sessions: [
     { key: "device", label: "Device", all: "All devices", options: fixed([["mobile", "Phone"], ["desktop", "Computer"], ["tablet", "Tablet"]]) },
     { key: "channel", label: "Channel", all: "All channels", options: fromTable("channels", "k") },
     { key: "country", label: "Country", all: "All countries", options: fromTable("countries", "k") },
@@ -125,6 +130,44 @@ function Group({ title, children }: { title: string; children: ReactNode }) {
   )
 }
 
+const TONE: Record<Insight["tone"], { icon: ReactNode; cls: string }> = {
+  up: { icon: <TrendingUp className="h-4 w-4" aria-hidden />, cls: "bg-[var(--good-bg)] text-[var(--good)]" },
+  down: { icon: <TrendingDown className="h-4 w-4" aria-hidden />, cls: "bg-[var(--bad-bg)] text-[var(--bad)]" },
+  idea: { icon: <Lightbulb className="h-4 w-4" aria-hidden />, cls: "bg-amber-100 text-amber-800 dark:bg-amber-950/50 dark:text-amber-300" },
+  info: { icon: <Info className="h-4 w-4" aria-hidden />, cls: "bg-[var(--chip)] text-[var(--muted)]" },
+}
+
+/** "What stands out": notes worked out from this page's own numbers. */
+export function Insights({ items }: { items: Insight[] }) {
+  const [all, setAll] = useState(false)
+  if (!items.length) return null
+  const LIMIT = 6
+  const shown = all ? items : items.slice(0, LIMIT)
+  return (
+    <Card
+      title="What stands out"
+      sub="Worked out from the numbers on this page"
+      action={items.length > LIMIT ? (
+        <button type="button" onClick={() => setAll((a) => !a)} className="text-xs font-medium text-[var(--brand)] hover:underline">
+          {all ? "Show fewer" : `Show all ${items.length}`}
+        </button>
+      ) : null}
+    >
+      <ul className="grid gap-x-6 gap-y-3.5 md:grid-cols-2">
+        {shown.map((x, i) => (
+          <li key={i} className="flex gap-3">
+            <span className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg ${TONE[x.tone]?.cls || TONE.info.cls}`}>{TONE[x.tone]?.icon || TONE.info.icon}</span>
+            <span className="min-w-0">
+              <span className="block text-[13.5px] font-semibold leading-snug text-[var(--ink)]">{x.title}</span>
+              <span className="mt-0.5 block text-[13px] leading-snug text-[var(--muted)]">{x.text}</span>
+            </span>
+          </li>
+        ))}
+      </ul>
+    </Card>
+  )
+}
+
 export function SectionView({
   data,
   color,
@@ -204,6 +247,8 @@ export function SectionView({
           ))}
         </div>
       ) : null}
+
+      {data.insights && data.insights.length ? <Insights items={data.insights} /> : null}
 
       {sel ? (
         <Card

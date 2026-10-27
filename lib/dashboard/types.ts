@@ -7,7 +7,8 @@
 export type Point = { d: string; v: number | null }
 
 /** "inr" / "usd": money in that currency (AdSense reports in the account's currency). */
-export type Format = "number" | "percent" | "decimal" | "duration" | "date" | "inr" | "usd"
+/** "change": a ratio against an earlier period (0.23 → +23%), or "new". */
+export type Format = "number" | "percent" | "decimal" | "duration" | "date" | "inr" | "usd" | "change"
 
 export type Kpi = {
   key: string
@@ -83,7 +84,11 @@ export type SectionData = {
   chartDefault?: string
   heatmap?: { title: string; grid: number[][]; days: string[] }
   realtime?: { users: number | null; pages: { k: string; v: number | null }[] }
+  insights?: Insight[]
 }
+
+/** "What stands out": a short note worked out from the section's own numbers. */
+export type Insight = { tone: "up" | "down" | "idea" | "info"; title: string; text: string }
 
 export type SectionError = { ok: false; section?: string; error: string }
 
