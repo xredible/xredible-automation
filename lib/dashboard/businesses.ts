@@ -21,6 +21,7 @@ export type ViewName =
   | "sessions"
   | "gsc"
   | "adsense"
+  | "ads"
   | "results"
   | "newsletters"
   | "email"
@@ -85,9 +86,10 @@ export const BUSINESSES: Record<BusinessKey, Business> = {
       { group: "", items: ["overview", "schedule", "printables"] },
       { group: "Social", items: ["instagram", "facebook", "youtube", "pinterest"] },
       { group: "Website", items: ["ga4", "sessions", "gsc"] },
+      { group: "Ads", items: ["ads"] },
       { group: "Members", items: ["email"] },
     ],
-    sections: ["queue", "instagram", "facebook", "youtube", "pinterest", "ga4", "sessions", "gsc", "email"],
+    sections: ["queue", "instagram", "facebook", "youtube", "pinterest", "ga4", "sessions", "gsc", "ads", "email"],
     picks: [
       { section: "ga4", key: "activeUsers", label: "Website visitors" },
       { section: "youtube", key: "views", label: "YouTube views" },
@@ -116,9 +118,10 @@ export const BUSINESSES: Record<BusinessKey, Business> = {
       { group: "", items: ["overview", "schedule", "blog", "printables"] },
       { group: "Social", items: ["instagram", "facebook", "pinterest"] },
       { group: "Website", items: ["ga4", "sessions", "gsc", "adsense"] },
+      { group: "Ads", items: ["ads"] },
       { group: "Email", items: ["email"] },
     ],
-    sections: ["queue", "blog", "blogpost", "ga4", "sessions", "gsc", "adsense", "instagram", "facebook", "pinterest", "email"],
+    sections: ["queue", "blog", "blogpost", "ga4", "sessions", "gsc", "adsense", "ads", "instagram", "facebook", "pinterest", "email"],
     picks: [
       { section: "ga4", key: "activeUsers", label: "Website visitors" },
       { section: "ga4", key: "screenPageViews", label: "Page views" },
@@ -149,8 +152,9 @@ export const BUSINESSES: Record<BusinessKey, Business> = {
     nav: [
       { group: "", items: ["overview", "schedule"] },
       { group: "LinkedIn", items: ["results", "newsletters", "printables"] },
+      { group: "Ads", items: ["ads"] },
     ],
-    sections: ["queue", "results", "newsletters"],
+    sections: ["queue", "results", "newsletters", "ads"],
     picks: [
       { section: "results", key: "posted", label: "Posts published" },
       { section: "results", key: "clicks", label: "Lead-link clicks" },
@@ -174,10 +178,11 @@ export const BUSINESSES: Record<BusinessKey, Business> = {
       { group: "", items: ["overview", "schedule", "ap-ideas", "ap-brand"] },
       { group: "Results", items: ["instagram", "facebook", "linkedin", "articles", "newsletter"] },
       { group: "Automations", items: ["ap-linkedin", "ap-meta", "ap-blog", "ap-newsletter", "printables"] },
+      { group: "Ads", items: ["ads"] },
       { group: "Account", items: ["billing", "settings", "help"] },
       { group: "Admin", items: ["admin-revenue", "admin-customers", "admin-leads", "admin-payments", "admin-coupons", "admin-announce", "admin-health"] },
     ],
-    sections: ["queue", "instagram", "facebook", "linkedin", "articles", "newsletter"],
+    sections: ["queue", "instagram", "facebook", "linkedin", "articles", "newsletter", "ads"],
     picks: [
       { section: "instagram", key: "reach", label: "Instagram accounts reached" },
       { section: "instagram", key: "views", label: "Instagram views" },

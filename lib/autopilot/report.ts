@@ -14,6 +14,7 @@ import { postUrl } from "./linkedin"
 import { postsFor, subsFor, type LiPost } from "./service"
 import { channelFor, contactsFor, liCardUrl, metaImages, TOOL_KEYS, type Channel, type Item } from "./tools"
 import { canPublish, lapsed, PRODUCTS, remaining } from "./products"
+import { autopilotAds } from "@/lib/dashboard/ads"
 
 type Result = { status: number; body: unknown }
 
@@ -521,6 +522,7 @@ export async function loadAutopilotSection(email: string, name: string, search: 
     if (name === "linkedin") return { status: 200, body: await linkedin(email, r) }
     if (name === "articles") return { status: 200, body: await articles(email, r) }
     if (name === "newsletter") return { status: 200, body: await newsletter(email, r) }
+    if (name === "ads") return { status: 200, body: autopilotAds(Object.fromEntries(search)) }
     return { status: 400, body: { ok: false, error: "Unknown section." } }
   } catch (e) {
     return { status: 502, body: { ok: false, error: e instanceof Error ? e.message : "Something went wrong." } }
