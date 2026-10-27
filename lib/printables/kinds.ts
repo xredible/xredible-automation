@@ -18,6 +18,8 @@ export type Workspace = {
   langs: PLang[]
   /** Where Publish puts the PDF. */
   publishTo: string
+  /** New printables can also be made from a topic someone types (no source item). */
+  topics?: boolean
 }
 
 export const WORKSPACES: Record<string, Workspace> = {
@@ -31,6 +33,23 @@ export const WORKSPACES: Record<string, Workspace> = {
     ],
     langs: ["en", "hi"],
     publishTo: "the sermon page on elevatingchrist.com",
+  },
+  "linkedin-agency": {
+    label: "Lead Magnets",
+    sources: "Newsletters",
+    source: "newsletter",
+    kinds: [{ key: "magnet", label: "Lead Magnet", hint: "A one or two page checklist or guide people download from a LinkedIn post, newsletter or DM. Publish gives you a link to share." }],
+    langs: ["en"],
+    publishTo: "a download link you can share on LinkedIn",
+    topics: true,
+  },
+  autopilot: {
+    label: "Printables",
+    sources: "Articles",
+    source: "article",
+    kinds: [{ key: "guide", label: "Free download", labelHi: "मुफ़्त डाउनलोड", hint: "A checklist or short guide made from the article, added to the end of the article as a PDF download (your brand colors and logo).", auto: true }],
+    langs: ["en", "hi"],
+    publishTo: "the article on your website",
   },
 }
 

@@ -145,9 +145,10 @@ export const BUSINESSES: Record<BusinessKey, Business> = {
     name: "LinkedIn Agency",
     subtitle: "Growth dashboard",
     icon: "/dashboard/linkedin-agency.svg",
+    labels: { printables: "Lead Magnets" },
     nav: [
       { group: "", items: ["overview", "schedule"] },
-      { group: "LinkedIn", items: ["results", "newsletters"] },
+      { group: "LinkedIn", items: ["results", "newsletters", "printables"] },
     ],
     sections: ["queue", "results", "newsletters"],
     picks: [
@@ -172,7 +173,7 @@ export const BUSINESSES: Record<BusinessKey, Business> = {
     nav: [
       { group: "", items: ["overview", "schedule", "ap-ideas", "ap-brand"] },
       { group: "Results", items: ["instagram", "facebook", "linkedin", "articles", "newsletter"] },
-      { group: "Automations", items: ["ap-linkedin", "ap-meta", "ap-blog", "ap-newsletter"] },
+      { group: "Automations", items: ["ap-linkedin", "ap-meta", "ap-blog", "ap-newsletter", "printables"] },
       { group: "Account", items: ["billing", "settings", "help"] },
       { group: "Admin", items: ["admin-revenue", "admin-customers", "admin-leads", "admin-payments", "admin-coupons", "admin-announce", "admin-health"] },
     ],
