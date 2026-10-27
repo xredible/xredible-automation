@@ -36,6 +36,14 @@ function ExportButton({ title, columns, rows }: { title: string; columns: Column
   )
 }
 
+/** +23% in green, −12% in red ("New" counts as up). */
+function ChangeCell({ v }: { v: unknown }) {
+  if (v === null || v === undefined || v === "") return <span className="text-[var(--faint)]">—</span>
+  const n = v === "new" ? 1 : Number(v)
+  const tone = n > 0.005 ? "text-[var(--good)]" : n < -0.005 ? "text-[var(--bad)]" : "text-[var(--muted)]"
+  return <span className={`font-medium ${tone}`}>{fmt(v, "change")}</span>
+}
+
 export function ReportTable({ t, onFilter }: { t: DataTable; onFilter?: (key: string, value: string) => void }) {
   const first = t.columns[0]
   const numeric = t.columns.slice(1)
@@ -142,7 +150,7 @@ export function ReportTable({ t, onFilter }: { t: DataTable; onFilter?: (key: st
                     </td>
                     {numeric.map((c) => (
                       <td key={c.key} className="whitespace-nowrap px-3 py-2 text-right tabular-nums text-[var(--ink-2)]">
-                        {c.format === "date" && typeof r[c.key] === "string" ? dateTime(String(r[c.key])) : fmt(r[c.key], c.format)}
+                        {c.format === "date" && typeof r[c.key] === "string" ? dateTime(String(r[c.key])) : c.format === "change" ? <ChangeCell v={r[c.key]} /> : fmt(r[c.key], c.format)}
                       </td>
                     ))}
                   </tr>

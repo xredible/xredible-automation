@@ -1,7 +1,7 @@
 // Platform names, colours and icons used across the dashboard.
 
 import type { ReactNode } from "react"
-import { Palette, BadgeIndianRupee, Coins, CalendarDays, CircleQuestionMark, CreditCard, HeartPulse, Lightbulb, Megaphone, Receipt, TicketPercent, Users, CalendarCheck, FileText, Globe, LayoutDashboard, Mail, MailOpen, Newspaper, PenLine, Pin, Printer, Search, Settings, TrendingUp } from "lucide-react"
+import { Palette, BadgeIndianRupee, Coins, CalendarDays, CircleQuestionMark, CreditCard, HeartPulse, Lightbulb, Megaphone, Receipt, TicketPercent, Users, CalendarCheck, FileText, Globe, LayoutDashboard, Mail, MailOpen, MousePointerClick, Newspaper, PenLine, Pin, Printer, Search, Settings, TrendingUp } from "lucide-react"
 
 // lucide-react 1.x has no brand icons, so these are simple line glyphs in the same style.
 type IconProps = { className?: string; "aria-hidden"?: boolean }
@@ -32,6 +32,7 @@ export const PLATFORM: Record<string, PlatformMeta> = {
   youtube: { label: "YouTube", short: "YouTube", color: "#e62117", ...i(Youtube) },
   pinterest: { label: "Pinterest", short: "Pinterest", color: "#c8102e", ...i(Pin) },
   ga4: { label: "Website analytics", short: "Website", color: "#0f7b5a", ...i(Globe) },
+  sessions: { label: "Visits & engagement", short: "Visits", color: "#0b7285", ...i(MousePointerClick) },
   gsc: { label: "Google Search", short: "Search", color: "#3b5bdb", ...i(Search) },
   adsense: { label: "Ad earnings", short: "Ads", color: "#b7791f", ...i(Coins) },
   linkedin: { label: "LinkedIn", short: "LinkedIn", color: "#0a66c2", ...i(Linkedin) },

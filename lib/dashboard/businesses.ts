@@ -18,6 +18,7 @@ export type ViewName =
   | "youtube"
   | "pinterest"
   | "ga4"
+  | "sessions"
   | "gsc"
   | "adsense"
   | "results"
@@ -80,10 +81,10 @@ export const BUSINESSES: Record<BusinessKey, Business> = {
     nav: [
       { group: "", items: ["overview", "schedule"] },
       { group: "Social", items: ["instagram", "facebook", "youtube", "pinterest"] },
-      { group: "Website", items: ["ga4", "gsc"] },
+      { group: "Website", items: ["ga4", "sessions", "gsc"] },
       { group: "Members", items: ["email"] },
     ],
-    sections: ["queue", "instagram", "facebook", "youtube", "pinterest", "ga4", "gsc", "email"],
+    sections: ["queue", "instagram", "facebook", "youtube", "pinterest", "ga4", "sessions", "gsc", "email"],
     picks: [
       { section: "ga4", key: "activeUsers", label: "Website visitors" },
       { section: "youtube", key: "views", label: "YouTube views" },
@@ -111,13 +112,13 @@ export const BUSINESSES: Record<BusinessKey, Business> = {
     nav: [
       { group: "", items: ["overview", "schedule", "blog", "printables"] },
       { group: "Social", items: ["instagram", "facebook", "pinterest"] },
-      { group: "Website", items: ["ga4", "gsc", "adsense"] },
+      { group: "Website", items: ["ga4", "sessions", "gsc", "adsense"] },
       { group: "Email", items: ["email"] },
     ],
-    sections: ["queue", "blog", "blogpost", "ga4", "gsc", "adsense", "instagram", "facebook", "pinterest", "email"],
+    sections: ["queue", "blog", "blogpost", "ga4", "sessions", "gsc", "adsense", "instagram", "facebook", "pinterest", "email"],
     picks: [
       { section: "ga4", key: "activeUsers", label: "Website visitors" },
-      { section: "ga4", key: "views", label: "Page views" },
+      { section: "ga4", key: "screenPageViews", label: "Page views" },
       { section: "gsc", key: "clicks", label: "Google search clicks" },
       { section: "gsc", key: "impressions", label: "Google search impressions" },
       { section: "instagram", key: "views", label: "Instagram views" },

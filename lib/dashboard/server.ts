@@ -6,6 +6,7 @@
 
 import { BUSINESSES, type BusinessKey } from "./businesses"
 import { gateway, type GatewayResult } from "./gateway"
+import { isWebSection, loadWebSection } from "./website"
 
 export { access, canSee, currentUser, isConfigured } from "./auth"
 
@@ -34,7 +35,7 @@ export async function loadSection(business: BusinessKey, section: string, search
   const cacheKey = business + "|" + JSON.stringify(query)
   const hit = cache.get(cacheKey)
   if (!fresh && hit && Date.now() - hit.at < TTL) return { status: 200, body: hit.body }
-  const r = await gateway({ kind: "proxy", biz: business, path, method: "GET", query })
+  const r = isWebSection(business, section) ? await loadWebSection(business, query) : await gateway({ kind: "proxy", biz: business, path, method: "GET", query })
   if (r.status === 200 && (r.body as { ok?: boolean } | null)?.ok) {
     cache.set(cacheKey, { at: Date.now(), body: r.body })
     if (cache.size > 400) cache.delete(cache.keys().next().value as string)
