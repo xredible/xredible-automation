@@ -1,4 +1,8 @@
-// POST /dashboard/printables  { op, … }  (Nestoodle's Printables page)
+// POST /dashboard/printables  { biz?, op, … }
+//
+// biz "elevating-christ" (and other workspaces in lib/printables/kinds.ts): handled by
+// lib/printables/generic.ts (sermons → Sermon Notes / Bible Study Guides in English and Hindi).
+// Otherwise Nestoodle's Printables page:
 //
 //   list                         articles with their current download, and every printable
 //   draft    { postId }          ask the AI for a printable from the article (it arrives in a minute or two)
@@ -16,10 +20,13 @@ import { canSee, currentUser } from "@/lib/dashboard/server"
 import { gateway } from "@/lib/dashboard/gateway"
 import { renderPrintable } from "@/lib/printables/pdf"
 import { cleanLinkText, cleanSpec, fileNameFor, type PrintablePost, type PrintableRow, type Spec } from "@/lib/printables/spec"
+import { GENERIC, discardRow, draft as genericDraft, listRows, listSources, namesFor, publishRow, saveRow } from "@/lib/printables/generic"
+import { THEMES } from "@/lib/printables/themes"
+import type { BusinessKey } from "@/lib/dashboard/businesses"
 
 export const runtime = "nodejs"
 export const dynamic = "force-dynamic"
-export const maxDuration = 60
+export const maxDuration = 120
 
 const json = (body: unknown, status = 200) => NextResponse.json(body, { status, headers: { "Cache-Control": "private, no-store" } })
 
@@ -72,13 +79,17 @@ export async function POST(request: Request) {
   const origin = request.headers.get("origin")
   const host = request.headers.get("x-forwarded-host") || request.headers.get("host")
   if (origin && host && new URL(origin).host !== host) return json({ ok: false, error: "Not allowed." }, 403)
-  if (!(await canSee("nestoodle"))) return json({ ok: false, error: "Your account doesn't include Nestoodle." }, 403)
-
   let b: Record<string, unknown> = {}
   try {
     b = (await request.json()) as Record<string, unknown>
   } catch {}
   const op = String(b.op || "")
+  const biz = String(b.biz || "nestoodle")
+  if (GENERIC.includes(biz)) {
+    if (!(await canSee(biz as BusinessKey))) return json({ ok: false, error: "Your account doesn't include this workspace." }, 403)
+    return generic(biz, op, b)
+  }
+  if (!(await canSee("nestoodle"))) return json({ ok: false, error: "Your account doesn't include Nestoodle." }, 403)
 
   if (op === "list") {
     const r = await nst({ op: "list" })
@@ -145,4 +156,54 @@ export async function POST(request: Request) {
   }
 
   return json({ ok: false, error: "That change isn't valid." }, 400)
+}
+
+// ---------- the other workspaces (Elevating CHRIST) ----------
+
+const errText = (e: unknown) => (e instanceof Error ? e.message : "Something went wrong.")
+
+async function generic(biz: string, op: string, b: Record<string, unknown>) {
+  try {
+    if (op === "list") {
+      const [sources, rows] = await Promise.all([listSources(biz), listRows(biz)])
+      return json({ ok: true, sources, rows })
+    }
+    if (op === "draft") {
+      const ref = String(b.ref || "").slice(0, 120)
+      const kind = String(b.kind || "")
+      const lang = b.lang === "hi" ? "hi" : "en"
+      if (!ref) return json({ ok: false, error: "Which sermon?" }, 400)
+      const row = await genericDraft(biz, ref, kind, lang)
+      return json({ ok: true, done: "Draft ready. Review it, then publish.", row })
+    }
+    if (op === "discard") {
+      const id = int(b.id)
+      if (!id) return json({ ok: false, error: "Which printable?" }, 400)
+      await discardRow(biz, id)
+      return json({ ok: true, done: "Removed. Make a new one any time." })
+    }
+    const spec = cleanSpec(b.spec)
+    if (!spec) return json({ ok: false, error: "The printable needs a title and at least one block with content." }, 400)
+    const lang = spec.lang === "hi" ? "hi" : "en"
+    const names = namesFor(biz, { title: String(b.sourceTitle || spec.title), shownTitle: String(b.shownTitle || "") }, String(b.kind || ""), lang, { fileName: b.fileName, linkText: b.linkText })
+    if (op === "preview") {
+      const out = await renderPrintable(spec, { theme: THEMES[biz], postTitle: typeof b.shownTitle === "string" ? b.shownTitle.slice(0, 200) : undefined, postUrl: typeof b.postLink === "string" ? b.postLink.slice(0, 300) : undefined })
+      return new NextResponse(Buffer.from(out.pdf), {
+        headers: { "Content-Type": "application/pdf", "Content-Disposition": `inline; filename="${names.fileName}"`, "Cache-Control": "private, no-store", "X-Pages": String(out.pages) },
+      })
+    }
+    const id = int(b.id)
+    if (!id) return json({ ok: false, error: "Which printable?" }, 400)
+    if (op === "save") {
+      await saveRow(biz, id, spec, names)
+      return json({ ok: true, done: "Saved.", ...names })
+    }
+    if (op === "publish") {
+      const r = await publishRow(biz, id, spec, names)
+      return json({ ok: true, done: "Published. The sermon page shows the download within a few minutes.", ...names, pages: r.pages, result: { mediaUrl: r.url, link: r.link, how: "on the sermon page" } })
+    }
+    return json({ ok: false, error: "That change isn't valid." }, 400)
+  } catch (e) {
+    return json({ ok: false, error: errText(e) }, 502)
+  }
 }

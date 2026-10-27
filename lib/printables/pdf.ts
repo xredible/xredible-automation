@@ -1,19 +1,23 @@
 // lib/printables/pdf.ts
 //
-// Server-only. Lays a printable (lib/printables/spec.ts) out on the Nestoodle page design
-// and returns the PDF.
+// Server-only. Lays a printable (lib/printables/spec.ts) out in a workspace's design
+// (lib/printables/themes.ts: Nestoodle, Elevating CHRIST, a customer's brand) and returns the PDF.
 //
 // The page: US Letter with 42pt (0.58in) side margins, so it also prints on A4 without
 // anything cut off. Page 1 opens with the logo, title, subtitle, intro and labels; every
-// page has a slim Nestoodle header and a nestoodle.com footer with page numbers. Cards,
+// page has a slim header with the brand and a footer with the site and page numbers.
+// Hindi printables use a Devanagari font (fontkit shapes the conjuncts and vowel signs). Cards,
 // chart rows and steps are never split across pages, headings always stay with what
 // follows, and tables repeat their heading row on a new page.
 
 import fs from "node:fs"
 import path from "node:path"
-import { PDFDocument, rgb, LineCapStyle, type PDFFont, type PDFPage, type PDFImage, type RGB } from "pdf-lib"
+import { PDFDocument, LineCapStyle, type PDFFont, type PDFPage, type PDFImage, type RGB } from "pdf-lib"
 import fontkit from "@pdf-lib/fontkit"
+// fontkit's Indic shaper (Hindi) is compiled with generators and needs this helper.
+import "regenerator-runtime/runtime.js"
 import { ICONS } from "./icons"
+import { THEMES, type Palette, type Theme, type Words } from "./themes"
 import { SHAPES } from "./shapes"
 import type { Block, Card, Spec } from "./spec"
 
@@ -27,25 +31,12 @@ const TOP_FIRST = 40
 const TOP = 66
 const BOTTOM = H - 56
 
-const hex = (h: string): RGB => rgb(parseInt(h.slice(1, 3), 16) / 255, parseInt(h.slice(3, 5), 16) / 255, parseInt(h.slice(5, 7), 16) / 255)
-const C = {
-  ink: hex("#332B22"),
-  soft: hex("#6B5F4F"),
-  faint: hex("#9C8F79"),
-  line: hex("#E4D6BE"),
-  paper: hex("#FFFCF6"),
-  cream: hex("#FAF3E7"),
-  coral: hex("#E0653C"),
-  coralSoft: hex("#FBE3D6"),
-  sky: hex("#3E8FA6"),
-  skySoft: hex("#DCEEEF"),
-  moss: hex("#6F8E4E"),
-  mossSoft: hex("#E7EEDA"),
-  white: rgb(1, 1, 1),
-}
+// The palette of the printable being drawn (set by renderPrintable before any drawing).
+let C: Palette = THEMES.nestoodle.colors
+let WORDS: Words = THEMES.nestoodle.words.en
 
 type Fonts = { head: PDFFont; headX: PDFFont; body: PDFFont; bold: PDFFont }
-type Ctx = { doc: PDFDocument; f: Fonts; logo: PDFImage; spec: Spec }
+type Ctx = { doc: PDFDocument; f: Fonts; logo: PDFImage | null; spec: Spec; theme: Theme }
 
 const asset = (name: string) => fs.readFileSync(path.join(process.cwd(), "lib/printables/assets", name))
 
@@ -175,12 +166,12 @@ function badge(pg: PDFPage, f: Fonts, x: number, top: number, d: number, what: {
   else if (what.n !== undefined) fitText(pg, String(what.n), f.bold, d * 0.5, x, top + d * 0.27, ink, d, "center")
 }
 
-function checkbox(pg: PDFPage, x: number, top: number, s: number, color = C.sky) {
+function checkbox(pg: PDFPage, x: number, top: number, s: number, color: RGB = C.sec) {
   roundRect(pg, x, top, s, s, s * 0.22, { fill: C.white, border: color, bw: 1.1 })
 }
 
-const hline = (pg: PDFPage, x1: number, x2: number, top: number, color = C.line, t = 0.8, dash?: number[]) => pg.drawLine({ start: { x: x1, y: H - top }, end: { x: x2, y: H - top }, thickness: t, color, dashArray: dash })
-const vline = (pg: PDFPage, x: number, t1: number, t2: number, color = C.line, t = 0.8) => pg.drawLine({ start: { x, y: H - t1 }, end: { x, y: H - t2 }, thickness: t, color })
+const hline = (pg: PDFPage, x1: number, x2: number, top: number, color: RGB = C.line, t = 0.8, dash?: number[]) => pg.drawLine({ start: { x: x1, y: H - top }, end: { x: x2, y: H - top }, thickness: t, color, dashArray: dash })
+const vline = (pg: PDFPage, x: number, t1: number, t2: number, color: RGB = C.line, t = 0.8) => pg.drawLine({ start: { x, y: H - t1 }, end: { x, y: H - t2 }, thickness: t, color })
 
 // ---------- units (what the page flow places) ----------
 
@@ -208,7 +199,7 @@ function titleUnit(f: Fonts, title: string | undefined, gap = 8): Unit[] {
 
 function cover(ctx: Ctx): Unit {
   const { f, spec, logo } = ctx
-  const L = 54
+  const L = logo ? 54 : 0
   let tsz = 27
   let tp = wrap(spec.title, CW - 40, tsz, f.headX, f.headX, tsz * 1.1)
   while (tp.lines.length > 2 && tsz > 18) {
@@ -234,7 +225,7 @@ function cover(ctx: Ctx): Unit {
     rw += w + 6
   }
   if (row.length) chipRows.push(row)
-  let h = L + 10 + paraH(tp)
+  let h = L + (logo ? 10 : 0) + paraH(tp)
   if (sub) h += 7 + paraH(sub)
   if (intro) h += 11 + paraH(intro)
   if (chipRows.length) h += 14 + chipRows.length * (chipH + 6) - 6
@@ -243,13 +234,13 @@ function cover(ctx: Ctx): Unit {
     h,
     gap: 16,
     draw: (pg, top) => {
-      pg.drawImage(logo, { x: (W - L) / 2, y: H - (top + L), width: L, height: L })
-      let y = top + L + 10
+      if (logo) pg.drawImage(logo, { x: (W - L) / 2, y: H - (top + L), width: L, height: L })
+      let y = top + L + (logo ? 10 : 0)
       drawPara(pg, tp, MX + 20, y, C.ink, "center", CW - 40)
       y += paraH(tp)
       if (sub) {
         y += 7
-        drawPara(pg, sub, MX + 40, y, C.coral, "center", CW - 80)
+        drawPara(pg, sub, MX + 40, y, C.acc, "center", CW - 80)
         y += paraH(sub)
       }
       if (intro) {
@@ -263,8 +254,8 @@ function cover(ctx: Ctx): Unit {
           const ws = r.map((c) => f.bold.widthOfTextAtSize(c, 8.6) + 20)
           let x = (W - (ws.reduce((a, b) => a + b, 0) + 6 * (r.length - 1))) / 2
           r.forEach((c, i) => {
-            roundRect(pg, x, y, ws[i], chipH, chipH / 2, { fill: C.skySoft })
-            pg.drawText(c, { x: x + 10, y: H - (y + 13), size: 8.6, font: f.bold, color: C.sky })
+            roundRect(pg, x, y, ws[i], chipH, chipH / 2, { fill: C.secSoft })
+            pg.drawText(c, { x: x + 10, y: H - (y + 13), size: 8.6, font: f.bold, color: C.sec })
             x += ws[i] + 6
           })
           y += chipH + 6
@@ -290,7 +281,7 @@ function section(f: Fonts, b: Extract<Block, { type: "section" }>): Unit[] {
       keep: true,
       newPage: b.newPage,
       draw: (pg, top) => {
-        if (ic) badge(pg, f, MX, top + (th - ic) / 2, ic, { icon: b.icon }, C.coralSoft, C.coral)
+        if (ic) badge(pg, f, MX, top + (th - ic) / 2, ic, { icon: b.icon }, C.accSoft, C.acc)
         drawPara(pg, tp, MX + (ic ? ic + 9 : 0), top + (th - paraH(tp)) / 2, C.ink)
         if (text) drawPara(pg, text, MX, top + th + 6, C.soft)
       },
@@ -311,7 +302,7 @@ function cardLayout(f: Fonts, c: Card, n: number, w: number, cut: boolean): Card
   const meta = c.meta?.length ? wrap(c.meta.join("  ·  "), inner, 8.4, f.bold, f.bold, 11) : null
   const text = c.text ? wrap(c.text, inner, 9.4, f.body, f.bold, 12.6) : null
   const items = (c.list || []).map((it) => wrap(it, inner - 13, 9.2, f.body, f.bold, 12.2))
-  const tip = c.tip ? wrap(`**Tip:** ${c.tip}`, inner - 10, 8.8, f.body, f.bold, 11.8) : null
+  const tip = c.tip ? wrap(`**${WORDS.tip}** ${c.tip}`, inner - 10, 8.8, f.body, f.bold, 11.8) : null
   let h = P + th
   if (meta) h += 5 + paraH(meta)
   if (text) h += 7 + paraH(text)
@@ -321,18 +312,18 @@ function cardLayout(f: Fonts, c: Card, n: number, w: number, cut: boolean): Card
   return {
     h,
     draw: (pg, x, top, hh) => {
-      roundRect(pg, x, top, w, hh, 10, cut ? { fill: C.white, border: C.coral, bw: 1, dash: [5, 3.5] } : { fill: C.paper, border: C.line, bw: 1 })
+      roundRect(pg, x, top, w, hh, 10, cut ? { fill: C.white, border: C.acc, bw: 1, dash: [5, 3.5] } : { fill: C.paper, border: C.line, bw: 1 })
       if (cut) {
         pg.drawRectangle({ x: x + 10, y: H - (top + 6), width: 14, height: 12, color: C.white })
-        icon(pg, "scissors", x + 11, top - 6, 12, C.coral, 1.5)
+        icon(pg, "scissors", x + 11, top - 6, 12, C.acc, 1.5)
       }
       let y = top + P
-      badge(pg, f, x + P, y + (th - B) / 2, B, c.icon ? { icon: c.icon } : { n }, c.icon ? C.coralSoft : C.coral, c.icon ? C.coral : C.white)
+      badge(pg, f, x + P, y + (th - B) / 2, B, c.icon ? { icon: c.icon } : { n }, c.icon ? C.accSoft : C.acc, c.icon ? C.acc : C.white)
       drawPara(pg, title, x + P + B + 7, y + (th - paraH(title)) / 2, C.ink)
       y += th
       if (meta) {
         y += 5
-        drawPara(pg, meta, x + P, y, C.sky)
+        drawPara(pg, meta, x + P, y, C.sec)
         y += paraH(meta)
       }
       if (text) {
@@ -343,8 +334,8 @@ function cardLayout(f: Fonts, c: Card, n: number, w: number, cut: boolean): Card
       if (items.length) {
         y += 7
         items.forEach((p, i) => {
-          if (c.numbered) fitText(pg, `${i + 1}.`, f.bold, 9.2, x + P, y, C.coral, 12)
-          else pg.drawCircle({ x: x + P + 3, y: H - (y + 4.6), size: 1.8, color: C.coral })
+          if (c.numbered) fitText(pg, `${i + 1}.`, f.bold, 9.2, x + P, y, C.acc, 12)
+          else pg.drawCircle({ x: x + P + 3, y: H - (y + 4.6), size: 1.8, color: C.acc })
           drawPara(pg, p, x + P + 13, y, C.ink)
           y += paraH(p) + 4
         })
@@ -353,7 +344,7 @@ function cardLayout(f: Fonts, c: Card, n: number, w: number, cut: boolean): Card
       if (tip) {
         y += 8
         const th2 = paraH(tip) + 10
-        roundRect(pg, x + P - 2, y, inner + 4, th2, 6, { fill: C.mossSoft })
+        roundRect(pg, x + P - 2, y, inner + 4, th2, 6, { fill: C.terSoft })
         drawPara(pg, tip, x + P + 3, y + 5, C.soft)
       }
     },
@@ -387,9 +378,10 @@ function checklist(f: Fonts, b: Extract<Block, { type: "checklist" }>): Unit[] {
   for (let i = 0; i < paras.length; i += cols) {
     const row = paras.slice(i, i + cols)
     const h = Math.max(S, ...row.map(paraH))
+    const last = i + cols >= paras.length
     units.push({
       h,
-      gap: 8,
+      gap: last ? 14 : 8,
       draw: (pg, top) =>
         row.forEach((p, j) => {
           const x = MX + j * (w + gap)
@@ -411,11 +403,11 @@ function list(f: Fonts, b: Extract<Block, { type: "list" }>): Unit[] {
     const row = paras.slice(i, i + cols)
     units.push({
       h: Math.max(...row.map(paraH)),
-      gap: 6,
+      gap: i + cols >= paras.length ? 14 : 6,
       draw: (pg, top) =>
         row.forEach((p, j) => {
           const x = MX + j * (w + gap)
-          pg.drawCircle({ x: x + 3, y: H - (top + 5), size: 2.1, color: C.coral })
+          pg.drawCircle({ x: x + 3, y: H - (top + 5), size: 2.1, color: C.acc })
           drawPara(pg, p, x + 13, top, C.ink)
         }),
     })
@@ -432,9 +424,9 @@ function steps(f: Fonts, b: Extract<Block, { type: "steps" }>): Unit[] {
       const h = Math.max(B, paraH(p))
       return {
         h,
-        gap: 8,
+        gap: i === b.steps.length - 1 ? 14 : 8,
         draw: (pg: PDFPage, top: number) => {
-          badge(pg, f, MX, top, B, { n: i + 1 }, C.coral, C.white)
+          badge(pg, f, MX, top, B, { n: i + 1 }, C.acc, C.white)
           drawPara(pg, p, MX + B + 10, top + Math.max(0, (B - paraH(p)) / 2), C.ink)
         },
       }
@@ -462,7 +454,7 @@ function lines(f: Fonts, b: Extract<Block, { type: "lines" }>): Unit[] {
 }
 
 function tip(f: Fonts, b: Extract<Block, { type: "tip" }>): Unit[] {
-  const label = b.title ? (/[:.!?]$/.test(b.title) ? b.title : `${b.title}:`) : "Tip:"
+  const label = b.title ? (/[:.!?।]$/.test(b.title) ? b.title : `${b.title}:`) : WORDS.tip
   const t = wrap(`**${label}** ${b.text}`, CW - 34, 9.8, f.body, f.bold, 13.4)
   const h = paraH(t) + 20
   return [
@@ -470,9 +462,9 @@ function tip(f: Fonts, b: Extract<Block, { type: "tip" }>): Unit[] {
       h,
       gap: 12,
       draw: (pg, top) => {
-        roundRect(pg, MX, top, CW, h, 8, { fill: C.mossSoft })
-        pg.drawRectangle({ x: MX, y: H - (top + h - 6), width: 3, height: h - 12, color: C.moss })
-        icon(pg, "lightbulb", MX + 10, top + 9, 13, C.moss, 1.6)
+        roundRect(pg, MX, top, CW, h, 8, { fill: C.terSoft })
+        pg.drawRectangle({ x: MX, y: H - (top + h - 6), width: 3, height: h - 12, color: C.ter })
+        icon(pg, "lightbulb", MX + 10, top + 9, 13, C.ter, 1.6)
         drawPara(pg, t, MX + 28, top + 10, C.ink)
       },
     },
@@ -497,8 +489,8 @@ function grid(
   const headRow = {
     h: HH,
     draw: (pg: PDFPage, top: number) => {
-      roundRect(pg, MX, top, CW, HH, 5, { fill: C.sky })
-      pg.drawRectangle({ x: MX, y: H - (top + HH), width: CW, height: HH / 2, color: C.sky })
+      roundRect(pg, MX, top, CW, HH, 5, { fill: C.sec })
+      pg.drawRectangle({ x: MX, y: H - (top + HH), width: CW, height: HH / 2, color: C.sec })
       if (headFirst) fitText(pg, headFirst, f.bold, 9, MX + 7, top + 6.5, C.white, widths[0] - 12)
       head.forEach((c, i) => (align === "left" ? fitText(pg, c, f.bold, 9, xs[i + 1] + 7, top + 6.5, C.white, widths[i + 1] - 12) : fitText(pg, c, f.bold, 9, xs[i + 1] + 2, top + 6.5, C.white, widths[i + 1] - 4, "center")))
     },
@@ -538,7 +530,7 @@ function chart(f: Fonts, b: Extract<Block, { type: "chart" }>): Unit[] {
       h,
       cells: [
         (pg: PDFPage, x: number, top: number, _w: number, hh: number) => {
-          if (ic) icon(pg, r.icon!, x + 8, top + (hh - ic) / 2, ic, C.sky, 1.6)
+          if (ic) icon(pg, r.icon!, x + 8, top + (hh - ic) / 2, ic, C.sec, 1.6)
           drawPara(pg, p, x + 8 + (ic ? ic + 6 : 0), top + (hh - paraH(p)) / 2, C.ink)
         },
         ...b.columns.map(() => (pg: PDFPage, x: number, top: number, w: number, hh: number) => checkbox(pg, x + (w - 13) / 2, top + (hh - 13) / 2, 13, C.line)),
@@ -596,8 +588,8 @@ function shapes(f: Fonts, b: Extract<Block, { type: "shapes" }>): Unit[] {
       gap: 10,
       keep: true,
       draw: (pg, top) => {
-        icon(pg, "scissors", MX, top - 1, 11, C.coral, 1.4)
-        fitText(pg, "Trace or print on card stock, then cut along the dashed line.", f.body, 8.8, MX + 16, top, C.faint, CW - 16)
+        icon(pg, "scissors", MX, top - 1, 11, C.acc, 1.4)
+        fitText(pg, WORDS.cut, f.body, 8.8, MX + 16, top, C.faint, CW - 16)
       },
     },
   ]
@@ -611,11 +603,66 @@ function shapes(f: Fonts, b: Extract<Block, { type: "shapes" }>): Unit[] {
         row.forEach((s, j) => {
           const x = MX + (CW - total) / 2 + j * (S + gap)
           const sh = SHAPES[s.shape]
-          for (const d of sh.paths) pg.drawSvgPath(d, { x, y: H - top, scale: S / 100, borderColor: C.coral, borderWidth: 1.3, borderDashArray: [5, 3.5], borderLineCap: LineCapStyle.Round })
+          for (const d of sh.paths) pg.drawSvgPath(d, { x, y: H - top, scale: S / 100, borderColor: C.acc, borderWidth: 1.3, borderDashArray: [5, 3.5], borderLineCap: LineCapStyle.Round })
           fitText(pg, s.label || sh.label, f.bold, 9, x, top + S + 6, C.soft, S, "center")
         }),
     })
   }
+  return units
+}
+
+function verse(f: Fonts, b: Extract<Block, { type: "verse" }>): Unit[] {
+  const t = wrap(`“${b.text.replace(/^["“]+|["”]+$/g, "")}”`, CW - 56, 11.6, f.body, f.bold, 16.4)
+  const ref = b.ref ? wrap(`— ${b.ref}`, CW - 56, 10, f.bold, f.bold, 13) : null
+  const h = 16 + paraH(t) + (ref ? 7 + paraH(ref) : 0) + 16
+  return [
+    {
+      h,
+      gap: 14,
+      before: 2,
+      draw: (pg, top) => {
+        roundRect(pg, MX, top, CW, h, 9, { fill: C.accSoft })
+        pg.drawRectangle({ x: MX, y: H - (top + h - 8), width: 3.5, height: h - 16, color: C.acc })
+        icon(pg, "book-open", MX + 12, top + 15, 15, C.acc, 1.6)
+        drawPara(pg, t, MX + 36, top + 16, C.ink)
+        if (ref) drawPara(pg, ref, MX + 36, top + 16 + paraH(t) + 7, C.acc)
+      },
+    },
+  ]
+}
+
+/** "Gratitude [[opens]] the door" → the text with a blank line, and the answer. */
+function blanksOf(s: string): { text: string; answers: string[] } {
+  const answers: string[] = []
+  const text = s.replace(/\[\[([^\]]+)\]\]/g, (_, a: string) => {
+    answers.push(a.trim())
+    return "_".repeat(Math.min(24, Math.max(9, Math.round(a.trim().length * 1.5))))
+  })
+  return { text, answers }
+}
+
+function blanks(f: Fonts, b: Extract<Block, { type: "blanks" }>): Unit[] {
+  const B = 18
+  const all: string[] = []
+  const units: Unit[] = [...titleUnit(f, b.title)]
+  b.items.forEach((s, i) => {
+    const { text, answers } = blanksOf(s)
+    answers.forEach((a) => all.push(`${i + 1}. ${a}`))
+    const p = wrap(text, CW - B - 10, 10.6, f.body, f.bold, 17)
+    const h = Math.max(B, paraH(p))
+    units.push({
+      h,
+      gap: 11,
+      draw: (pg, top) => {
+        badge(pg, f, MX, top, B, { n: i + 1 }, C.acc, C.white)
+        drawPara(pg, p, MX + B + 10, top + Math.max(0, (B - paraH(p)) / 2), C.ink)
+      },
+    })
+  })
+  if (b.answers !== false && all.length) {
+    const p = wrap(`**${WORDS.answers}:** ${all.join("   ")}`, CW, 7.8, f.body, f.bold, 10.4)
+    units.push({ h: paraH(p), gap: 14, draw: (pg, top) => drawPara(pg, p, MX, top, C.faint) })
+  } else if (units.length) units[units.length - 1].gap = 14
   return units
 }
 
@@ -643,6 +690,10 @@ function unitsFor(f: Fonts, b: Block): Unit[] {
       return tip(f, b)
     case "shapes":
       return shapes(f, b)
+    case "verse":
+      return verse(f, b)
+    case "blanks":
+      return blanks(f, b)
     case "pagebreak":
       return [{ h: 0, gap: 0, newPage: true, force: true, draw: () => {} }]
   }
@@ -651,39 +702,58 @@ function unitsFor(f: Fonts, b: Block): Unit[] {
 // ---------- page frame ----------
 
 function frame(ctx: Ctx, pg: PDFPage, n: number, total: number) {
-  const { f, logo, spec } = ctx
+  const { f, logo, spec, theme } = ctx
+  const lang = spec.lang === "hi" ? "hi" : "en"
   if (n > 1) {
-    pg.drawImage(logo, { x: MX, y: H - 46, width: 20, height: 20 })
-    pg.drawText("nestoodle", { x: MX + 25, y: H - 40, size: 12.5, font: f.headX, color: C.coral })
-    fitText(pg, spec.title, f.body, 8.6, MX + 120, 31.5, C.faint, CW - 120, "right")
+    const lx = logo ? MX + 25 : MX
+    if (logo) pg.drawImage(logo, { x: MX, y: H - 46, width: 20, height: 20 })
+    const mark = safe(f.headX, theme.wordmark)
+    const msz = Math.min(12.5, 160 / Math.max(1, f.headX.widthOfTextAtSize(mark, 1)))
+    pg.drawText(mark, { x: lx, y: H - 40, size: msz, font: f.headX, color: C.acc })
+    const used = lx - MX + f.headX.widthOfTextAtSize(mark, msz) + 16
+    fitText(pg, spec.title, f.body, 8.6, MX + used, 31.5, C.faint, CW - used, "right")
     hline(pg, MX, W - MX, 52, C.line, 1, [3, 3])
   }
   hline(pg, MX, W - MX, H - 44, C.line, 1, [3, 3])
-  pg.drawText(safe(f.body, "nestoodle.com · Free printable for personal and classroom use"), { x: MX, y: 30, size: 8.2, font: f.body, color: C.faint })
-  const pn = `Page ${n} of ${total}`
-  pg.drawText(pn, { x: W - MX - f.bold.widthOfTextAtSize(pn, 8.2), y: 30, size: 8.2, font: f.bold, color: C.faint })
+  const pn = WORDS.page(n, total)
+  const pw = f.bold.widthOfTextAtSize(safe(f.bold, pn), 8.2)
+  fitText(pg, theme.footer[lang], f.body, 8.2, MX, H - 30 - 8.2 * 0.8 - 0.5, C.faint, CW - pw - 16)
+  pg.drawText(safe(f.bold, pn), { x: W - MX - pw, y: 30, size: 8.2, font: f.bold, color: C.faint })
 }
 
 // ---------- the document ----------
 
 export type RenderResult = { pdf: Uint8Array; pages: number }
 
-export async function renderPrintable(spec: Spec, o: { postTitle?: string; postUrl?: string } = {}): Promise<RenderResult> {
+export async function renderPrintable(spec: Spec, o: { postTitle?: string; postUrl?: string; theme?: Theme; logo?: Uint8Array | null } = {}): Promise<RenderResult> {
+  const theme = o.theme || THEMES.nestoodle
+  const lang = spec.lang === "hi" ? "hi" : "en"
+  const files = theme.fonts[lang]
   const doc = await PDFDocument.create()
   doc.registerFontkit(fontkit)
   const f: Fonts = {
-    head: await doc.embedFont(asset("Baloo2-Bold.ttf"), { subset: true }),
-    headX: await doc.embedFont(asset("Baloo2-ExtraBold.ttf"), { subset: true }),
-    body: await doc.embedFont(asset("Karla-Regular.ttf"), { subset: true }),
-    bold: await doc.embedFont(asset("Karla-Bold.ttf"), { subset: true }),
+    head: await doc.embedFont(asset(files.head), { subset: true }),
+    headX: await doc.embedFont(asset(files.headX), { subset: true }),
+    body: await doc.embedFont(asset(files.body), { subset: true }),
+    bold: await doc.embedFont(asset(files.bold), { subset: true }),
   }
-  const logo = await doc.embedPng(asset("logo.png"))
-  const ctx: Ctx = { doc, f, logo, spec }
+  let logo: PDFImage | null = null
+  try {
+    const bytes = o.logo || (theme.logo ? asset(theme.logo) : null)
+    if (bytes) logo = bytes[0] === 0x89 ? await doc.embedPng(bytes) : await doc.embedJpg(bytes)
+  } catch {
+    logo = null
+  }
+  const ctx: Ctx = { doc, f, logo, spec, theme }
+  // Everything from here to the end of the page frames is drawn without waiting, so another
+  // printable being made at the same time can't swap the colors halfway.
+  C = theme.colors
+  WORDS = theme.words[lang]
 
   const units: Unit[] = [cover(ctx), ...spec.blocks.flatMap((b) => unitsFor(f, b))]
   // Something to close on: where the printable came from.
-  if (o.postTitle) {
-    const p = wrap(`From “${o.postTitle}” on ${o.postUrl ? o.postUrl.replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, "") : "nestoodle.com"}. More free printables at nestoodle.com.`, CW, 8.8, f.body, f.bold, 12)
+  if (o.postTitle && theme.closing !== false) {
+    const p = wrap(WORDS.from(o.postTitle, o.postUrl ? o.postUrl.replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, "") : theme.site), CW, 8.8, f.body, f.bold, 12)
     units.push({ h: paraH(p) + 10, gap: 0, draw: (pg, top) => drawPara(pg, p, MX, top + 10, C.faint, "center", CW) })
   }
 
@@ -722,13 +792,13 @@ export async function renderPrintable(spec: Spec, o: { postTitle?: string; postU
   }
   pages.forEach((p, i) => frame(ctx, p, i + 1, pages.length))
 
-  doc.setTitle(`Nestoodle - ${spec.title}`)
-  doc.setAuthor("Nestoodle")
-  doc.setSubject(spec.subtitle || "Free printable from nestoodle.com")
-  doc.setKeywords(["Nestoodle", "printable", ...(spec.chips || [])])
-  doc.setCreator("Nestoodle")
-  doc.setProducer("Nestoodle")
-  doc.setLanguage("en-US")
+  doc.setTitle(`${theme.name} - ${spec.title}`)
+  doc.setAuthor(theme.name)
+  doc.setSubject(spec.subtitle || `Free printable from ${theme.site}`)
+  doc.setKeywords([theme.name, "printable", ...(spec.chips || [])])
+  doc.setCreator(theme.name)
+  doc.setProducer(theme.name)
+  doc.setLanguage(lang === "hi" ? "hi-IN" : "en-US")
   const now = new Date()
   doc.setCreationDate(now)
   doc.setModificationDate(now)

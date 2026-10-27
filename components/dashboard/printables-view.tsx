@@ -25,7 +25,7 @@ const small = "w-full rounded-md border border-[var(--line)] bg-[var(--panel)] p
 const lab = "mb-1 block text-[11.5px] font-semibold uppercase tracking-wide text-[var(--muted)]"
 const hint = "mt-1 text-[11.5px] leading-snug text-[var(--faint)]"
 
-async function call(body: Record<string, unknown>): Promise<Result & Partial<ListData>> {
+export async function call(body: Record<string, unknown>): Promise<Result & Partial<ListData>> {
   try {
     const r = await fetch("/dashboard/printables", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) })
     if (r.status === 401) window.location.reload()
@@ -74,7 +74,7 @@ const STATUS: Record<string, { label: string; cls: string }> = {
   pending: { label: "Pending", cls: "bg-amber-50 text-amber-800 ring-amber-600/25" },
   private: { label: "Private", cls: "bg-slate-100 text-slate-600 ring-slate-500/20" },
 }
-const Pill = ({ s, label }: { s: string; label?: string }) => {
+export const Pill = ({ s, label }: { s: string; label?: string }) => {
   const m = STATUS[s] || { label: s, cls: "bg-slate-100 text-slate-600 ring-slate-500/20" }
   return <span className={`inline-flex rounded-full px-2 py-0.5 text-[11px] font-semibold ring-1 ring-inset ${m.cls}`}>{label || m.label}</span>
 }
@@ -154,7 +154,14 @@ export function PrintablesView() {
     if (post && row && row.spec && row.status !== "drafting") {
       return (
         <>
-          <Editor key={`${row.id}-${row.changedAt}`} post={post} row={row} onClose={() => setOpen(null)} onChanged={load} show={show} />
+          <Editor
+            key={`${row.id}-${row.changedAt}`}
+            ctx={{ biz: "nestoodle", heading: post.title, back: "All articles", link: post.link, prefix: "Nestoodle", brand: "Nestoodle", extra: { postId: post.id, postTitle: post.title, postLink: post.link }, target: "the article", nst: post }}
+            row={row}
+            onClose={() => setOpen(null)}
+            onChanged={load}
+            show={show}
+          />
           {toast$}
         </>
       )
@@ -251,7 +258,7 @@ export function PrintablesView() {
   )
 }
 
-function Stat({ n, label: l, tone }: { n: number; label: string; tone?: "warn" }) {
+export function Stat({ n, label: l, tone }: { n: number; label: string; tone?: "warn" }) {
   return (
     <div className={`rounded-xl border bg-[var(--panel)] p-3.5 ${tone ? "border-amber-300" : "border-[var(--line)]"}`}>
       <div className="text-2xl font-semibold tabular-nums tracking-tight text-[var(--ink)]">{n}</div>
@@ -260,7 +267,7 @@ function Stat({ n, label: l, tone }: { n: number; label: string; tone?: "warn" }
   )
 }
 
-function ListSkeleton() {
+export function ListSkeleton() {
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -302,16 +309,42 @@ function newBlock(type: BlockType): Block {
       return { type, text: "Your tip" }
     case "shapes":
       return { type, title: "Templates", size: "medium", shapes: [{ shape: "star" }] }
+    case "verse":
+      return { type, text: "The verse, word for word", ref: "Book 1:1" }
+    case "blanks":
+      return { type, title: "Sermon notes", items: ["God's word is a [[lamp]] to my feet."] }
     case "pagebreak":
       return { type }
   }
 }
 
-function Editor({ post, row, onClose, onChanged, show }: { post: PrintablePost; row: PrintableRow; onClose: () => void; onChanged: () => void; show: (t: "ok" | "bad", s: string) => void }) {
+/** What the editor needs to know about where the printable goes. Nestoodle: a WordPress article. */
+export type EditorCtx = {
+  biz: string
+  heading: string
+  back: string
+  link: string
+  /** File name prefix and brand (Nestoodle-…, Elevating-CHRIST-…). */
+  prefix: string
+  brand: string
+  /** Sent with every save / preview / publish. */
+  extra: Record<string, unknown>
+  /** "the article", "the sermon page". */
+  target: string
+  /** Names follow this instead of the printable's title (sermons: kind + sermon title). */
+  autoFile?: string
+  nst?: PrintablePost
+}
+
+type EditRow = { id: number; status: string; spec: Spec | null; linkText: string; fileName: string; error: string; publishedAt: string; changedAt: string; url?: string }
+
+export function Editor({ ctx, row, onClose, onChanged, show }: { ctx: EditorCtx; row: EditRow; onClose: () => void; onChanged: () => void; show: (t: "ok" | "bad", s: string) => void }) {
+  const post = ctx.nst
+  const autoOf = (title: string) => ctx.autoFile || fileNameFor(title, ctx.prefix)
   const [spec, setSpec] = useState<Spec>(row.spec!)
-  const [linkText, setLinkText] = useState(row.linkText || cleanLinkText(row.spec!.title))
-  const [fileName, setFileName] = useState(row.fileName || fileNameFor(row.spec!.title))
-  const [autoName, setAutoName] = useState(!row.fileName || row.fileName === fileNameFor(row.spec!.title))
+  const [linkText, setLinkText] = useState(row.linkText || cleanLinkText(row.spec!.title, ctx.brand))
+  const [fileName, setFileName] = useState(row.fileName || autoOf(row.spec!.title))
+  const [autoName, setAutoName] = useState(!row.fileName || row.fileName === autoOf(row.spec!.title))
   const [dirty, setDirty] = useState(false)
   const [busy, setBusy] = useState<string | null>(null)
   const [preview, setPreview] = useState<{ url: string; pages: number } | null>(null)
@@ -325,7 +358,7 @@ function Editor({ post, row, onClose, onChanged, show }: { post: PrintablePost; 
     setSpec(next)
     setDirty(true)
     setStale(true)
-    if (autoName) setFileName(fileNameFor(next.title))
+    if (autoName) setFileName(autoOf(next.title))
   }
   const setBlock = (i: number, b: Block) => edit({ ...spec, blocks: spec.blocks.map((x, j) => (j === i ? b : x)) })
   const move = (i: number, d: -1 | 1) => {
@@ -335,7 +368,7 @@ function Editor({ post, row, onClose, onChanged, show }: { post: PrintablePost; 
     ;[b[i], b[j]] = [b[j], b[i]]
     edit({ ...spec, blocks: b })
   }
-  const body = { id: row.id, postId: post.id, spec, fileName, linkText, postTitle: post.title, postLink: post.link }
+  const body = { biz: ctx.biz, id: row.id, ...ctx.extra, spec, fileName, linkText }
 
   const save = async () => {
     setBusy("save")
@@ -369,9 +402,9 @@ function Editor({ post, row, onClose, onChanged, show }: { post: PrintablePost; 
     onChanged()
   }
   const discard = async () => {
-    if (!window.confirm("Remove this printable draft? The article's current download stays as it is.")) return
+    if (!window.confirm(post ? "Remove this printable draft? The article's current download stays as it is." : row.url ? "Remove this printable? Its PDF is taken off the website too." : "Remove this printable draft?")) return
     setBusy("discard")
-    const r = await call({ op: "discard", id: row.id })
+    const r = await call({ op: "discard", biz: ctx.biz, id: row.id })
     setBusy(null)
     show(r.ok ? "ok" : "bad", r.ok ? r.done || "Removed." : r.error || "That didn't work.")
     if (r.ok) {
@@ -380,28 +413,29 @@ function Editor({ post, row, onClose, onChanged, show }: { post: PrintablePost; 
     }
   }
 
-  const issues = fileIssues(post)
-  const replaces = post.file ? post.file.name : post.spot ? "the [Add download] spot" : "a new download card in the Free printable section"
+  const issues = post ? fileIssues(post) : []
+  const replaces = post ? (post.file ? post.file.name : post.spot ? "the [Add download] spot" : "a new download card in the Free printable section") : ""
+  const filePattern = new RegExp(`^${ctx.prefix.replace(/-/g, "\\-")}-[A-Za-z0-9-]+\\.pdf$`)
 
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-2">
         <button type="button" className={btn} onClick={() => (!dirty || window.confirm("Leave without saving your changes?") ? onClose() : null)}>
-          <ArrowLeft className="h-3.5 w-3.5" /> All articles
+          <ArrowLeft className="h-3.5 w-3.5" /> {ctx.back}
         </button>
-        <div className="min-w-0 flex-1 truncate text-sm font-semibold text-[var(--ink)]">{post.title}</div>
+        <div className="min-w-0 flex-1 truncate text-sm font-semibold text-[var(--ink)]">{ctx.heading}</div>
         <Pill s={row.status} />
       </div>
 
       {result ? (
         <Notice tone="info" title="Published">
           <span className="block">
-            The article now offers <b>{fileName}</b> with the link text “{linkText}” ({result.how || "placed"}).
+            {post ? "The article" : "The page"} now offers <b>{fileName}</b> with the link text “{linkText}” ({result.how || "placed"}).
           </span>
           <span className="mt-1 flex flex-wrap gap-3">
             {result.link ? (
               <a className="font-semibold underline" href={result.link} target="_blank" rel="noreferrer">
-                Open the article
+                {post ? "Open the article" : "Open the page"}
               </a>
             ) : null}
             {result.mediaUrl ? (
@@ -411,19 +445,19 @@ function Editor({ post, row, onClose, onChanged, show }: { post: PrintablePost; 
             ) : null}
           </span>
           {result.oldHref ? <span className="mt-1 block text-xs">{result.deletedOld ? `The old file (${result.oldHref.split("/").pop()}) was deleted from Media.` : `The old file (${result.oldHref.split("/").pop()}) is still in Media${result.keptOld ? `: ${result.keptOld}` : ""}.`}</span> : null}
-          <span className="mt-1 block text-xs">Purge LiteSpeed (Toolbox → Purge All) if the article still shows the old download.</span>
+          {post ? <span className="mt-1 block text-xs">Purge LiteSpeed (Toolbox → Purge All) if the article still shows the old download.</span> : null}
         </Notice>
       ) : null}
       {row.status === "failed" && row.error ? <Notice tone="error">{row.error}</Notice> : null}
 
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_460px]">
         <div className="space-y-4">
-          <Card title="Download in the article" sub="What parents see and what their file is called.">
+          <Card title={post ? "Download in the article" : "Download on the website"} sub={post ? "What parents see and what their file is called." : "The name people see and what their file is called."}>
             <div className="grid gap-3 sm:grid-cols-2">
               <label className="block">
                 <span className={lab}>Link text</span>
                 <input className={input} value={linkText} maxLength={90} onChange={(e) => (setLinkText(e.target.value), setDirty(true))} />
-                <span className={hint}>Shown as the card title. No “Free” or “Nestoodle” (the card already says both).</span>
+                <span className={hint}>{post ? "Shown as the card title. No “Free” or “Nestoodle” (the card already says both)." : "Shown on the download."}</span>
               </label>
               <label className="block">
                 <span className={lab}>File name</span>
@@ -435,12 +469,12 @@ function Editor({ post, row, onClose, onChanged, show }: { post: PrintablePost; 
                     setAutoName(false)
                     setDirty(true)
                   }}
-                  onBlur={() => setFileName(fileNameFor(fileName.replace(/\.pdf$/i, "")) === fileName ? fileName : /^Nestoodle-[A-Za-z0-9-]+\.pdf$/.test(fileName) ? fileName : fileNameFor(fileName.replace(/\.pdf$/i, "")))}
+                  onBlur={() => setFileName(filePattern.test(fileName) ? fileName : fileNameFor(fileName.replace(/\.pdf$/i, ""), ctx.prefix))}
                 />
                 <span className={hint}>
-                  {autoName ? "Follows the title. " : ""}Pattern: Nestoodle-Name-Of-Printable.pdf
+                  {autoName ? (ctx.autoFile ? "Set automatically. " : "Follows the title. ") : ""}Pattern: {ctx.prefix}-Name-Of-Printable.pdf
                   {!autoName ? (
-                    <button type="button" className="ml-1 underline" onClick={() => (setAutoName(true), setFileName(fileNameFor(spec.title)))}>
+                    <button type="button" className="ml-1 underline" onClick={() => (setAutoName(true), setFileName(autoOf(spec.title)))}>
                       Use the title
                     </button>
                   ) : null}
@@ -448,15 +482,28 @@ function Editor({ post, row, onClose, onChanged, show }: { post: PrintablePost; 
               </label>
             </div>
             <dl className="mt-3 grid gap-x-4 gap-y-1 rounded-lg bg-[var(--chip)] p-3 text-xs sm:grid-cols-[auto_1fr]">
-              <dt className="font-semibold text-[var(--muted)]">Article</dt>
+              <dt className="font-semibold text-[var(--muted)]">{post ? "Article" : "Page"}</dt>
               <dd className="min-w-0 truncate">
-                <a href={post.link} target="_blank" rel="noreferrer" className="hover:underline">
-                  {post.title}
+                <a href={ctx.link} target="_blank" rel="noreferrer" className="hover:underline">
+                  {ctx.heading}
                 </a>
               </dd>
-              <dt className="font-semibold text-[var(--muted)]">Replaces</dt>
-              <dd className="min-w-0 break-all">{replaces}</dd>
-              {issues.length && post.file ? (
+              {post ? (
+                <>
+                  <dt className="font-semibold text-[var(--muted)]">Replaces</dt>
+                  <dd className="min-w-0 break-all">{replaces}</dd>
+                </>
+              ) : row.url ? (
+                <>
+                  <dt className="font-semibold text-[var(--muted)]">Live now</dt>
+                  <dd className="min-w-0 break-all">
+                    <a href={row.url} target="_blank" rel="noreferrer" className="hover:underline">
+                      {row.fileName || "PDF"}
+                    </a>
+                  </dd>
+                </>
+              ) : null}
+              {issues.length && post?.file ? (
                 <>
                   <dt className="font-semibold text-[var(--muted)]">Now</dt>
                   <dd className="text-amber-700 dark:text-amber-400">{issues.join(" ")}</dd>
@@ -517,7 +564,7 @@ function Editor({ post, row, onClose, onChanged, show }: { post: PrintablePost; 
                 <p className="text-xs text-[var(--muted)] sm:hidden">Tap Open to see the PDF.</p>
               </div>
             ) : (
-              <p className="mt-3 text-xs text-[var(--faint)]">Press Preview to see the pages exactly as parents will print them.</p>
+              <p className="mt-3 text-xs text-[var(--faint)]">Press Preview to see the pages exactly as they will print.</p>
             )}
           </Card>
           <Card>
@@ -526,7 +573,7 @@ function Editor({ post, row, onClose, onChanged, show }: { post: PrintablePost; 
                 {busy === "save" ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />} {dirty ? "Save draft" : "Saved"}
               </button>
               <button type="button" className={primary} disabled={!!busy} onClick={() => setConfirm(true)}>
-                {busy === "publish" ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Rocket className="h-3.5 w-3.5" />} Publish to the article
+                {busy === "publish" ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Rocket className="h-3.5 w-3.5" />} Publish to {post ? "the article" : "the website"}
               </button>
               <button type="button" className={btn} disabled={!!busy} onClick={discard} title="Remove this printable draft">
                 <Trash2 className="h-3.5 w-3.5" />
@@ -536,15 +583,23 @@ function Editor({ post, row, onClose, onChanged, show }: { post: PrintablePost; 
               <div className="mt-3 space-y-2 rounded-lg border border-[var(--line)] p-3 text-sm">
                 <p className="font-semibold text-[var(--ink)]">Publish this printable?</p>
                 <ul className="list-disc space-y-0.5 pl-5 text-xs text-[var(--ink-2)]">
-                  <li>
-                    Uploads <b>{fileName}</b> to WordPress Media.
-                  </li>
-                  <li>
-                    In “{post.title}”, the download {post.file ? <>replaces <b>{post.file.name}</b></> : <>goes to {replaces}</>} with the link text “{cleanLinkText(linkText) || spec.title}”.
-                  </li>
+                  {post ? (
+                    <>
+                      <li>
+                        Uploads <b>{fileName}</b> to WordPress Media.
+                      </li>
+                      <li>
+                        In “{post.title}”, the download {post.file ? <>replaces <b>{post.file.name}</b></> : <>goes to {replaces}</>} with the link text “{cleanLinkText(linkText) || spec.title}”.
+                      </li>
+                    </>
+                  ) : (
+                    <li>
+                      Puts <b>{fileName}</b> online and shows it on {ctx.target}{row.url ? ", in place of the current PDF" : ""}.
+                    </li>
+                  )}
                   <li>Your edits are saved first.</li>
                 </ul>
-                {post.file ? (
+                {post?.file ? (
                   <label className="flex items-start gap-2 text-xs text-[var(--ink-2)]">
                     <input type="checkbox" className="mt-0.5" checked={deleteOld} onChange={(e) => setDeleteOld(e.target.checked)} />
                     <span>Delete the old file from Media (only if no other article uses it).</span>
@@ -652,7 +707,7 @@ function BlockCard({ b, i, n, onChange, onMove, onDelete }: { b: Block; i: numbe
     </div>
   )
   const title =
-    b.type !== "cards" && b.type !== "tip" && b.type !== "pagebreak" ? (
+    b.type !== "cards" && b.type !== "tip" && b.type !== "pagebreak" && b.type !== "verse" ? (
       <Field label={b.type === "section" ? "Heading" : "Small heading (optional)"}>
         <input className={small} value={("title" in b && b.title) || ""} onChange={(e) => onChange({ ...b, title: e.target.value } as Block)} />
       </Field>
@@ -826,6 +881,31 @@ function BlockCard({ b, i, n, onChange, onMove, onDelete }: { b: Block; i: numbe
               <option value="medium">Medium (3 per row)</option>
               <option value="large">Large (2 per row)</option>
             </select>
+          </label>
+        </div>
+      )
+      break
+    case "verse":
+      fields = (
+        <div className="grid gap-2 sm:grid-cols-[1fr_200px]">
+          <Field label="Verse, word for word" help="Copy it exactly from the Bible translation the sermon uses.">
+            <textarea className={small} rows={3} value={b.text} onChange={(e) => onChange({ ...b, text: e.target.value })} />
+          </Field>
+          <Field label="Reference">
+            <input className={small} value={b.ref || ""} onChange={(e) => onChange({ ...b, ref: e.target.value })} />
+          </Field>
+        </div>
+      )
+      break
+    case "blanks":
+      fields = (
+        <div className="space-y-2">
+          {title}
+          <Field label="Points, one per line" help="Put the word to fill in between double brackets: Gratitude [[opens]] the door.">
+            <LinesInput value={b.items} onChange={(items) => onChange({ ...b, items })} rows={Math.min(10, Math.max(3, b.items.length + 1))} />
+          </Field>
+          <label className="flex items-center gap-2 text-xs text-[var(--ink-2)]">
+            <input type="checkbox" checked={b.answers !== false} onChange={(e) => onChange({ ...b, answers: e.target.checked ? undefined : false })} /> Print the answers small at the end
           </label>
         </div>
       )

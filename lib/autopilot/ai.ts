@@ -7,8 +7,8 @@ import { gateway } from "@/lib/dashboard/gateway"
 import { addNotice, noticesFor, removeNotice } from "./account"
 import { HUMAN, aiPhrases, polish } from "./style"
 
-export async function ask(prompt: string, o: { json?: boolean; maxTokens?: number; temperature?: number; timeoutMs?: number } = {}): Promise<string> {
-  const r = await gateway({ kind: "ai", prompt, json: !!o.json, maxTokens: o.maxTokens ?? 2048, temperature: o.temperature ?? 0.8 }, o.timeoutMs ?? 95_000)
+export async function ask(prompt: string, o: { json?: boolean; maxTokens?: number; temperature?: number; timeoutMs?: number; thinking?: "minimal" | "low" | "medium" | "high" } = {}): Promise<string> {
+  const r = await gateway({ kind: "ai", prompt, json: !!o.json, maxTokens: o.maxTokens ?? 2048, temperature: o.temperature ?? 0.8, ...(o.thinking ? { thinking: o.thinking } : {}) }, o.timeoutMs ?? 95_000)
   const b = r.body as { ok?: boolean; text?: string; error?: string }
   if (r.status !== 200 || !b?.ok || !b.text) throw new Error(b?.error || "The AI didn't answer. Try again in a minute.")
   return b.text
