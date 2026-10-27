@@ -275,9 +275,10 @@ export function SectionView({
 
       {groups.map(([g, ts]) => (
         <Group key={g} title={g}>
-          <div className="grid gap-4 lg:grid-cols-2">
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
             {ts.map((t) => (
-              <div key={t.key} className={t.wide ? "lg:col-span-2" : ""}>
+              // min-w-0: a long table scrolls inside its box instead of widening the page on phones.
+              <div key={t.key} className={`min-w-0 ${t.wide ? "lg:col-span-2" : ""}`}>
                 <ReportTable t={t} onFilter={onFilter} />
               </div>
             ))}
