@@ -12,6 +12,7 @@ export type ViewName =
   | "overview"
   | "schedule"
   | "blog"
+  | "printables"
   | "instagram"
   | "facebook"
   | "youtube"
@@ -108,7 +109,7 @@ export const BUSINESSES: Record<BusinessKey, Business> = {
     subtitle: "Parenting website",
     icon: "/dashboard/nestoodle.svg",
     nav: [
-      { group: "", items: ["overview", "schedule", "blog"] },
+      { group: "", items: ["overview", "schedule", "blog", "printables"] },
       { group: "Social", items: ["instagram", "facebook", "pinterest"] },
       { group: "Website", items: ["ga4", "gsc", "adsense"] },
       { group: "Email", items: ["email"] },

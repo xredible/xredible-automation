@@ -1,6 +1,10 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // The printable PDF engine reads its fonts and logo from disk.
+  outputFileTracingIncludes: {
+    "/dashboard/printables": ["./lib/printables/assets/**/*"],
+  },
   async rewrites() {
     return [{ source: "/.well-known/assetlinks.json", destination: "/api/assetlinks" }];
   },

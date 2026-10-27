@@ -1,7 +1,7 @@
 // Platform names, colours and icons used across the dashboard.
 
 import type { ReactNode } from "react"
-import { Palette, BadgeIndianRupee, Coins, CalendarDays, CircleQuestionMark, CreditCard, HeartPulse, Lightbulb, Megaphone, Receipt, TicketPercent, Users, CalendarCheck, FileText, Globe, LayoutDashboard, Mail, MailOpen, Newspaper, PenLine, Pin, Search, Settings, TrendingUp } from "lucide-react"
+import { Palette, BadgeIndianRupee, Coins, CalendarDays, CircleQuestionMark, CreditCard, HeartPulse, Lightbulb, Megaphone, Receipt, TicketPercent, Users, CalendarCheck, FileText, Globe, LayoutDashboard, Mail, MailOpen, Newspaper, PenLine, Pin, Printer, Search, Settings, TrendingUp } from "lucide-react"
 
 // lucide-react 1.x has no brand icons, so these are simple line glyphs in the same style.
 type IconProps = { className?: string; "aria-hidden"?: boolean }
@@ -26,6 +26,7 @@ export const PLATFORM: Record<string, PlatformMeta> = {
   overview: { label: "Overview", short: "Overview", color: "#10203f", ...i(LayoutDashboard) },
   schedule: { label: "Content calendar", short: "Calendar", color: "#10203f", ...i(CalendarDays) },
   blog: { label: "Blog posts", short: "Blog", color: "#c8661b", ...i(PenLine) },
+  printables: { label: "Printables", short: "Printables", color: "#e0653c", ...i(Printer) },
   instagram: { label: "Instagram", short: "Instagram", color: "#c13584", ...i(Instagram) },
   facebook: { label: "Facebook", short: "Facebook", color: "#1877f2", ...i(Facebook) },
   youtube: { label: "YouTube", short: "YouTube", color: "#e62117", ...i(Youtube) },
