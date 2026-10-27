@@ -20,8 +20,8 @@ import { canSee, currentUser } from "@/lib/dashboard/server"
 import { gateway } from "@/lib/dashboard/gateway"
 import { renderPrintable } from "@/lib/printables/pdf"
 import { cleanLinkText, cleanSpec, fileNameFor, type PrintablePost, type PrintableRow, type Spec } from "@/lib/printables/spec"
-import { GENERIC, discardRow, draft as genericDraft, listRows, listSources, namesFor, publishRow, saveRow } from "@/lib/printables/generic"
-import { THEMES } from "@/lib/printables/themes"
+import { GENERIC, discardRow, draft as genericDraft, listRows, listSources, lookOf, namesFor, previewPdf, publishRow, saveRow, scopeOf } from "@/lib/printables/generic"
+import { ownerKey } from "@/lib/autopilot/brands"
 import type { BusinessKey } from "@/lib/dashboard/businesses"
 
 export const runtime = "nodejs"
@@ -158,36 +158,41 @@ export async function POST(request: Request) {
   return json({ ok: false, error: "That change isn't valid." }, 400)
 }
 
-// ---------- the other workspaces (Elevating CHRIST) ----------
+// ---------- the other workspaces (Elevating CHRIST, LinkedIn Agency, Autopilot customers) ----------
 
 const errText = (e: unknown) => (e instanceof Error ? e.message : "Something went wrong.")
 
 async function generic(biz: string, op: string, b: Record<string, unknown>) {
   try {
+    const me = await currentUser()
+    const sc = scopeOf(biz, biz === "autopilot" && me ? await ownerKey(me.email) : undefined)
     if (op === "list") {
-      const [sources, rows] = await Promise.all([listSources(biz), listRows(biz)])
-      return json({ ok: true, sources, rows })
+      const rows = await listRows(sc)
+      const [sources, look] = await Promise.all([listSources(sc, rows), lookOf(sc)])
+      return json({ ok: true, sources, rows, brand: { prefix: look.theme.prefix, name: look.theme.name } })
     }
     if (op === "draft") {
-      const ref = String(b.ref || "").slice(0, 120)
+      const ref = String(b.ref || "").slice(0, 160)
       const kind = String(b.kind || "")
       const lang = b.lang === "hi" ? "hi" : "en"
-      if (!ref) return json({ ok: false, error: "Which sermon?" }, 400)
-      const row = await genericDraft(biz, ref, kind, lang)
+      const topic = b.topic && typeof b.topic === "object" ? { title: String((b.topic as Record<string, unknown>).title || ""), notes: String((b.topic as Record<string, unknown>).notes || "") } : undefined
+      if (!ref && !topic) return json({ ok: false, error: "Which one?" }, 400)
+      const row = await genericDraft(sc, ref, kind, lang, topic)
       return json({ ok: true, done: "Draft ready. Review it, then publish.", row })
     }
     if (op === "discard") {
       const id = int(b.id)
       if (!id) return json({ ok: false, error: "Which printable?" }, 400)
-      await discardRow(biz, id)
+      await discardRow(sc, id)
       return json({ ok: true, done: "Removed. Make a new one any time." })
     }
     const spec = cleanSpec(b.spec)
     if (!spec) return json({ ok: false, error: "The printable needs a title and at least one block with content." }, 400)
     const lang = spec.lang === "hi" ? "hi" : "en"
-    const names = namesFor(biz, { title: String(b.sourceTitle || spec.title), shownTitle: String(b.shownTitle || "") }, String(b.kind || ""), lang, { fileName: b.fileName, linkText: b.linkText })
+    const look = await lookOf(sc)
+    const names = namesFor(sc, look.theme, { title: String(b.sourceTitle || spec.title), shownTitle: String(b.shownTitle || "") }, String(b.kind || ""), lang, { fileName: b.fileName, linkText: b.linkText })
     if (op === "preview") {
-      const out = await renderPrintable(spec, { theme: THEMES[biz], postTitle: typeof b.shownTitle === "string" ? b.shownTitle.slice(0, 200) : undefined, postUrl: typeof b.postLink === "string" ? b.postLink.slice(0, 300) : undefined })
+      const out = await previewPdf(sc, spec, { title: typeof b.shownTitle === "string" && b.shownTitle ? b.shownTitle.slice(0, 200) : undefined, link: typeof b.postLink === "string" && b.postLink ? b.postLink.slice(0, 300) : undefined })
       return new NextResponse(Buffer.from(out.pdf), {
         headers: { "Content-Type": "application/pdf", "Content-Disposition": `inline; filename="${names.fileName}"`, "Cache-Control": "private, no-store", "X-Pages": String(out.pages) },
       })
@@ -195,12 +200,12 @@ async function generic(biz: string, op: string, b: Record<string, unknown>) {
     const id = int(b.id)
     if (!id) return json({ ok: false, error: "Which printable?" }, 400)
     if (op === "save") {
-      await saveRow(biz, id, spec, names)
+      await saveRow(sc, id, spec, names)
       return json({ ok: true, done: "Saved.", ...names })
     }
     if (op === "publish") {
-      const r = await publishRow(biz, id, spec, names)
-      return json({ ok: true, done: "Published. The sermon page shows the download within a few minutes.", ...names, pages: r.pages, result: { mediaUrl: r.url, link: r.link, how: "on the sermon page" } })
+      const r = await publishRow(sc, id, spec, names)
+      return json({ ok: true, done: `Published ${r.how}.`, ...names, pages: r.pages, result: { mediaUrl: r.url, link: r.link, how: r.how } })
     }
     return json({ ok: false, error: "That change isn't valid." }, 400)
   } catch (e) {
