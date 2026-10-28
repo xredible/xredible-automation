@@ -5,7 +5,7 @@
 
 import { BrandKitSummary } from "./brand-kit"
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react"
-import { Check, ExternalLink, PenLine, RefreshCw, Send, Sparkles, Trash2 } from "lucide-react"
+import { BookCheck, Check, ExternalLink, PenLine, RefreshCw, Send, Sparkles, Trash2 } from "lucide-react"
 import { PRODUCTS, type ProductKey, type Subscription } from "@/lib/autopilot/products"
 import { card, field, ghost, istTime, Notice, PlanCard, primary, small, toLocalInput, type Upi } from "./ui"
 import { RewriteMenu } from "./rewrite"
@@ -105,10 +105,12 @@ export function ToolApp({ product, bare = false }: { product: Tool; bare?: boole
     if (!s) return
     const waiting = s.channel?.connected && s.channel.settings.about && !s.items.some((i) => i.status === "draft" || i.status === "approved")
     const sending = s.items.some((i) => i.status === "approved" && i.progress > 0)
-    if (!waiting && !sending) return
+    // Blog drafts get their sources added in the background (about a minute each).
+    const checking = s.items.some((i) => i.design.sources?.pending || (product === "blog" && i.status === "draft" && !i.design.sources && i.text.length >= 600))
+    if (!waiting && !sending && !checking) return
     const t = setInterval(load, 20_000)
     return () => clearInterval(t)
-  }, [s, load])
+  }, [s, load, product])
 
   const act: Act = async (body) => {
     setBusy(true)
@@ -612,6 +614,67 @@ function ItemAudience({ it, busy, act }: { it: Item; busy: boolean; act: Act }) 
   return <AudiencePicker value={a} tags={tags} disabled={busy} onChange={(audience) => act({ op: "design", id: it.id, design: { ...it.design, audience } })} />
 }
 
+/** Blog articles: the 3–4 outbound links that were checked and added, with what each one backs up. */
+function ItemSources({ it, busy, act, open }: { it: Item; busy: boolean; act: Act; open: boolean }) {
+  const s = it.design.sources
+  const [finding, setFinding] = useState(false)
+  // A check that started over 10 minutes ago never finished; the button offers a retry.
+  const [now] = useState(() => Date.now())
+  const pending = !!s?.pending && now - Date.parse(s.at || "") < 10 * 60_000
+  const find = async () => {
+    setFinding(true)
+    await act({ op: "sources", id: it.id })
+    setFinding(false)
+  }
+  return (
+    <div className="mt-3 rounded-lg border border-[var(--line)] bg-[var(--soft)] p-3 text-[13px]">
+      <div className="flex flex-wrap items-center gap-2">
+        <BookCheck className="h-4 w-4 text-[var(--brand)]" />
+        <span className="font-semibold">Sources</span>
+        <span className="text-[var(--muted)]">{finding || pending ? "Finding and checking sources… about a minute." : s ? s.note : "Not checked yet. They're added automatically in a minute or two."}</span>
+        {open && !finding && !pending ? (
+          <button type="button" className={ghost + " ml-auto"} disabled={busy} onClick={find}>
+            <RefreshCw className="h-3.5 w-3.5" /> {s ? "Find sources again" : "Find sources"}
+          </button>
+        ) : null}
+      </div>
+      {s && s.added.length ? (
+        <div className="mt-2 overflow-x-auto">
+          <table className="w-full min-w-[520px] text-left text-[12.5px]">
+            <thead className="text-[var(--muted)]">
+              <tr>
+                <th className="py-1 pr-3 font-medium">Linked words</th>
+                <th className="py-1 pr-3 font-medium">Source</th>
+                <th className="py-1 font-medium">What it backs up</th>
+              </tr>
+            </thead>
+            <tbody>
+              {s.added.map((a) => (
+                <tr key={a.url} className="border-t border-[var(--line)] align-top">
+                  <td className="py-1.5 pr-3 font-semibold">{a.anchor}</td>
+                  <td className="py-1.5 pr-3">
+                    <a href={a.url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-[var(--brand)] hover:underline" title={a.title || a.url}>
+                      {a.site || new URL(a.url).hostname} <ExternalLink className="h-3 w-3" />
+                    </a>
+                    {a.title ? <div className="max-w-[260px] truncate text-[11.5px] text-[var(--faint)]">{a.title}</div> : null}
+                  </td>
+                  <td className="py-1.5 text-[var(--ink2)]">{a.supports}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <div className="mt-1 text-[11.5px] text-[var(--faint)]">Each page was opened and checked on {istTime(s.at)}: it works, it&apos;s from an authoritative publisher, and it matches the sentence it&apos;s linked from.</div>
+        </div>
+      ) : null}
+      {s && s.removed.length ? (
+        <div className="mt-2 text-[12px] text-[var(--muted)]">
+          Removed {s.removed.length} broken link{s.removed.length === 1 ? "" : "s"} (the words stay): {s.removed.map((r) => `${new URL(r.url).hostname} (${r.why})`).join(", ")}
+        </div>
+      ) : null}
+    </div>
+  )
+}
+
 function ItemCard({ it, product, busy, act }: { it: Item; product: Tool; busy: boolean; act: Act }) {
   const [editing, setEditing] = useState(false)
   const [f, setF] = useState({ title: it.title, summary: it.summary, text: it.text, image: it.image })
@@ -703,6 +766,7 @@ function ItemCard({ it, product, busy, act }: { it: Item; product: Tool; busy: b
               <ItemAudience it={it} busy={busy} act={act} />
             </div>
           ) : null}
+          {product === "blog" ? <ItemSources it={it} busy={busy} act={act} open={open} /> : null}
         </div>
       )}
       {it.error ? (
@@ -740,7 +804,7 @@ function ItemCard({ it, product, busy, act }: { it: Item; product: Tool; busy: b
               )}
               {it.progress === 0 ? (
                 <>
-                  <button type="button" className={ghost} onClick={() => setEditing(true)}>
+                  <button type="button" className={ghost} onClick={() => { setF({ title: it.title, summary: it.summary, text: it.text, image: it.image }); setDesign(it.design); setEditing(true) }}>
                     <PenLine className="h-3.5 w-3.5" /> Edit
                   </button>
                   <RewriteMenu endpoint={`/dashboard/me/${product}`} id={it.id} text={it.text} title={it.title} onResult={(r) => { setF((x) => ({ ...x, text: r.text, title: r.title ?? x.title })); setEditing(true) }} />

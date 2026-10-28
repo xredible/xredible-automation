@@ -7,7 +7,16 @@ import { isTemplate, type TemplateKey } from "./brand-presets"
 
 export type Format = "text" | "image" | "carousel" | "photo"
 export type Slide = { title: string; body: string }
-export type Design = { headline?: string; slides?: Slide[]; photos?: string[]; template?: TemplateKey; goal?: Goal; trend?: string; audience?: { tags?: string[]; segment?: "all" | "engaged" | "new" | "inactive" } }
+/** Blog articles: the outbound links that were checked and added (lib/sources). */
+export type SourcesInfo = {
+  at: string
+  pending?: boolean
+  note: string
+  added: { anchor: string; url: string; site: string; title: string; supports: string }[]
+  kept: string[]
+  removed: { url: string; why: string }[]
+}
+export type Design = { headline?: string; slides?: Slide[]; photos?: string[]; template?: TemplateKey; goal?: Goal; trend?: string; audience?: { tags?: string[]; segment?: "all" | "engaged" | "new" | "inactive" }; sources?: SourcesInfo }
 
 // ---------- post goals: what each post is for ----------
 // Most posts earn attention and trust; a few ask for business. Only "offer" posts carry the sales call to action.
@@ -75,6 +84,19 @@ export function cleanDesign(d: unknown): Design {
   if (Array.isArray(o.photos)) {
     const photos = o.photos.map((x) => String(x || "").trim()).filter((x) => /^https:\/\/\S+$/i.test(x)).slice(0, MAX_PHOTOS)
     if (photos.length) out.photos = photos
+  }
+  if (o.sources && typeof o.sources === "object") {
+    const x = o.sources as Record<string, unknown>
+    const url = (v: unknown) => (/^https:\/\/\S+$/i.test(String(v || "")) ? String(v).slice(0, 600) : "")
+    const arr = (v: unknown) => (Array.isArray(v) ? v : []).slice(0, 12) as Record<string, unknown>[]
+    out.sources = {
+      at: s(x.at, 40),
+      ...(x.pending === true ? { pending: true } : {}),
+      note: s(x.note, 300),
+      added: arr(x.added).map((a) => ({ anchor: s(a.anchor, 120), url: url(a.url), site: s(a.site, 100), title: s(a.title, 160), supports: s(a.supports, 300) })).filter((a) => a.url),
+      kept: arr(x.kept).map((k) => url(k)).filter(Boolean),
+      removed: arr(x.removed).map((r) => ({ url: url(r.url), why: s(r.why, 120) })).filter((r) => r.url),
+    }
   }
   return out
 }
