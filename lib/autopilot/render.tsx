@@ -207,6 +207,7 @@ function Footer({ ctx, c, color, faint, on, off, swipe }: { ctx: Ctx; c: Card; c
       <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
         <div style={{ display: "flex", fontFamily: ctx.head, fontSize: 30, fontWeight: 700, color }}>{ctx.kit.name}</div>
         {ctx.kit.handle ? <div style={{ display: "flex", fontFamily: ctx.text, fontSize: 24, color: faint }}>{ctx.kit.handle}</div> : null}
+        {ctx.kit.tagline ? <div style={{ display: "flex", maxWidth: 640, fontFamily: ctx.text, fontSize: 22, lineHeight: 1.3, color: faint }}>{ctx.kit.tagline}</div> : null}
       </div>
       {right}
     </div>
@@ -287,6 +288,7 @@ function Editorial(c: Card, ctx: Ctx) {
       </div>
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 22, width: "100%" }}>
         <div style={{ display: "flex", width: "100%", height: 2, background: rule }} />
+        {ctx.kit.tagline ? <div style={{ display: "flex", justifyContent: "center", fontFamily: ctx.text, fontSize: 24, lineHeight: 1.3, color: muted }}>{ctx.kit.tagline}</div> : null}
         <div style={{ display: "flex", alignItems: "center", gap: 24 }}>
           <div style={{ display: "flex", fontFamily: ctx.text, fontSize: 26, letterSpacing: 4, color: muted }}>{(ctx.kit.handle || ctx.kit.name).toUpperCase()}</div>
           {c.kind === "cover" ? <div style={{ display: "flex", fontFamily: ctx.text, fontSize: 26, fontWeight: 700, color: k.accent }}>SWIPE →</div> : <Dots c={c} on={k.accent} off={rule} />}
@@ -407,7 +409,7 @@ export async function renderCard(card: Card, look: Look): Promise<ArrayBuffer> {
   } catch {
     const strip = (t: string) => t.replace(/[^\p{L}\p{N}\p{P}\p{Zs}]/gu, "")
     const plain = { ...card, title: strip(card.title), ...("body" in card ? { body: strip(card.body) } : {}) } as Card
-    return draw([], plain, { kit: { ...kit, name: strip(kit.name), handle: strip(kit.handle) }, logo: null, logoDark: null, head: "sans-serif", text: "sans-serif", author: look.author ? strip(look.author) : undefined })
+    return draw([], plain, { kit: { ...kit, name: strip(kit.name), handle: strip(kit.handle), tagline: strip(kit.tagline || "") }, logo: null, logoDark: null, head: "sans-serif", text: "sans-serif", author: look.author ? strip(look.author) : undefined })
   }
 }
 

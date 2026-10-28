@@ -2,6 +2,7 @@
 // the single headline image, or slide n of a carousel, in the customer's brand colour.
 // Instagram and Facebook fetch these addresses when publishing, so they're public but signed.
 
+import { createHash } from "node:crypto"
 import { signed } from "@/lib/autopilot/crypto"
 import { channelFor, itemById } from "@/lib/autopilot/tools"
 import { liLook, postsFor, profileFor } from "@/lib/autopilot/service"
@@ -15,7 +16,12 @@ export const runtime = "nodejs"
 export const dynamic = "force-dynamic"
 export const maxDuration = 30
 
-const png = (body: ArrayBuffer) => new Response(body, { headers: { "Content-Type": "image/png", "Cache-Control": "public, max-age=300" } })
+// "no-cache" + ETag: browsers and Instagram/Facebook check back each time, so a brand kit change
+// (tagline, colours, logo) or an edited post shows at once; unchanged designs answer 304 without redrawing.
+const png = (body: ArrayBuffer, etag: string) => new Response(body, { headers: { "Content-Type": "image/png", "Cache-Control": "public, no-cache", ETag: etag } })
+/** Bump when the design templates change, so old copies are drawn again. */
+const RENDER_VERSION = 2
+
 const missing = () => new Response("Not found", { status: 404 })
 
 function cardFor(format: Format, d: Design, fallback: string, n: number): Card {
@@ -50,8 +56,10 @@ export async function GET(request: Request, ctx: { params: Promise<{ id: string 
     const format = isFormat(it.format) ? it.format : "image"
     card = cardFor(format, { ...parseDesign(it.design), headline: it.title || it.design.headline }, it.topic, n)
   }
+  const etag = `"${createHash("sha1").update(JSON.stringify([RENDER_VERSION, look, card])).digest("base64url")}"`
+  if ((request.headers.get("if-none-match") || "").split(/\s*,\s*/).includes(etag)) return new Response(null, { status: 304, headers: { ETag: etag, "Cache-Control": "public, no-cache" } })
   try {
-    return png(await renderCard(card, look))
+    return png(await renderCard(card, look), etag)
   } catch {
     return new Response("Couldn't draw this design", { status: 500 })
   }
