@@ -20,7 +20,7 @@ export const maxDuration = 30
 // (tagline, colours, logo) or an edited post shows at once; unchanged designs answer 304 without redrawing.
 const png = (body: ArrayBuffer, etag: string) => new Response(body, { headers: { "Content-Type": "image/png", "Cache-Control": "public, no-cache", ETag: etag } })
 /** Bump when the design templates change, so old copies are drawn again. */
-const RENDER_VERSION = 2
+const RENDER_VERSION = 3
 
 const missing = () => new Response("Not found", { status: 404 })
 

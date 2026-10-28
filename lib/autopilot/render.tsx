@@ -204,11 +204,15 @@ function Footer({ ctx, c, color, faint, on, off, swipe }: { ctx: Ctx; c: Card; c
     )
   return (
     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-      <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-        <div style={{ display: "flex", fontFamily: ctx.head, fontSize: 30, fontWeight: 700, color }}>{ctx.kit.name}</div>
-        {ctx.kit.handle ? <div style={{ display: "flex", fontFamily: ctx.text, fontSize: 24, color: faint }}>{ctx.kit.handle}</div> : null}
-        {ctx.kit.tagline ? <div style={{ display: "flex", maxWidth: 640, fontFamily: ctx.text, fontSize: 22, lineHeight: 1.3, color: faint }}>{ctx.kit.tagline}</div> : null}
-      </div>
+      {ctx.kit.tagline ? (
+        // The name (or logo) is already at the top, so the footer carries only the tagline.
+        <div style={{ display: "flex", maxWidth: 660, fontFamily: ctx.text, fontSize: 25, lineHeight: 1.3, color: faint }}>{ctx.kit.tagline}</div>
+      ) : (
+        <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+          <div style={{ display: "flex", fontFamily: ctx.head, fontSize: 30, fontWeight: 700, color }}>{ctx.kit.name}</div>
+          {ctx.kit.handle ? <div style={{ display: "flex", fontFamily: ctx.text, fontSize: 24, color: faint }}>{ctx.kit.handle}</div> : null}
+        </div>
+      )}
       {right}
     </div>
   )
@@ -227,7 +231,8 @@ function Bold(c: Card, ctx: Ctx) {
   return (
     <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", justifyContent: "space-between", padding: "92px 88px 84px", backgroundImage: `linear-gradient(160deg, ${mix(k.primary, "#ffffff", 0.12)} 0%, ${k.primary} 45%, ${mix(k.primary, "#000000", 0.35)} 100%)`, color: fg }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        {ctx.logo || ctx.logoDark ? <LogoMark ctx={ctx} height={84} color={fg} dark={fg === "#ffffff"} /> : <div style={{ display: "flex", width: 120, height: 12, borderRadius: 6, background: k.accent }} />}
+        {/* With a tagline the footer drops the name, so the name goes at the top. */}
+        {ctx.logo || ctx.logoDark || k.tagline ? <LogoMark ctx={ctx} height={84} color={fg} dark={fg === "#ffffff"} /> : <div style={{ display: "flex", width: 120, height: 12, borderRadius: 6, background: k.accent }} />}
         {c.kind === "slide" ? <div style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 92, height: 92, borderRadius: 46, background: k.accent, color: textOn(k.accent), fontFamily: ctx.head, fontSize: 38, fontWeight: 700 }}>{num(c)}</div> : null}
       </div>
       <div style={{ display: "flex", flexDirection: "column", gap: 30 }}>
@@ -288,9 +293,12 @@ function Editorial(c: Card, ctx: Ctx) {
       </div>
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 22, width: "100%" }}>
         <div style={{ display: "flex", width: "100%", height: 2, background: rule }} />
-        {ctx.kit.tagline ? <div style={{ display: "flex", justifyContent: "center", fontFamily: ctx.text, fontSize: 24, lineHeight: 1.3, color: muted }}>{ctx.kit.tagline}</div> : null}
         <div style={{ display: "flex", alignItems: "center", gap: 24 }}>
-          <div style={{ display: "flex", fontFamily: ctx.text, fontSize: 26, letterSpacing: 4, color: muted }}>{(ctx.kit.handle || ctx.kit.name).toUpperCase()}</div>
+          {ctx.kit.tagline ? (
+            <div style={{ display: "flex", maxWidth: 700, fontFamily: ctx.text, fontSize: 25, lineHeight: 1.3, color: muted }}>{ctx.kit.tagline}</div>
+          ) : (
+            <div style={{ display: "flex", fontFamily: ctx.text, fontSize: 26, letterSpacing: 4, color: muted }}>{(ctx.kit.handle || ctx.kit.name).toUpperCase()}</div>
+          )}
           {c.kind === "cover" ? <div style={{ display: "flex", fontFamily: ctx.text, fontSize: 26, fontWeight: 700, color: k.accent }}>SWIPE →</div> : <Dots c={c} on={k.accent} off={rule} />}
         </div>
       </div>
@@ -384,7 +392,7 @@ function Playbook(c: Card, ctx: Ctx) {
         {end ? <div style={{ display: "flex", height: 4, background: fg }} /> : null}
         <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between" }}>
           <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-            {end ? <div style={{ display: "flex", fontFamily: ctx.head, fontSize: 40, fontWeight: 700 }}>{ctx.author || k.name}</div> : null}
+            {end && !k.tagline ? <div style={{ display: "flex", fontFamily: ctx.head, fontSize: 40, fontWeight: 700 }}>{ctx.author || k.name}</div> : null}
             {tagline ? <div style={{ display: "flex", fontFamily: ctx.text, fontSize: end ? 27 : 24, color: grey }}>{tagline}</div> : null}
           </div>
           {c.kind === "cover" || c.kind === "slide" ? <div style={{ display: "flex", fontFamily: ctx.text, fontSize: c.kind === "cover" ? 36 : 30, fontWeight: 700, color: c.kind === "cover" ? accent : grey }}>Swipe →</div> : null}
