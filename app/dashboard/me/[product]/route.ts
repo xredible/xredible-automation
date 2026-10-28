@@ -4,7 +4,7 @@
 //      { op: "disconnect" } | { op: "generate", count } | { op: "contacts-add", text } | { op: "contact-remove", id }
 //      { op: "approve"|"unapprove"|"reject"|"edit"|"reschedule"|"test", id, … }
 
-import { NextResponse } from "next/server"
+import { NextResponse, after } from "next/server"
 import { errText, json, signedIn } from "@/lib/autopilot/guard"
 import { ensureTrial } from "@/lib/autopilot/service"
 import { requestToolDrafts } from "@/lib/autopilot/db"
@@ -25,6 +25,8 @@ import {
   itemById,
   metaImages,
   itemsFor,
+  checkItemSources,
+  sourcesDue,
   pickPage,
   removeContact,
   saveSettings,
@@ -37,7 +39,7 @@ import { isFormat } from "@/lib/autopilot/formats"
 
 export const runtime = "nodejs"
 export const dynamic = "force-dynamic"
-export const maxDuration = 120
+export const maxDuration = 300
 
 async function state(email: string, product: ToolKey) {
   const [sub, channel, items, upi, contacts] = await Promise.all([
@@ -66,6 +68,12 @@ async function state(email: string, product: ToolKey) {
 
 type Ctx = { params: Promise<{ product: string }> }
 
+/** New blog drafts get their sources checked in the background, one at a time (see lib/sources). */
+function checkSourcesLater(owner: string, items: { id: number }[]) {
+  const due = (items as Parameters<typeof sourcesDue>[0][]).find(sourcesDue)
+  if (due) after(() => checkItemSources(owner, due.id).catch(() => {}))
+}
+
 export async function GET(request: Request, ctx: Ctx) {
   const { product } = await ctx.params
   if (!isTool(product)) return json({ ok: false, error: "Unknown tool." }, 404)
@@ -73,7 +81,9 @@ export async function GET(request: Request, ctx: Ctx) {
   if (me instanceof NextResponse) return me
   const owner = await ownerKey(me.email)
   try {
-    return json(await state(owner, product))
+    const out = await state(owner, product)
+    if (product === "blog") checkSourcesLater(owner, out.items)
+    return json(out)
   } catch (e) {
     return json({ ok: false, error: errText(e) }, 502)
   }
@@ -149,6 +159,9 @@ export async function POST(request: Request, ctx: Ctx) {
         markdown: product !== "meta",
       })
       return json({ ok: true, rewrite: out })
+    } else if (op === "sources" && product === "blog") {
+      // "Find sources": check the links and add 3–4 verified ones now (about a minute).
+      extra = { sources: await checkItemSources(owner, Number(b.id)) }
     } else {
       await itemAction(owner, product, b)
       if (op === "test") extra = { tested: true }

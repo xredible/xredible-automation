@@ -17,7 +17,7 @@ import { cleanSite, wpPublish, wpVerify } from "./wordpress"
 import { buildIssue, isEmailTemplate, smtpVerify, transport, type EmailKit, type EmailTemplate, type Smtp } from "./mail"
 import { kitFor } from "./brandkit"
 import { mdToHtml } from "./markdown"
-import { cleanDesign, goalPlanKey, isFormat, META_MIXES, mixKey, parseDesign, type Design, type Format } from "./formats"
+import { cleanDesign, goalPlanKey, isFormat, META_MIXES, mixKey, parseDesign, type Design, type Format, type SourcesInfo } from "./formats"
 
 export type ToolKey = Exclude<ProductKey, "linkedin">
 export const TOOL_KEYS: ToolKey[] = ["meta", "blog", "newsletter"]
@@ -630,4 +630,53 @@ async function sendIssue(it: Item): Promise<Result> {
   const note = capped && remaining ? `Sent to ${sent} subscribers, the most your plan allows. Upgrade to reach all ${all.length}.` : failures ? `${failures} addresses didn't accept it.` : ""
   await update("ap_items", it.id, { status: "posted", postedAt: new Date().toISOString(), progress: last, ref: `sent:${sent}`, error: note })
   return { ok: true, status: "posted", sent }
+}
+
+// ---------- blog articles: verified outbound links (lib/sources) ----------
+
+const SOURCES_RETRY_MS = 10 * 60_000
+
+/** Whether a blog draft still needs its sources checked (not yet, or a check that never finished). */
+export function sourcesDue(it: Item): boolean {
+  if (it.product !== "blog" || !["draft", "approved", "paused", "failed"].includes(it.status) || it.text.length < 600) return false
+  const s = it.design.sources
+  return !s || (!!s.pending && Date.now() - Date.parse(s.at || "") > SOURCES_RETRY_MS)
+}
+
+/**
+ * Checks a blog article's external links and adds 3–4 verified authoritative ones.
+ * The article is re-read before saving, so an edit made meanwhile is never overwritten.
+ */
+export async function checkItemSources(email: string, id: number): Promise<SourcesInfo> {
+  const { checkSources } = await import("@/lib/sources")
+  const it = await itemById(id)
+  if (!it || it.email !== email || it.product !== "blog") throw new Error("That article isn't yours.")
+  if (it.status === "posted") throw new Error("This article is already published. Edit it on your website.")
+  const at = new Date().toISOString()
+  await update("ap_items", id, { design: JSON.stringify({ ...it.design, sources: { at, pending: true, note: "Checking sources…", added: [], kept: [], removed: [] } }) })
+  const c = await channelFor(email, "blog").catch(() => null)
+  const site = String(c?.meta.site || "")
+  let host = ""
+  try {
+    host = site ? new URL(site).hostname.replace(/^www\./, "") : ""
+  } catch {}
+  let info: SourcesInfo
+  let text = it.text
+  try {
+    const { body, report } = await checkSources({ title: it.title, body: it.text, format: "md", own: host ? [host] : [], site: host, audience: String(c?.settings.audience || "") })
+    text = body
+    info = { at: report.checkedAt, note: report.note, added: report.added.map(({ anchor, url, site: pub, title, supports }) => ({ anchor, url, site: pub, title, supports })), kept: report.kept.map((k) => k.url), removed: report.removed.map((r) => ({ url: r.url, why: r.why })) }
+  } catch (e) {
+    info = { at, note: `Sources couldn't be checked: ${e instanceof Error ? e.message : "unknown error"}. Use "Find sources" to try again.`, added: [], kept: [], removed: [] }
+  }
+  const now = await itemById(id)
+  if (!now) return info
+  if (now.text !== it.text) {
+    // Edited while the check ran: keep the edit, report nothing added.
+    info = { ...info, note: "The article was edited while sources were being checked, so nothing was changed. Use \"Find sources\" again.", added: [], removed: [] }
+    await update("ap_items", id, { design: JSON.stringify({ ...now.design, sources: info }) })
+    return info
+  }
+  await update("ap_items", id, { text, design: JSON.stringify({ ...now.design, sources: info }) })
+  return info
 }

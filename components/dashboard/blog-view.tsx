@@ -7,13 +7,14 @@
 // NST-D. Changes go through /dashboard/blog to NST-DB Blog Actions.
 
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react"
-import { ArrowDown, ArrowLeft, ArrowUp, CalendarClock, Check, CircleAlert, ExternalLink, Eye, ImageOff, ImagePlus, Loader2, Pencil, Plus, Rocket, Save, Send, SkipForward, Sparkles, Trash2, Undo2, X } from "lucide-react"
+import { ArrowDown, ArrowLeft, ArrowUp, BookCheck, CalendarClock, Check, CircleAlert, ExternalLink, Eye, ImageOff, ImagePlus, Loader2, Pencil, Plus, Rocket, Save, Send, SkipForward, Sparkles, Trash2, Undo2, X } from "lucide-react"
 import type { BlogData, BlogPost, BlogPostData, BlogTopic } from "@/lib/dashboard/types"
 import type { BusinessKey } from "@/lib/dashboard/businesses"
 import { blockText, edited, parseBlocks, serializeBlocks, type Block } from "@/lib/dashboard/blocks"
 import { loadKey } from "./state"
 import { dateTime, todayIST } from "./format"
 import { Card, Notice, Skeleton } from "./ui"
+import type { SourceCheck } from "@/lib/sources"
 
 type Result = { ok: boolean; error?: string; done?: string; status?: string; date?: string | null; link?: string | null }
 type Toast = { tone: "ok" | "bad"; text: string } | null
@@ -568,6 +569,17 @@ function BlogEditor({ biz, id, onClose, onChanged, show }: { biz: BusinessKey; i
             </ul>
           </Card>
 
+          <SourcesCard
+            biz={biz}
+            title={title}
+            content={content}
+            disabled={!!busy}
+            onResult={(html) => {
+              setBlocks(parseBlocks(html))
+              setDirty(true)
+            }}
+          />
+
           <Card title="Featured image">
             {post?.featuredImage ? (
               <img src={post.featuredImage} alt="" className="w-full rounded-lg" />
@@ -585,6 +597,58 @@ function BlogEditor({ biz, id, onClose, onChanged, show }: { biz: BusinessKey; i
         </aside>
       </div>
     </div>
+  )
+}
+
+/** External links: checks the ones in the article and adds verified ones until it has 3–4 (lib/sources). */
+function SourcesCard({ biz, title, content, disabled, onResult }: { biz: BusinessKey; title: string; content: string; disabled: boolean; onResult: (html: string) => void }) {
+  const [running, setRunning] = useState(false)
+  const [report, setReport] = useState<SourceCheck | null>(null)
+  const [error, setError] = useState("")
+  const run = async () => {
+    setRunning(true)
+    setError("")
+    try {
+      const r = await fetch("/dashboard/blog/sources", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ biz, title, content }) })
+      const j = (await r.json().catch(() => ({}))) as { ok?: boolean; body?: string; report?: SourceCheck; error?: string }
+      if (!r.ok || !j.ok || !j.body || !j.report) throw new Error(j.error || "The check didn't finish. Try again.")
+      setReport(j.report)
+      if (j.body !== content) onResult(j.body)
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "The check didn't finish. Try again.")
+    }
+    setRunning(false)
+  }
+  const host = (u: string) => {
+    try {
+      return new URL(u).hostname.replace(/^www\./, "")
+    } catch {
+      return u
+    }
+  }
+  return (
+    <Card title="Sources" sub="3–4 links to authoritative pages that back up the article">
+      <button type="button" className={btn} disabled={disabled || running} onClick={run}>
+        {running ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <BookCheck className="h-3.5 w-3.5" />} {running ? "Checking… about a minute" : "Check and add sources"}
+      </button>
+      {error ? <p className="!mb-0 !mt-2 text-xs text-[var(--bad)]">{error}</p> : null}
+      {report ? (
+        <div className="mt-2 space-y-2 text-xs">
+          <p className="!m-0 text-[var(--ink-2)]">{report.note}{report.added.length ? " Review the links, then Save." : ""}</p>
+          {report.added.map((a) => (
+            <div key={a.url} className="rounded-md border border-[var(--line)] p-2">
+              <div className="font-semibold text-[var(--ink)]">{a.anchor}</div>
+              <a href={a.url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-[var(--brand)] hover:underline" title={a.title}>
+                {a.site || host(a.url)} <ExternalLink className="h-3 w-3" />
+              </a>
+              <div className="mt-0.5 text-[var(--faint)]">{a.supports}</div>
+            </div>
+          ))}
+          {report.kept.length ? <p className="!m-0 text-[var(--muted)]">Already linked and working: {report.kept.map((k) => host(k.url)).join(", ")}</p> : null}
+          {report.removed.length ? <p className="!m-0 text-amber-700">Unlinked {report.removed.length} broken link{report.removed.length === 1 ? "" : "s"} (the words stay): {report.removed.map((r) => `${host(r.url)} (${r.why})`).join(", ")}</p> : null}
+        </div>
+      ) : null}
+    </Card>
   )
 }
 
