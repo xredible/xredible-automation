@@ -35,6 +35,8 @@ export type Column = {
   sub?: string
   filter?: string
   filterKey?: string
+  /** Row key holding a full article (HTML): the name opens a reader with copy / download. */
+  doc?: string
 }
 
 export type Row = Record<string, unknown>
