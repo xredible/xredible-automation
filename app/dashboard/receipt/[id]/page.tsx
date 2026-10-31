@@ -3,7 +3,7 @@ import { notFound } from "next/navigation"
 import { currentUser } from "@/lib/dashboard/auth"
 import { paymentById } from "@/lib/autopilot/billing"
 import { realEmail } from "@/lib/autopilot/account"
-import { PRODUCTS, planOf, rupees } from "@/lib/autopilot/products"
+import { extraText, PRODUCTS, planOf, rupees } from "@/lib/autopilot/products"
 import { PrintButton } from "./print-button"
 
 export const metadata: Metadata = { title: "Payment receipt | Xredible", robots: { index: false, follow: false } }
@@ -53,7 +53,7 @@ export default async function Receipt(props: { params: Promise<{ id: string }> }
             <tr className="border-b border-slate-100">
               <td className="py-3">
                 <div className="font-medium">
-                  {product.name} · {plan?.name} ({pay.cycle === "yearly" ? "yearly" : "monthly"})
+                  {product.name} · {plan?.name} ({pay.cycle === "yearly" ? "yearly" : "monthly"}){pay.extra ? ` ${extraText(pay.product, pay.extra)}` : ""}
                 </div>
                 <div className="text-slate-500">
                   Service period {d(pay.periodStart)} – {d(pay.periodEnd)}

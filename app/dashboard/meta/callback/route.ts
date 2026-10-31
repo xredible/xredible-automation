@@ -8,7 +8,7 @@ import { SITE } from "@/lib/autopilot/linkedin"
 import { metaExchange } from "@/lib/autopilot/meta"
 import { ensureTrial } from "@/lib/autopilot/service"
 import { requestToolDrafts } from "@/lib/autopilot/db"
-import { channelFor, connectMeta, itemsFor } from "@/lib/autopilot/tools"
+import { channelFor, connectExtraMeta, connectMeta, itemsFor } from "@/lib/autopilot/tools"
 import { ownerKey } from "@/lib/autopilot/brands"
 
 export const runtime = "nodejs"
@@ -25,12 +25,16 @@ export async function GET(request: Request) {
   const jar = await cookies()
   const want = jar.get("xd_meta_state")?.value || ""
   jar.delete({ name: "xd_meta_state", path: "/dashboard" })
+  const extra = jar.get("xd_meta_extra")?.value === "1"
+  jar.delete({ name: "xd_meta_extra", path: "/dashboard" })
   const got = url.searchParams.get("state") || ""
   if (url.searchParams.get("error")) return back("c=cancelled")
   if (!want || want.length !== got.length || !timingSafeEqual(Buffer.from(want), Buffer.from(got))) return back("c=expired")
   try {
     const pages = await metaExchange(url.searchParams.get("code") || "")
     await ensureTrial(owner, "meta")
+    // Another Facebook Page (+ Instagram) for this brand (paid add-on).
+    if (extra) return back((await connectExtraMeta(owner, pages)) === "added" ? "c=extra" : "c=extra-choose")
     await connectMeta(owner, pages)
     const ch = await channelFor(owner, "meta")
     if (!ch?.connected) return back("c=choose")

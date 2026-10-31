@@ -7,8 +7,8 @@ import { webhookSignatureOk } from "@/lib/autopilot/razorpay"
 import { applySubscription } from "@/lib/autopilot/service"
 import { activatePlan } from "@/lib/autopilot/billing"
 import { rows } from "@/lib/autopilot/db"
-import { asSub } from "@/lib/autopilot/service"
-import type { Cycle, PlanKey } from "@/lib/autopilot/products"
+import { asSub, subFor } from "@/lib/autopilot/service"
+import { isProduct, type Cycle, type PlanKey } from "@/lib/autopilot/products"
 
 export const runtime = "nodejs"
 export const dynamic = "force-dynamic"
@@ -31,16 +31,20 @@ export async function POST(request: Request) {
   try {
     if (ev.event === "subscription.charged") {
       const pay = ev.payload?.payment?.entity
-      const sub = (await rows<Record<string, unknown>>("subs", { col: "rzpSubId", val: s.id })).map(asSub)[0]
+      // Matched by subscription id; a renewal of a card plan whose change was never paid for
+      // (checkout closed) is matched by the customer and tool it was made for.
+      const sub =
+        (await rows<Record<string, unknown>>("subs", { col: "rzpSubId", val: s.id })).map(asSub)[0] ||
+        (s.notes?.email && isProduct(s.notes.product) ? await subFor(s.notes.email, s.notes.product) : null)
       if (sub && pay?.id) {
         const plan = (s.notes?.plan === "pro" ? "pro" : "starter") as PlanKey
         const cycle = (s.notes?.cycle === "yearly" ? "yearly" : "monthly") as Cycle
-        await activatePlan(sub, { plan, cycle, method: "razorpay", ref: pay.id, amount: Number(pay.amount) || 0, start: s.current_start, end: s.current_end, rzpSubId: s.id })
+        await activatePlan(sub, { plan, cycle, method: "razorpay", ref: pay.id, amount: Number(pay.amount) || 0, start: s.current_start, end: s.current_end, rzpSubId: s.id, extra: Number(s.notes?.extra) || 0 })
       }
     } else {
       const map: Record<string, "halted" | "cancelled"> = { "subscription.halted": "halted", "subscription.cancelled": "cancelled", "subscription.completed": "cancelled" }
       const status = map[ev.event || ""]
-      if (status) await applySubscription({ rzpSubId: s.id, email: s.notes?.email, product: s.notes?.product, plan: s.notes?.plan, status })
+      if (status) await applySubscription({ rzpSubId: s.id, email: s.notes?.email, product: s.notes?.product, plan: s.notes?.plan, extra: Number(s.notes?.extra) || 0, status })
     }
   } catch {
     // Ask Razorpay to retry later.

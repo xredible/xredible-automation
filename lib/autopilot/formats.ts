@@ -16,7 +16,8 @@ export type SourcesInfo = {
   kept: string[]
   removed: { url: string; why: string }[]
 }
-export type Design = { headline?: string; slides?: Slide[]; photos?: string[]; template?: TemplateKey; goal?: Goal; trend?: string; audience?: { tags?: string[]; segment?: "all" | "engaged" | "new" | "inactive" }; sources?: SourcesInfo }
+/** profile: the extra profile (XD Channels row id) a post goes to; none = the main profile. */
+export type Design = { profile?: number; headline?: string; slides?: Slide[]; photos?: string[]; template?: TemplateKey; goal?: Goal; trend?: string; audience?: { tags?: string[]; segment?: "all" | "engaged" | "new" | "inactive" }; sources?: SourcesInfo }
 
 // ---------- post goals: what each post is for ----------
 // Most posts earn attention and trust; a few ask for business. Only "offer" posts carry the sales call to action.
@@ -71,6 +72,7 @@ export function cleanDesign(d: unknown): Design {
       .slice(0, MAX_SLIDES)
     if (slides.length) out.slides = slides
   }
+  if (Number.isInteger(Number(o.profile)) && Number(o.profile) > 0) out.profile = Number(o.profile)
   if (isTemplate(o.template)) out.template = o.template
   if (isGoal(o.goal)) out.goal = o.goal
   const trend = s(o.trend, 200)

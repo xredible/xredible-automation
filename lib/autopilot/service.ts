@@ -5,7 +5,7 @@
 
 import { insert, rows, update, type Table } from "./db"
 import { open, seal } from "./crypto"
-import { planOf, PRODUCTS, canPublish, isProduct, type PlanKey, type ProductKey, type Subscription } from "./products"
+import { cleanExtra, limitOf, planOf, PRODUCTS, canPublish, isProduct, type PlanKey, type ProductKey, type Subscription } from "./products"
 import { liUpload, publishPost, postUrl, type LiMedia } from "./linkedin"
 import { cleanDesign, goalPlanKey, isFormat, LI_MIXES, mixKey, parseDesign, type Design, type Format } from "./formats"
 import { carouselPdf, renderCard, safeColor, type Look } from "./render"
@@ -13,6 +13,7 @@ import { kitFor } from "./brandkit"
 import { templateFor } from "./brand-presets"
 import { safeFetch } from "./safe-fetch"
 import { hasFreeAccess, makeFree } from "./free"
+import { extraFor, secretOf, targetFor } from "./profiles"
 
 export type LiProfile = {
   id: number
@@ -68,6 +69,7 @@ export function asSub(r: Record<string, unknown>): Subscription {
     periodEnd: (r.periodEnd as string) || null,
     rzpSubId: String(r.rzpSubId || ""),
     note: String(r.note || ""),
+    extra: Math.max(0, Math.floor(num(r.extra))),
   }
 }
 
@@ -93,7 +95,7 @@ export async function markPending(sub: Subscription, rzpSubId: string, plan: Pla
 }
 
 /** From Razorpay (checkout success or webhook). */
-export async function applySubscription(event: { rzpSubId: string; email?: string; product?: string; plan?: string; status: "active" | "halted" | "cancelled"; start?: number; end?: number; charged?: boolean }) {
+export async function applySubscription(event: { rzpSubId: string; email?: string; product?: string; plan?: string; extra?: number; status: "active" | "halted" | "cancelled"; start?: number; end?: number; charged?: boolean }) {
   const all = await rows<Record<string, unknown>>("subs", { col: "rzpSubId", val: event.rzpSubId })
   let sub = all.map(asSub)[0]
   if (!sub && event.email && isProduct(event.product)) sub = (await subFor(event.email, event.product)) || (await ensureTrial(event.email, event.product))
@@ -104,8 +106,10 @@ export async function applySubscription(event: { rzpSubId: string; email?: strin
   const periodEnd = event.end ? new Date(event.end * 1000).toISOString() : sub.periodEnd
   const patch: Record<string, unknown> = { status: event.status, rzpSubId: event.rzpSubId, note: "" }
   if (event.status === "active") {
+    const extra = cleanExtra(sub.product, event.extra ?? sub.extra)
     patch.plan = plan
-    patch.postLimit = p?.posts ?? sub.postLimit
+    patch.extra = extra
+    patch.postLimit = p ? limitOf(sub.product, plan, sub.cycle, extra) : sub.postLimit
     patch.periodStart = periodStart
     patch.periodEnd = periodEnd
     // A new billing period (or the first one) starts with a fresh allowance.
@@ -265,6 +269,15 @@ export async function postAction(email: string, input: Record<string, unknown>) 
     if (Date.parse(iso) < Date.now()) throw new Error("Pick a time in the future.")
     return update("li_posts", id, { scheduledAt: iso })
   }
+  if (op === "send-to") {
+    // Which LinkedIn profile it goes to: the main one (0) or one of the extra ones.
+    const to = Number(input.profile) || 0
+    if (to && !(await extraFor(email, "linkedin", to))) throw new Error("Pick one of your connected LinkedIn profiles.")
+    const design = { ...post.design }
+    if (to) design.profile = to
+    else delete design.profile
+    return update("li_posts", id, { design: JSON.stringify(design), ...(post.status === "failed" || post.status === "blocked" ? { status: "draft", error: "" } : {}) })
+  }
   throw new Error("Unknown change.")
 }
 
@@ -280,10 +293,16 @@ export async function publishOne(id: number): Promise<{ ok: boolean; status: str
     await update("li_posts", id, { status: "blocked", error: why })
     return { ok: false, status: "blocked", error: why }
   }
-  const prof = await profileFor(post.email)
+  const main = await profileFor(post.email)
   try {
-    if (!prof || !prof.connected || !prof.tokenEnc) throw new Error("LinkedIn isn't connected. Connect LinkedIn on the Autopilot page.")
-    if (prof.tokenExpires && Date.parse(prof.tokenExpires) < Date.now()) throw new Error("LinkedIn access expired. Reconnect LinkedIn.")
+    if (!main) throw new Error("LinkedIn isn't connected. Connect LinkedIn on the Autopilot page.")
+    // An extra LinkedIn profile when the post was set to go there; otherwise the main one.
+    const extra = await targetFor(post.email, "linkedin", post.design.profile)
+    const prof: LiProfile = extra
+      ? { ...main, liSub: String(extra.meta.sub || ""), liName: extra.name, tokenEnc: seal(String(secretOf(extra).token || "")), tokenExpires: (extra.meta.expires as string) || null, connected: extra.connected }
+      : main
+    if (!prof.connected || !prof.tokenEnc || !prof.liSub) throw new Error(extra ? `${extra.name || "This LinkedIn profile"} isn't connected. Connect it again.` : "LinkedIn isn't connected. Connect LinkedIn on the Autopilot page.")
+    if (prof.tokenExpires && Date.parse(prof.tokenExpires) < Date.now()) throw new Error(extra ? `LinkedIn access for ${extra.name} expired. Connect it again.` : "LinkedIn access expired. Reconnect LinkedIn.")
     const token = open(prof.tokenEnc)
     const urn = await publishPost(token, prof.liSub, post.text, await liMedia(post, prof, token))
     await update("li_posts", id, { status: "posted", postedAt: new Date().toISOString(), postUrn: urn, error: "" })
@@ -301,8 +320,9 @@ export async function publishOne(id: number): Promise<{ ok: boolean; status: str
 /** The look of a LinkedIn post's design: the brand kit and the post's template. */
 export async function liLook(post: Pick<LiPost, "id" | "email" | "design">, prof: LiProfile | null): Promise<Look> {
   const kit = await kitFor(post.email, { name: prof?.prefs.brand || prof?.liName || "", color: prof?.prefs.color !== "#10203f" ? prof?.prefs.color : "" })
-  // Personal LinkedIn posts carry the person's own name on Playbook designs.
-  return { kit, template: templateFor(kit, post.design.template, post.id), author: prof?.liName || undefined }
+  // Personal LinkedIn posts carry the person's own name on Playbook designs (an extra profile's own name).
+  const extra = post.design.profile ? await extraFor(post.email, "linkedin", post.design.profile) : null
+  return { kit, template: templateFor(kit, post.design.template, post.id), author: extra?.name || prof?.liName || undefined }
 }
 
 async function photoBytes(url: string): Promise<{ bytes: ArrayBuffer; type: string }> {

@@ -15,7 +15,7 @@ import { paymentsFor, receiptUrl, referralInfo } from "@/lib/autopilot/billing"
 import { remove, rows, type Table } from "@/lib/autopilot/db"
 import { COOKIE, deleteUser, findUser, verifyPassword } from "@/lib/dashboard/auth"
 import { cancelSubscription, razorpayConfigured } from "@/lib/autopilot/razorpay"
-import { PRODUCTS, planOf, rupees } from "@/lib/autopilot/products"
+import { extraText, PRODUCTS, planOf, rupees } from "@/lib/autopilot/products"
 
 export const runtime = "nodejs"
 export const dynamic = "force-dynamic"
@@ -48,7 +48,7 @@ async function state(email: string, name: string, role = "customer") {
     referral,
     payments: payments
       .sort((a, b) => b.id - a.id)
-      .map((p) => ({ id: p.id, invoiceNo: p.invoiceNo, at: p.at, what: `${PRODUCTS[p.product].name} ${planOf(p.product, p.plan)?.name || ""} (${p.cycle})`, brand: brands.list.find((b) => b.key === p.email)?.name || "", amount: rupees(p.amount), method: p.method === "razorpay" ? "Card / Razorpay" : "UPI", url: receiptUrl(p.id) })),
+      .map((p) => ({ id: p.id, invoiceNo: p.invoiceNo, at: p.at, what: `${PRODUCTS[p.product].name} ${planOf(p.product, p.plan)?.name || ""} (${p.cycle})${p.extra ? ` ${extraText(p.product, p.extra)}` : ""}`, brand: brands.list.find((b) => b.key === p.email)?.name || "", amount: rupees(p.amount), method: p.method === "razorpay" ? "Card / Razorpay" : "UPI", url: receiptUrl(p.id) })),
     mail: mailConfigured(),
     viewingAs: as,
     announcements: activeAnnouncements(ann, await noticesFor(email), paid).map((a) => ({ id: a.id, title: a.title, message: a.message })),

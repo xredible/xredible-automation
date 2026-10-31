@@ -12,7 +12,8 @@ import { NextResponse } from "next/server"
 import { currentUser, listUsers } from "@/lib/dashboard/auth"
 import { rows, update } from "@/lib/autopilot/db"
 import { errText, json } from "@/lib/autopilot/guard"
-import { isCycle, isFree, pendingUpi, planOf, priceOf, PRODUCTS, type PlanKey, type Subscription } from "@/lib/autopilot/products"
+import { isSideRow } from "@/lib/autopilot/profiles"
+import { cleanExtra, isCycle, isFree, pendingUpi, planOf, priceOf, PRODUCTS, type PlanKey, type Subscription } from "@/lib/autopilot/products"
 import { asSub } from "@/lib/autopilot/service"
 import { activatePlan, allCoupons, allPayments, saveCoupon, setCouponActive, subById } from "@/lib/autopilot/billing"
 import { realEmail } from "@/lib/autopilot/account"
@@ -31,7 +32,7 @@ function revenue(all: Subscription[], payments: Awaited<ReturnType<typeof allPay
   const now = Date.now()
   const subs = all.filter((s) => !isFree(s) && !(s.plan !== "trial" && s.status === "cancelled" && !payments.some((p) => p.email === s.email && p.product === s.product)))
   const live = subs.filter((s) => s.status === "active" && s.periodEnd && Date.parse(s.periodEnd) > now)
-  const mrr = live.reduce((t, s) => t + (s.plan === "trial" ? 0 : priceOf(s.product, s.plan, s.cycle) / (s.cycle === "yearly" ? 12 : 1)), 0)
+  const mrr = live.reduce((t, s) => t + (s.plan === "trial" ? 0 : priceOf(s.product, s.plan, s.cycle, s.extra) / (s.cycle === "yearly" ? 12 : 1)), 0)
   const people = new Set(subs.map((s) => realEmail(s.email)))
   const payers = new Set(payments.map((p) => realEmail(p.email)))
   const last30 = payments.filter((p) => p.at && Date.parse(p.at) > now - 30 * 864e5)
@@ -58,7 +59,7 @@ export async function GET() {
     const subs = rawSubs.map(asSub)
     const name = new Map((users || []).map((u) => [u.email, u.name]))
     const prof = new Map(profiles.map((p) => [String(p.email), p]))
-    const chan = new Map(channels.map((c) => [`${c.email}|${c.product}`, c]))
+    const chan = new Map(channels.filter((c) => !isSideRow(c)).map((c) => [`${c.email}|${c.product}`, c]))
     const conn = (s: Subscription) => {
       if (s.product === "linkedin") return { liName: String(prof.get(s.email)?.liName || ""), connected: prof.get(s.email)?.connected === true }
       const c = chan.get(`${s.email}|${s.product}`)
@@ -100,8 +101,10 @@ export async function POST(request: Request) {
       const cycle = isCycle(b.cycle) ? b.cycle : pend?.cycle || "monthly"
       if (!planOf(s.product, plan)) return json({ ok: false, error: "Pick a plan." }, 400)
       // The amount the customer was quoted (after any coupon); otherwise the list price.
-      const amount = pend && pend.plan === plan && pend.cycle === cycle && pend.amount ? pend.amount : priceOf(s.product, plan, cycle)
-      const r = await activatePlan(s, { plan, cycle, method: "upi", ref: pend?.utr ? `UTR ${pend.utr}` : `manual ${new Date().toISOString()}`, amount, coupon: pend && pend.plan === plan ? pend.coupon : "" })
+      // Extra profiles: what the customer paid for, or what the admin picked, or what they have now.
+      const extra = cleanExtra(s.product, b.extra !== undefined ? b.extra : pend && pend.plan === plan && pend.cycle === cycle ? pend.extra : s.extra)
+      const amount = pend && pend.plan === plan && pend.cycle === cycle && pend.extra === extra && pend.amount ? pend.amount : priceOf(s.product, plan, cycle, extra)
+      const r = await activatePlan(s, { plan, cycle, method: "upi", ref: pend?.utr ? `UTR ${pend.utr}` : `manual ${new Date().toISOString()}`, amount, coupon: pend && pend.plan === plan ? pend.coupon : "", extra })
       return json({ ok: true, invoice: r.payment.invoiceNo, extraDays: r.extraDays })
     }
     if (op === "reject") {

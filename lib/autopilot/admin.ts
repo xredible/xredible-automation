@@ -25,7 +25,7 @@ export function revenueStats(all: Subscription[], payments: Payment[]) {
   // Free access (given by an admin) isn't revenue, and isn't a lost customer when it ends.
   const subs = all.filter((s) => !isFree(s) && !(s.plan !== "trial" && s.status === "cancelled" && !payments.some((p) => p.email === s.email && p.product === s.product)))
   const live = subs.filter((s) => s.status === "active" && s.periodEnd && Date.parse(s.periodEnd) > now && s.plan !== "trial")
-  const mrr = live.reduce((t, s) => t + (s.plan === "trial" ? 0 : priceOf(s.product, s.plan, s.cycle) / (s.cycle === "yearly" ? 12 : 1)), 0)
+  const mrr = live.reduce((t, s) => t + (s.plan === "trial" ? 0 : priceOf(s.product, s.plan, s.cycle, s.extra) / (s.cycle === "yearly" ? 12 : 1)), 0)
   const people = new Set(subs.map((s) => realEmail(s.email)))
   const payers = new Set(payments.map((p) => realEmail(p.email)))
   const last30 = payments.filter((p) => p.at && Date.parse(p.at) > now - 30 * DAY)
@@ -42,7 +42,7 @@ export function revenueStats(all: Subscription[], payments: Payment[]) {
     product: PRODUCTS[k].name,
     trials: subs.filter((s) => s.product === k && s.status === "trial").length,
     paid: live.filter((s) => s.product === k).length,
-    mrr: Math.round(live.filter((s) => s.product === k).reduce((t, s) => t + priceOf(s.product, s.plan as "starter" | "pro", s.cycle) / (s.cycle === "yearly" ? 12 : 1), 0)),
+    mrr: Math.round(live.filter((s) => s.product === k).reduce((t, s) => t + priceOf(s.product, s.plan as "starter" | "pro", s.cycle, s.extra) / (s.cycle === "yearly" ? 12 : 1), 0)),
     revenue: payments.filter((p) => p.product === k).reduce((t, p) => t + p.amount, 0),
   }))
   return {

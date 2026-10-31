@@ -1,13 +1,14 @@
 // POST /dashboard/billing — the signed-in customer's payments (for the brand they have open).
-//   { op: "quote", product, plan, cycle, coupon }        → price after coupon, and a UPI QR for it
-//   { op: "upi", product, plan, cycle, coupon, utr }     → "I've paid by UPI"; an admin checks and activates
-//   { op: "subscribe", product, plan, cycle }            → Razorpay subscription for Checkout
+//   { op: "quote", product, plan, cycle, coupon, extra }     → price after coupon, and a UPI QR for it
+//   { op: "upi", product, plan, cycle, coupon, utr, extra }  → "I've paid by UPI"; an admin checks and activates
+//   { op: "subscribe", product, plan, cycle, extra }         → Razorpay subscription for Checkout
+//   extra: how many extra profiles (LinkedIn profiles, Facebook Pages, WordPress sites) on top of the plan
 //   { op: "confirm", razorpay_payment_id, razorpay_subscription_id, razorpay_signature }
 //   { op: "cancel", product }                            → Razorpay plan stops at the end of the paid period
 
 import { NextResponse } from "next/server"
 import { errText, json, signedIn } from "@/lib/autopilot/guard"
-import { isCycle, isFree, isProduct, planOf, priceOf, PRODUCTS, rupees, type Cycle, type PlanKey } from "@/lib/autopilot/products"
+import { cleanExtra, extraText, isCycle, isFree, isProduct, planOf, priceOf, PRODUCTS, rupees, type Cycle, type PlanKey } from "@/lib/autopilot/products"
 import { upiConfigured, upiId, upiLink, upiQr, validUtr } from "@/lib/autopilot/upi"
 import { notify, update } from "@/lib/autopilot/db"
 import { cancelSubscription, checkoutSignatureOk, createSubscription, razorpayConfigured, razorpayKeyId } from "@/lib/autopilot/razorpay"
@@ -35,15 +36,16 @@ export async function POST(request: Request) {
     const op = String(b.op || "")
     const cycle: Cycle = isCycle(b.cycle) ? b.cycle : "monthly"
     const verified = async () => me.role !== "customer" || isVerified(await noticesFor(realEmail(owner)))
+    const extra = isProduct(b.product) ? cleanExtra(b.product, b.extra) : 0
 
     if (op === "quote" || op === "upi") {
       if (!isProduct(b.product) || !PRODUCTS[b.product].live) return json({ ok: false, error: "That product isn't available yet." }, 400)
       const plan = String(b.plan) as PlanKey
       const p = planOf(b.product, plan)
       if (!p) return json({ ok: false, error: "Pick a plan." }, 400)
-      const q = await quote(b.product, plan, cycle, String(b.coupon || ""))
+      const q = await quote(b.product, plan, cycle, String(b.coupon || ""), extra)
       if (op === "quote") {
-        const link = upiConfigured() ? upiLink(q.amount, `${PRODUCTS[b.product].name.split(" ")[0]} ${p.name} ${cycle}`) : null
+        const link = upiConfigured() ? upiLink(q.amount, `${PRODUCTS[b.product].name.split(" ")[0]} ${p.name} ${cycle}${extra ? ` +${extra}` : ""}`) : null
         return json({ ok: true, amount: q.amount, full: q.full, couponError: q.error || null, percent: q.coupon?.percent || 0, upi: link ? { id: upiId(), link, qr: await upiQr(link) } : null })
       }
       if (!upiConfigured()) return json({ ok: false, error: "UPI payments aren't switched on yet." }, 503)
@@ -54,8 +56,8 @@ export async function POST(request: Request) {
       const sub = await ensureTrial(owner, b.product)
       if (isFree(sub)) return json({ ok: false, error: FREE_ALREADY }, 400)
       const code = q.coupon ? q.coupon.code : ""
-      await update("subs", sub.id, { note: `upi:${plan}:${utr}:${new Date().toISOString()}|${cycle}|${code}|${q.amount}` })
-      await notify(`💳 UPI payment to check: ${me.name} <${owner}> · ${PRODUCTS[b.product].name} ${p.name} ${cycle} ${rupees(q.amount)}${code ? ` (coupon ${code})` : ""} · UTR ${utr}. Activate it in xredible.in/dashboard → Customers.`)
+      await update("subs", sub.id, { note: `upi:${plan}:${utr}:${new Date().toISOString()}|${cycle}|${code}|${q.amount}|${extra}` })
+      await notify(`💳 UPI payment to check: ${me.name} <${owner}> · ${PRODUCTS[b.product].name} ${p.name} ${cycle}${extra ? ` ${extraText(b.product, extra)}` : ""} ${rupees(q.amount)}${code ? ` (coupon ${code})` : ""} · UTR ${utr}. Activate it in xredible.in/dashboard → Customers.`)
       return json({ ok: true })
     }
 
@@ -68,9 +70,10 @@ export async function POST(request: Request) {
       if (cleanCode(b.coupon)) return json({ ok: false, error: "Coupon codes work with UPI payments for now." }, 400)
       const sub = await ensureTrial(owner, b.product)
       if (isFree(sub)) return json({ ok: false, error: FREE_ALREADY }, 400)
-      if (sub.status === "active" && sub.plan === plan && sub.cycle === cycle && sub.rzpSubId) return json({ ok: false, error: "You're already on this plan." }, 400)
-      const r = await createSubscription(b.product, plan, owner, cycle)
-      await markPending(sub, r.id, `${plan}:${cycle}` as PlanKey)
+      if (sub.status === "active" && sub.plan === plan && sub.cycle === cycle && (sub.extra || 0) === extra && sub.rzpSubId) return json({ ok: false, error: "You're already on this plan." }, 400)
+      const r = await createSubscription(b.product, plan, owner, cycle, extra)
+      const replacing = sub.status === "active" && sub.rzpSubId ? sub.rzpSubId : ""
+      await markPending(sub, r.id, `${plan}:${cycle}:${extra}:${replacing}` as PlanKey)
       return json({ ok: true, subscriptionId: r.id, key: razorpayKeyId(), name: me.name, email: realEmail(owner) })
     }
     if (op === "confirm") {
@@ -79,10 +82,11 @@ export async function POST(request: Request) {
       if (!checkoutSignatureOk(pay, sid, String(b.razorpay_signature || ""))) return json({ ok: false, error: "We couldn't verify that payment. If money was taken, it will show up within a few minutes." }, 400)
       const mine = (await subsFor(owner)).find((x) => x.rzpSubId === sid)
       if (!mine) return json({ ok: false, error: "We couldn't match that payment. It will show up within a few minutes." }, 400)
-      const [plan, cyc] = (mine.note.startsWith("checkout:") ? mine.note.slice(9) : "starter:monthly").split(":")
+      const [plan, cyc, ext] = (mine.note.startsWith("checkout:") ? mine.note.slice(9) : "starter:monthly:0").split(":")
       const pl = (plan === "pro" ? "pro" : "starter") as PlanKey
       const cy: Cycle = cyc === "yearly" ? "yearly" : "monthly"
-      await activatePlan(mine, { plan: pl, cycle: cy, method: "razorpay", ref: pay, amount: priceOf(mine.product, pl, cy), rzpSubId: sid })
+      const ex = cleanExtra(mine.product, ext)
+      await activatePlan(mine, { plan: pl, cycle: cy, method: "razorpay", ref: pay, amount: priceOf(mine.product, pl, cy, ex), rzpSubId: sid, extra: ex })
       return json({ ok: true })
     }
     if (op === "cancel") {

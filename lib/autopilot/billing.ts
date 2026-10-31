@@ -7,8 +7,9 @@ import { createHash } from "node:crypto"
 import { insert, rows, update } from "./db"
 import { addNotice, allNotices, EMAILS, noticesFor, realEmail, removeNotice, send } from "./account"
 import { asSub, subFor, subsFor } from "./service"
-import { daysOf, isProduct, limitOf, planOf, PRODUCTS, priceOf, rupees, type Cycle, type PlanKey, type ProductKey, type Subscription } from "./products"
+import { cleanExtra, daysOf, extraText, isProduct, limitOf, planOf, PRODUCTS, priceOf, rupees, type Cycle, type PlanKey, type ProductKey, type Subscription } from "./products"
 import { SITE } from "./linkedin"
+import { cancelSubscription } from "./razorpay"
 import { findUser } from "@/lib/dashboard/auth"
 
 // ---------- payments ----------
@@ -27,6 +28,8 @@ export type Payment = {
   periodStart: string | null
   periodEnd: string | null
   at: string | null
+  /** Extra profiles this payment covered. */
+  extra: number
 }
 
 const asPayment = (r: Record<string, unknown>): Payment => ({
@@ -43,6 +46,7 @@ const asPayment = (r: Record<string, unknown>): Payment => ({
   periodStart: (r.periodStart as string) || null,
   periodEnd: (r.periodEnd as string) || null,
   at: (r.at as string) || (r.createdAt as string) || null,
+  extra: Math.max(0, Math.floor(Number(r.extra) || 0)),
 })
 
 export const paymentsFor = async (email: string) => (await rows<Record<string, unknown>>("payments", { col: "email", val: email })).map(asPayment).sort((a, b) => b.id - a.id)
@@ -103,8 +107,8 @@ export async function saveCoupon(input: Record<string, unknown>): Promise<void> 
 export const setCouponActive = (id: number, active: boolean) => update("coupons", id, { active })
 
 /** The price to pay (paise), after a coupon. */
-export async function quote(product: ProductKey, plan: PlanKey, cycle: Cycle, code: string): Promise<{ amount: number; full: number; coupon: Coupon | null; error?: string }> {
-  const full = priceOf(product, plan, cycle)
+export async function quote(product: ProductKey, plan: PlanKey, cycle: Cycle, code: string, extra = 0): Promise<{ amount: number; full: number; coupon: Coupon | null; error?: string }> {
+  const full = priceOf(product, plan, cycle, extra)
   if (!cleanCode(code)) return { amount: full, full, coupon: null }
   const c = await findCoupon(code, product)
   if (typeof c === "string") return { amount: full, full, coupon: null, error: c }
@@ -174,14 +178,19 @@ async function referralBonus(email: string): Promise<number> {
  * Starts (or extends) a paid plan after a confirmed payment, records the payment,
  * uses the coupon, applies referral days and credits, and emails the receipt.
  */
-export async function activatePlan(sub: Subscription, o: { plan: PlanKey; cycle: Cycle; method: "upi" | "razorpay"; ref: string; amount: number; coupon?: string; start?: number; end?: number; rzpSubId?: string }) {
+export async function activatePlan(sub: Subscription, o: { plan: PlanKey; cycle: Cycle; method: "upi" | "razorpay"; ref: string; amount: number; coupon?: string; start?: number; end?: number; rzpSubId?: string; extra?: number }) {
   const p = planOf(sub.product, o.plan)
   if (!p) throw new Error("Unknown plan.")
+  const extra = cleanExtra(sub.product, o.extra)
   // The same payment can arrive twice (checkout and webhook): record it once.
   const seen = (await paymentsFor(sub.email)).find((x) => x.ref === o.ref)
   if (seen) return { payment: seen, extraDays: 0 }
+  // Changing plan or the number of extra profiles by card starts a new Razorpay subscription;
+  // the one it replaces (kept in the checkout note) stops at the end of its paid period.
+  const replaced = o.rzpSubId && sub.note.startsWith("checkout:") ? sub.note.split(":")[4] || "" : ""
+  if (replaced && replaced !== o.rzpSubId) await cancelSubscription(replaced).catch(() => {})
   const now = Date.now()
-  const samePlan = sub.status === "active" && sub.plan === o.plan && sub.cycle === o.cycle && sub.periodEnd && Date.parse(sub.periodEnd) > now
+  const samePlan = sub.status === "active" && sub.plan === o.plan && sub.cycle === o.cycle && (sub.extra || 0) === extra && sub.periodEnd && Date.parse(sub.periodEnd) > now
   // Paying again for the same plan extends it; a new or changed plan starts today.
   const start = o.start ? o.start * 1000 : samePlan ? Date.parse(sub.periodEnd as string) : now
   let end = o.end ? o.end * 1000 : start + daysOf(o.cycle) * 864e5
@@ -196,14 +205,16 @@ export async function activatePlan(sub: Subscription, o: { plan: PlanKey; cycle:
     coupon: o.coupon || "",
     periodStart: new Date(start).toISOString(),
     periodEnd: new Date(end).toISOString(),
+    extra,
   })
-  const extra = (await referralBonus(sub.email)) + (await takeCredits(sub.email))
-  end += extra * 864e5
+  const bonusDays = (await referralBonus(sub.email)) + (await takeCredits(sub.email))
+  end += bonusDays * 864e5
   await update("subs", sub.id, {
     status: "active",
     plan: o.plan,
     cycle: o.cycle,
-    postLimit: limitOf(sub.product, o.plan, o.cycle),
+    postLimit: limitOf(sub.product, o.plan, o.cycle, extra),
+    extra,
     used: samePlan ? sub.used : 0,
     periodStart: new Date(samePlan ? Date.parse(sub.periodStart || "") || start : start).toISOString(),
     periodEnd: new Date(end).toISOString(),
@@ -215,10 +226,10 @@ export async function activatePlan(sub: Subscription, o: { plan: PlanKey; cycle:
     if (c) await update("coupons", c.id, { used: c.used + 1 })
   }
   const who = await findUser(realEmail(sub.email))
-  const what = `${PRODUCTS[sub.product].name} ${p.name} (${o.cycle})`
+  const what = `${PRODUCTS[sub.product].name} ${p.name} (${o.cycle})${extra ? ` ${extraText(sub.product, extra)}` : ""}`
   const until = new Date(end).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric", timeZone: "Asia/Kolkata" })
   await send(sub.email, EMAILS.receipt(who?.name || "", what, rupees(o.amount), until, receiptUrl(pay.id)))
-  return { payment: pay, extraDays: extra }
+  return { payment: pay, extraDays: bonusDays }
 }
 
 export async function subById(id: number): Promise<Subscription | null> {

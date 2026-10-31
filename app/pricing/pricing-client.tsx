@@ -7,7 +7,7 @@ import Link from "next/link"
 import { useState } from "react"
 import { Section, SectionTitle, SiteFooter, SiteHeader, WhatsAppButton } from "@/components/site/site"
 import { ui, WHATSAPP } from "@/components/site/ui"
-import { PRODUCT_KEYS, PRODUCTS, YEARLY_MONTHS, rupees, type Cycle, type ProductKey } from "@/lib/autopilot/products"
+import { canHaveExtra, EXTRA_LABEL, PRODUCT_KEYS, PRODUCTS, YEARLY_MONTHS, rupees, type Cycle, type ProductKey } from "@/lib/autopilot/products"
 
 const SHORT: Record<ProductKey, string> = { linkedin: "LinkedIn", meta: "Instagram + Facebook", blog: "Blog (WordPress)", newsletter: "Email Marketing" }
 
@@ -177,6 +177,7 @@ export function PricingClient() {
                           {pl.posts} {x.unit}/month
                           {pl.contacts ? ` · ${pl.contacts.toLocaleString("en-IN")} subscribers` : ""}
                         </div>
+                        {canHaveExtra(k) ? <div className="mt-1 text-xs text-slate-500">+ {rupees(Math.round(per(pl.price) / 200) * 100)} per extra {EXTRA_LABEL[k].one}</div> : null}
                       </td>
                     ))}
                   </tr>
@@ -185,6 +186,9 @@ export function PricingClient() {
             </tbody>
           </table>
         </div>
+        <p className="mx-auto mt-6 max-w-3xl text-center text-sm text-slate-400">
+          More than one LinkedIn profile, Facebook Page or WordPress site? Add extra profiles to a plan: each one is half the plan price and comes with the plan&rsquo;s full post count.
+        </p>
       </Section>
 
       {/* Done for you */}

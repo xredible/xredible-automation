@@ -12,6 +12,7 @@ import { card, field, ghost, istTime, Notice, PlanCard, primary, small, toLocalI
 import { RewriteMenu } from "./rewrite"
 import { DesignFields, DesignPreview, FormatPicker, GoalFields, TemplatePicker } from "./design-editor"
 import { GOAL_LABEL, GOALS, LI_FORMATS, LI_MIXES, type Design, type Format } from "@/lib/autopilot/formats"
+import { ExtraProfiles, PostTo, ProfilesCtx, type Extras } from "./extra-profiles"
 
 type Profile = {
   about: string
@@ -28,7 +29,7 @@ type Profile = {
   prefs: { mix: string; color: string; brand: string; goals?: string; offer?: string; cta?: string }
 }
 type Post = { id: number; status: "draft" | "approved" | "posted" | "failed" | "blocked"; text: string; topic: string; scheduledAt: string | null; postedAt: string | null; postUrn: string; error: string; format: Format; design: Design; previews: string[] }
-type LiState = { ok: true; sub: Subscription; profile: Profile | null; posts: Post[]; ready: { linkedin: boolean; payments: boolean; razorpayKey: string; upi: Upi | null } }
+type LiState = { ok: true; sub: Subscription; profile: Profile | null; extras: Extras | null; posts: Post[]; ready: { linkedin: boolean; payments: boolean; razorpayKey: string; upi: Upi | null } }
 
 // ---------- LinkedIn Autopilot ----------
 
@@ -113,8 +114,11 @@ export function LinkedInAutopilot({ bare = false }: { bare?: boolean }) {
         <ProfileCard profile={s.profile} busy={busy} onSave={(f) => act({ op: "profile", ...f })} />
         <ConnectCard s={s} busy={busy} onDisconnect={() => act({ op: "disconnect" })} />
       </div>
+      {s.profile?.connected ? <ExtraProfiles product="linkedin" extras={s.extras} sub={s.sub} mainName={s.profile.liName} mainConnected={s.profile.connected} busy={busy} act={act} /> : null}
       {writing ? <Notice tone="info">{writing}</Notice> : null}
-      <Posts s={s} busy={busy || !!writing} canGenerate={hasProfile && !!s.profile?.connected} act={act} onGenerate={generate} />
+      <ProfilesCtx.Provider value={{ product: "linkedin", mainName: s.profile?.liName || "", extras: s.extras }}>
+        <Posts s={s} busy={busy || !!writing} canGenerate={hasProfile && !!s.profile?.connected} act={act} onGenerate={generate} />
+      </ProfilesCtx.Provider>
     </>
   )
 }
@@ -328,6 +332,7 @@ function PostItem({ p, busy, act }: { p: Post; busy: boolean; act: (b: Record<st
         {p.design.trend ? <span title={`Based on this week's news: ${p.design.trend}`} className="rounded-full bg-[var(--soft)] px-2 py-0.5 text-[var(--ink2)]">Trending</span> : null}
         {p.topic ? <span className="rounded bg-[var(--soft)] px-1.5 py-0.5 text-[var(--ink2)]">{p.topic}</span> : null}
         <span>{p.status === "posted" ? `Posted ${istTime(p.postedAt)}` : p.scheduledAt ? `Planned for ${istTime(p.scheduledAt)}` : ""}</span>
+        {open ? <PostTo value={p.design.profile} busy={busy} onPick={(profile) => act({ op: "send-to", id: p.id, profile })} /> : null}
         {p.status === "posted" && p.postUrn.startsWith("urn:li:") ? (
           <a href={`https://www.linkedin.com/feed/update/${p.postUrn}/`} target="_blank" rel="noreferrer" className="ml-auto inline-flex items-center gap-1 text-[var(--brand)] hover:underline">
             View on LinkedIn <ExternalLink className="h-3 w-3" />

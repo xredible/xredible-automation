@@ -52,6 +52,8 @@ export function DashboardApp({ allowed, me }: { allowed: BusinessKey[]; me: Me }
     const who = q.get("p") === "meta" ? "Facebook" : q.get("p") === "linkedin" ? "LinkedIn" : "Your account"
     if (c === "connected") setFlash({ tone: "good", text: `${who} connected. Your first drafts will appear here in a minute or two.` })
     else if (c === "choose") setFlash({ tone: "info", text: "You manage more than one Facebook Page. Pick the one to post to." })
+    else if (c === "extra") setFlash({ tone: "good", text: `The extra ${q.get("p") === "meta" ? "Facebook Page" : "LinkedIn profile"} is connected. Pick it under “Post to” on any post.` })
+    else if (c === "extra-choose") setFlash({ tone: "info", text: "One more step: pick the Page to add under “More Facebook Pages”." })
     else if (c === "cancelled") setFlash({ tone: "info", text: "The connection was cancelled." })
     else if (c === "expired") setFlash({ tone: "bad", text: "That sign-in took too long. Please try again." })
     else if (c === "notready") setFlash({ tone: "info", text: "Connecting is being switched on. Please try again soon." })
