@@ -1,10 +1,13 @@
 "use client"
 
 // Full-article reader for report rows that carry the article itself (e.g. LinkedIn newsletter drafts):
-// read it, copy it with formatting for LinkedIn's editor, or download it as an HTML file.
+// read it, copy it with formatting for LinkedIn's editor, or download it as an HTML file. Pictures made
+// for the article (cover + section images) show in place, each with its own download button.
 
 import { useEffect, useMemo, useState } from "react"
-import { Check, Copy, Download, X } from "lucide-react"
+import { Check, Copy, Download, ImageDown, X } from "lucide-react"
+
+export type DocImage = { slot: string; url: string; alt?: string; w?: number | null; h?: number | null }
 
 const ALLOWED = new Set(["P", "H1", "H2", "H3", "H4", "UL", "OL", "LI", "STRONG", "B", "EM", "I", "A", "BR", "BLOCKQUOTE"])
 
@@ -35,8 +38,55 @@ function clean(html: string): string {
   return root.innerHTML
 }
 
-export function DocViewer({ title, subtitle, html, onClose }: { title: string; subtitle?: string; html: string; onClose: () => void }) {
+/** A download link for a picture served by the li-img webhook (it adds Content-Disposition for dl=1). */
+function downloadUrl(img: DocImage, base: string): string {
+  const name = `${base || "newsletter"}-${img.slot}.jpg`.toLowerCase().replace(/[^a-z0-9._-]+/g, "-")
+  return `${img.url}${img.url.includes("?") ? "&" : "?"}dl=1&n=${encodeURIComponent(name)}`
+}
+
+function Picture({ img, base, label }: { img: DocImage; base: string; label: string }) {
+  return (
+    <figure className="my-5">
+      <img src={img.url} alt={img.alt || label} loading="lazy" referrerPolicy="no-referrer" className="aspect-video w-full rounded-xl bg-[var(--chip)] object-cover" />
+      <figcaption className="mt-1.5 flex items-center gap-2 text-xs text-[var(--muted)]">
+        <span className="font-medium text-[var(--ink-2)]">{label}</span>
+        <a href={downloadUrl(img, base)} className="ml-auto inline-flex items-center gap-1 rounded-md border border-[var(--line)] px-2 py-1 font-medium text-[var(--ink)] hover:bg-[var(--hover)]">
+          <ImageDown className="h-3.5 w-3.5" />
+          Download
+        </a>
+      </figcaption>
+    </figure>
+  )
+}
+
+const PROSE =
+  "space-y-4 text-[15px] leading-relaxed text-[var(--ink-2)] [&_a]:text-[var(--brand)] [&_a]:underline [&_h2]:mt-8 [&_h2]:text-xl [&_h2]:font-semibold [&_h2]:text-[var(--ink)] [&_h3]:mt-6 [&_h3]:font-semibold [&_li]:ml-5 [&_ol]:list-decimal [&_ul]:list-disc [&_ul]:space-y-1"
+
+export function DocViewer({
+  title,
+  subtitle,
+  html,
+  images = [],
+  fileBase = "",
+  onClose,
+}: {
+  title: string
+  subtitle?: string
+  html: string
+  images?: DocImage[]
+  fileBase?: string
+  onClose: () => void
+}) {
   const body = useMemo(() => clean(html), [html])
+  // The body split at each <h2>: [intro, section 1, section 2, ...], so section pictures (s1, s2..) sit under their heading.
+  const parts = useMemo(() => {
+    return body.split(/(?=<h2[\s>])/i).map((part) => {
+      const m = /^<h2[^>]*>[\s\S]*?<\/h2>/i.exec(part)
+      return m ? { head: m[0], rest: part.slice(m[0].length) } : { head: "", rest: part }
+    })
+  }, [body])
+  const pic = (slot: string) => images.find((i) => i.slot === slot && /^https:\/\//.test(i.url))
+  const cover = pic("cover")
   const [copied, setCopied] = useState(false)
   const words = useMemo(() => body.replace(/<[^>]+>/g, " ").split(/\s+/).filter(Boolean).length, [body])
 
@@ -92,12 +142,27 @@ export function DocViewer({ title, subtitle, html, onClose }: { title: string; s
         <article className="px-4 pb-8 pt-5 sm:px-8">
           <h1 className="text-2xl font-bold leading-tight text-[var(--ink)] sm:text-3xl">{title}</h1>
           {subtitle ? <p className="mt-2 text-base text-[var(--muted)]">{subtitle}</p> : null}
-          <div
-            className="mt-6 space-y-4 text-[15px] leading-relaxed text-[var(--ink-2)] [&_a]:text-[var(--brand)] [&_a]:underline [&_h2]:mt-8 [&_h2]:text-xl [&_h2]:font-semibold [&_h2]:text-[var(--ink)] [&_h3]:mt-6 [&_h3]:font-semibold [&_li]:ml-5 [&_ol]:list-decimal [&_ul]:list-disc [&_ul]:space-y-1"
-            dangerouslySetInnerHTML={{ __html: body }}
-          />
+          {cover ? <Picture img={cover} base={fileBase} label="Cover image (1920 × 1080)" /> : null}
+          <div className="mt-6 space-y-4">
+            {parts.map((p, i) => {
+              const img = i > 0 ? pic(`s${i}`) : undefined
+              return (
+                <div key={i}>
+                  {p.head ? <div className={PROSE} dangerouslySetInnerHTML={{ __html: p.head }} /> : null}
+                  {img ? <Picture img={img} base={fileBase} label={`Picture for section ${i}`} /> : null}
+                  {p.rest ? <div className={`${PROSE} mt-4`} dangerouslySetInnerHTML={{ __html: p.rest }} /> : null}
+                </div>
+              )
+            })}
+          </div>
           <p className="mt-8 rounded-lg bg-[var(--chip)] px-3 py-2 text-xs text-[var(--muted)]">
             To publish: on LinkedIn open <b>Write article</b>, pick the newsletter, put the title and subtitle in their own fields, then paste (Copy article keeps the headings, bullets and link).
+            {images.length ? (
+              <>
+                {" "}
+                Pictures don&apos;t travel with the paste: download them here, upload the cover with <b>Upload from computer</b> at the top of the article, and add each section picture under its heading with <b>+ → Image</b>.
+              </>
+            ) : null}
           </p>
         </article>
       </div>
