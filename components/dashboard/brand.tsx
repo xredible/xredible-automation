@@ -32,7 +32,7 @@ export const PLATFORM: Record<string, PlatformMeta> = {
   youtube: { label: "YouTube", short: "YouTube", color: "#e62117", ...i(Youtube) },
   pinterest: { label: "Pinterest", short: "Pinterest", color: "#c8102e", ...i(Pin) },
   ga4: { label: "Website analytics", short: "Website", color: "#0f7b5a", ...i(Globe) },
-  sessions: { label: "Visits & engagement", short: "Visits", color: "#0b7285", ...i(MousePointerClick) },
+  sessions: { label: "Sessions & engagement", short: "Sessions", color: "#0b7285", ...i(MousePointerClick) },
   gsc: { label: "Google Search", short: "Search", color: "#3b5bdb", ...i(Search) },
   adsense: { label: "Ad earnings", short: "Earnings", color: "#b7791f", ...i(Coins) },
   ads: { label: "Paid ads", short: "Paid ads", color: "#d9480f", ...i(Target) },
