@@ -37,6 +37,8 @@ export type Column = {
   filterKey?: string
   /** Row key holding a full article (HTML): the name opens a reader with copy / download. */
   doc?: string
+  /** Row key holding the article's pictures: [{ slot: "cover" | "s1".., url, alt }] (shown in the reader). */
+  docImages?: string
 }
 
 export type Row = Record<string, unknown>

@@ -9,7 +9,7 @@ import type { Column, DataTable, Items, Row } from "@/lib/dashboard/types"
 import { countryName, dateTime, download, flag, fmt, prettyLabel, toCsv } from "./format"
 import { Card } from "./ui"
 import { ShareBar } from "./charts"
-import { DocViewer } from "./doc-viewer"
+import { DocViewer, type DocImage } from "./doc-viewer"
 
 const label = (t: DataTable, r: Row, c: Column) => {
   const raw = r[c.key]
@@ -175,7 +175,16 @@ export function ReportTable({ t, onFilter }: { t: DataTable; onFilter?: (key: st
       ) : (
         <div className="h-2" />
       )}
-      {open && first.doc ? <DocViewer title={label(t, open, first)} subtitle={first.sub ? String(open[first.sub] || "") : ""} html={String(open[first.doc] || "")} onClose={() => setOpen(null)} /> : null}
+      {open && first.doc ? (
+        <DocViewer
+          title={label(t, open, first)}
+          subtitle={first.sub ? String(open[first.sub] || "") : ""}
+          html={String(open[first.doc] || "")}
+          images={first.docImages && Array.isArray(open[first.docImages]) ? (open[first.docImages] as DocImage[]) : []}
+          fileBase={String(open.id || "")}
+          onClose={() => setOpen(null)}
+        />
+      ) : null}
     </Card>
   )
 }
