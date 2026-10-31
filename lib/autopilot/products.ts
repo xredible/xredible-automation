@@ -92,6 +92,8 @@ export type Subscription = {
   periodEnd: string | null
   rzpSubId: string
   note: string
+  /** Extra profiles paid for on top of the plan (each one: half the plan price, the plan's full post count). */
+  extra: number
 }
 
 /** "Free access" given by an admin (Accounts → Edit): the Pro plan without payment, renewed every 30 days. */
@@ -105,15 +107,41 @@ export const lapsed = (s: Subscription | null) => !!s && !isFree(s) && s.status 
 export const canPublish = (s: Subscription | null) => !!s && (s.status === "trial" || s.status === "active") && !lapsed(s) && s.used < s.postLimit
 
 export const YEARLY_MONTHS = 10
-export const priceOf = (product: ProductKey, plan: PlanKey, cycle: Cycle) => (planOf(product, plan)?.price || 0) * (cycle === "yearly" ? YEARLY_MONTHS : 1)
-export const limitOf = (product: ProductKey, plan: PlanKey, cycle: Cycle) => (planOf(product, plan)?.posts || 0) * (cycle === "yearly" ? 12 : 1)
+
+// ---------- extra profiles (add-on) ----------
+// More than one LinkedIn profile, Facebook Page (+ Instagram) or WordPress site in one brand.
+// Each extra profile costs half the plan price and adds the plan's full post count.
+
+/** Tools that can have extra profiles (the newsletter sends from one address). */
+export const EXTRA_PRODUCTS: ProductKey[] = ["linkedin", "meta", "blog"]
+export const canHaveExtra = (p: ProductKey) => EXTRA_PRODUCTS.includes(p)
+export const MAX_EXTRA = 5
+export const cleanExtra = (p: ProductKey, v: unknown) => (canHaveExtra(p) ? Math.min(MAX_EXTRA, Math.max(0, Math.floor(Number(v) || 0))) : 0)
+export const EXTRA_LABEL: Record<ProductKey, { one: string; many: string }> = {
+  linkedin: { one: "LinkedIn profile", many: "LinkedIn profiles" },
+  meta: { one: "Facebook Page + Instagram", many: "Facebook Pages + Instagram" },
+  blog: { one: "WordPress site", many: "WordPress sites" },
+  newsletter: { one: "sending address", many: "sending addresses" },
+}
+/** "+ 2 extra LinkedIn profiles" (empty for none). */
+export const extraText = (p: ProductKey, n: number) => (n > 0 ? `+ ${n} extra ${n === 1 ? EXTRA_LABEL[p].one : EXTRA_LABEL[p].many}` : "")
+
+/** The plan price, with extra profiles at half the plan price each (rounded to the rupee). */
+export const priceOf = (product: ProductKey, plan: PlanKey, cycle: Cycle, extra = 0) => {
+  const base = (planOf(product, plan)?.price || 0) * (cycle === "yearly" ? YEARLY_MONTHS : 1)
+  return Math.round((base * (2 + cleanExtra(product, extra))) / 2 / 100) * 100
+}
+/** Posts in the period: the plan's count for the main profile and again for each extra one. */
+export const limitOf = (product: ProductKey, plan: PlanKey, cycle: Cycle, extra = 0) => (planOf(product, plan)?.posts || 0) * (cycle === "yearly" ? 12 : 1) * (1 + cleanExtra(product, extra))
+/** How many profiles a subscription may connect: 1, plus paid extras while the plan is active. */
+export const profilesAllowed = (s: Subscription | null) => 1 + (s && (s.status === "active" || isFree(s)) && !lapsed(s) ? cleanExtra(s.product, s.extra) : 0)
 export const daysOf = (cycle: Cycle) => (cycle === "yearly" ? 365 : 30)
 export const isCycle = (v: unknown): v is Cycle => v === "monthly" || v === "yearly"
 
-/** A UPI payment waiting for the admin to check: note "upi:<plan>:<utr>:<when>|<cycle>|<coupon>|<amount paise>". */
-export function pendingUpi(s: Subscription | null): { plan: PlanKey; utr: string; at: string; cycle: Cycle; coupon: string; amount: number | null } | null {
-  const m = /^upi:(starter|pro):([A-Za-z0-9]+):([^|]+)(?:\|(monthly|yearly)\|([A-Z0-9]*)\|(\d+))?$/.exec(s?.note || "")
-  return m ? { plan: m[1] as PlanKey, utr: m[2], at: m[3], cycle: (m[4] as Cycle) || "monthly", coupon: m[5] || "", amount: m[6] ? Number(m[6]) : null } : null
+/** A UPI payment waiting for the admin to check: note "upi:<plan>:<utr>:<when>|<cycle>|<coupon>|<amount paise>|<extra profiles>". */
+export function pendingUpi(s: Subscription | null): { plan: PlanKey; utr: string; at: string; cycle: Cycle; coupon: string; amount: number | null; extra: number } | null {
+  const m = /^upi:(starter|pro):([A-Za-z0-9]+):([^|]+)(?:\|(monthly|yearly)\|([A-Z0-9]*)\|(\d+)(?:\|(\d+))?)?$/.exec(s?.note || "")
+  return m ? { plan: m[1] as PlanKey, utr: m[2], at: m[3], cycle: (m[4] as Cycle) || "monthly", coupon: m[5] || "", amount: m[6] ? Number(m[6]) : null, extra: m[7] ? Number(m[7]) : 0 } : null
 }
 export const remaining = (s: Subscription | null) => (s ? Math.max(0, s.postLimit - s.used) : 0)
 

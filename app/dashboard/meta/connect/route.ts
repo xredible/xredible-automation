@@ -11,12 +11,15 @@ import { tokenKeySet } from "@/lib/autopilot/crypto"
 export const runtime = "nodejs"
 export const dynamic = "force-dynamic"
 
-export async function GET() {
+export async function GET(request: Request) {
   const me = await currentUser()
   if (!me) return NextResponse.redirect(`${SITE}/dashboard`)
   if (!metaConfigured() || !tokenKeySet()) return NextResponse.redirect(`${SITE}/dashboard?p=meta&c=notready`)
   const state = randomBytes(18).toString("base64url")
   const jar = await cookies()
   jar.set("xd_meta_state", state, { httpOnly: true, secure: true, sameSite: "lax", path: "/dashboard", maxAge: 600 })
+  // ?extra=1: this sign-in adds an extra Facebook Page (paid add-on) instead of replacing the main one.
+  if (new URL(request.url).searchParams.get("extra") === "1") jar.set("xd_meta_extra", "1", { httpOnly: true, secure: true, sameSite: "lax", path: "/dashboard", maxAge: 600 })
+  else jar.delete({ name: "xd_meta_extra", path: "/dashboard" })
   return NextResponse.redirect(metaAuthorizeUrl(state))
 }

@@ -3,6 +3,8 @@
 // POST { op: "settings", ...fields } | { op: "connect", ... } (WordPress / email) | { op: "page", pageId } (Facebook Page)
 //      { op: "disconnect" } | { op: "generate", count } | { op: "contacts-add", text } | { op: "contact-remove", id }
 //      { op: "approve"|"unapprove"|"reject"|"edit"|"reschedule"|"test", id, … }
+//      Extra profiles: { op: "extra-connect", site, user, pass } (WordPress) | { op: "extra-page", pageId } (Facebook)
+//      | { op: "extra-remove", id } | { op: "extra-cancel" } | { op: "send-to", id, profile } (where a post goes; 0 = main)
 
 import { NextResponse, after } from "next/server"
 import { errText, json, signedIn } from "@/lib/autopilot/guard"
@@ -28,12 +30,16 @@ import {
   checkItemSources,
   sourcesDue,
   pickPage,
+  connectExtraWordPress,
+  extrasView,
+  pickExtraPage,
   removeContact,
   saveSettings,
   viewChannel,
   type ToolKey,
 } from "@/lib/autopilot/tools"
 import { ownerKey } from "@/lib/autopilot/brands"
+import { removeExtra, setPendingPages } from "@/lib/autopilot/profiles"
 import { makeHeadline, makeSlides, rememberVoice, rewrite, voiceOf } from "@/lib/autopilot/ai"
 import { isFormat } from "@/lib/autopilot/formats"
 
@@ -42,17 +48,19 @@ export const dynamic = "force-dynamic"
 export const maxDuration = 300
 
 async function state(email: string, product: ToolKey) {
-  const [sub, channel, items, upi, contacts] = await Promise.all([
+  const [sub, channel, items, upi, contacts, extras] = await Promise.all([
     ensureTrial(email, product),
     channelFor(email, product),
     itemsFor(email, product),
     upiOptions(product, email),
     product === "newsletter" ? contactsFor(email) : Promise.resolve(null),
+    extrasView(email, product),
   ])
   return {
     ok: true,
     sub,
     channel: viewChannel(channel),
+    extras,
     items: product === "meta" ? items.map((it) => ({ ...it, previews: it.format === "photo" && !it.design.photos?.length ? [] : metaImages(it) })) : items,
     contacts: contacts
       ? {
@@ -120,6 +128,15 @@ export async function POST(request: Request, ctx: Ctx) {
       const ch = await channelFor(owner, product)
       const items = await itemsFor(owner, product)
       if (ch?.settings.about && !items.length) await requestToolDrafts(owner, product, 3).catch(() => {})
+    } else if (op === "extra-connect" && product === "blog") {
+      if (!tokenKeySet()) throw new Error("Connecting is being switched on. Please try again soon.")
+      await connectExtraWordPress(owner, b)
+    } else if (op === "extra-page" && product === "meta") {
+      await pickExtraPage(owner, String(b.pageId || ""))
+    } else if (op === "extra-cancel" && product === "meta") {
+      await setPendingPages(owner, [])
+    } else if (op === "extra-remove" && product !== "newsletter") {
+      await removeExtra(owner, product, b.id)
     } else if (op === "disconnect") {
       await disconnect(owner, product)
     } else if (op === "generate") {

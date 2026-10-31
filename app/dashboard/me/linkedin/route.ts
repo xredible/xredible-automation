@@ -14,6 +14,7 @@ import { upiOptions } from "@/lib/autopilot/upi"
 import { ownerKey } from "@/lib/autopilot/brands"
 import { makeHeadline, makeSlides, rememberVoice, rewrite, voiceOf } from "@/lib/autopilot/ai"
 import { liCardUrl } from "@/lib/autopilot/tools"
+import { removeExtra, viewExtras } from "@/lib/autopilot/profiles"
 import { isFormat, type Format } from "@/lib/autopilot/formats"
 import type { LiPost } from "@/lib/autopilot/service"
 
@@ -31,11 +32,12 @@ function previews(p: LiPost): string[] {
 }
 
 async function state(email: string) {
-  const [sub, profile, posts, upi] = await Promise.all([ensureTrial(email, "linkedin"), profileFor(email), postsFor(email), upiOptions("linkedin", email)])
+  const [sub, profile, posts, upi, extras] = await Promise.all([ensureTrial(email, "linkedin"), profileFor(email), postsFor(email), upiOptions("linkedin", email), viewExtras(email, "linkedin")])
   return {
     ok: true,
     sub,
     profile: viewProfile(profile),
+    extras,
     posts: posts.filter((p) => p.status !== "rejected").map((p) => ({ ...p, previews: previews(p) })),
     ready: { linkedin: linkedinConfigured() && tokenKeySet(), payments: razorpayConfigured(), razorpayKey: razorpayKeyId(), upi },
   }
@@ -79,6 +81,8 @@ export async function POST(request: Request) {
       await requestDrafts(owner, Math.min(5, Math.max(1, Number(b.count) || 3)))
     } else if (op === "disconnect") {
       await disconnectLinkedIn(owner)
+    } else if (op === "extra-remove") {
+      await removeExtra(owner, "linkedin", b.id)
     } else if (op === "format") {
       // Switch a draft's type; writes the image headline or the carousel slides it needs.
       const post = (await postsFor(owner)).find((p) => p.id === Number(b.id))

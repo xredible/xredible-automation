@@ -16,6 +16,7 @@ import { metaPublish, type MetaPage } from "./meta"
 import { cleanSite, wpPublish, wpVerify } from "./wordpress"
 import { buildIssue, isEmailTemplate, smtpVerify, transport, type EmailKit, type EmailTemplate, type Smtp } from "./mail"
 import { kitFor } from "./brandkit"
+import { addExtra, extraFor, isSideRow, pendingPages, setPendingPages, targetFor, viewExtras } from "./profiles"
 import { mdToHtml } from "./markdown"
 import { cleanDesign, goalPlanKey, isFormat, META_MIXES, mixKey, parseDesign, type Design, type Format, type SourcesInfo } from "./formats"
 
@@ -100,9 +101,10 @@ function asChannel(r: Obj): Channel {
   }
 }
 
+/** The tool's main channel (extra profiles and Pages waiting to be picked live in their own rows: profiles.ts). */
 export async function channelFor(email: string, product: ToolKey): Promise<Channel | null> {
-  const all = (await rows<Obj>("ap_channels", { col: "email", val: email })).map(asChannel)
-  return all.find((c) => c.product === product) || null
+  const all = (await rows<Obj>("ap_channels", { col: "email", val: email })).filter((r) => String(r.product) === product && !isSideRow(r))
+  return all.map(asChannel).sort((a, b) => a.id - b.id)[0] || null
 }
 
 /** What the browser gets: never secrets or the trial key. */
@@ -159,7 +161,7 @@ export async function saveSettings(email: string, product: ToolKey, input: Obj):
 
 /** One free trial per Page / site / sending address, whatever email signs up. */
 async function guardTrial(email: string, product: ToolKey, connKey: string, what: string) {
-  const others = (await rows<Obj>("ap_channels", { col: "connKey", val: connKey })).map(asChannel).filter((x) => x.product === product && x.email !== email)
+  const others = (await rows<Obj>("ap_channels", { col: "connKey", val: connKey })).filter((r) => String(r.product) === product).map(asChannel).filter((x) => x.email !== email)
   if (!others.length) return
   const mine = await ensureTrial(email, product)
   if (mine.status !== "trial" || mine.used > 0) return
@@ -228,6 +230,54 @@ export async function connectWordPress(email: string, input: Obj) {
   const host = site.replace(/^https?:\/\//, "")
   await setConnection(email, "blog", { connName: host, connKey: `wp:${host}`, meta: { site, user }, secret: { pass }, connected: true })
   await guardTrial(email, "blog", `wp:${host}`, "website")
+}
+
+// Extra profiles (paid add-on): more Facebook Pages or WordPress sites in the same brand.
+
+const pageName = (p: MetaPage) => (p.igUser ? `${p.name} + @${p.igUser}` : p.name)
+const pageMeta = (p: MetaPage) => ({ pageId: p.id, pageName: p.name, igId: p.igId, igUser: p.igUser })
+
+/** After a Facebook sign-in for an extra Page: one Page is added at once; several wait to be picked. */
+export async function connectExtraMeta(email: string, pages: MetaPage[]): Promise<"added" | "choose"> {
+  if (!pages.length) throw new Error("No Facebook Pages came back. Make sure you picked your Page when Facebook asked.")
+  const main = await channelFor(email, "meta")
+  const others = pages.filter((p) => `fb:${p.id}` !== main?.connKey)
+  if (!others.length) throw new Error("That Page is already your main one. When Facebook asks, pick the other Page you want to add.")
+  if (others.length === 1) {
+    await addExtra(email, "meta", { name: pageName(others[0]), key: `fb:${others[0].id}`, meta: pageMeta(others[0]), secret: { token: others[0].token } }, main?.connKey)
+    await setPendingPages(email, [])
+    return "added"
+  }
+  await setPendingPages(email, others.map((p) => ({ id: p.id, name: p.name, token: p.token, igId: p.igId, igUser: p.igUser })))
+  return "choose"
+}
+
+export async function pickExtraPage(email: string, pageId: string) {
+  const pending = await pendingPages(email)
+  const p = pending?.pages.find((x) => x.id === pageId)
+  if (!p) throw new Error("Connect Facebook again and pick the Page.")
+  const main = await channelFor(email, "meta")
+  await addExtra(email, "meta", { name: pageName(p), key: `fb:${p.id}`, meta: pageMeta(p), secret: { token: p.token } }, main?.connKey)
+  await setPendingPages(email, [])
+}
+
+export async function connectExtraWordPress(email: string, input: Obj) {
+  const site = cleanSite(String(input.site || ""))
+  const user = clip(input.user, 100)
+  const pass = String(input.pass || "").trim()
+  if (!user || pass.replace(/\s/g, "").length < 16) throw new Error("Enter the WordPress username and the Application Password.")
+  const v = await wpVerify(site, user, pass)
+  if (!v.canPublish) throw new Error("That WordPress user can't publish posts. Use an Author, Editor or Administrator account.")
+  const host = site.replace(/^https?:\/\//, "")
+  const main = await channelFor(email, "blog")
+  await addExtra(email, "blog", { name: host, key: `wp:${host}`, meta: { site, user }, secret: { pass } }, main?.connKey)
+}
+
+/** Extra profiles for the tool page, and Facebook Pages waiting to be picked. */
+export async function extrasView(email: string, product: ToolKey) {
+  if (product === "newsletter") return null
+  const [v, pending] = await Promise.all([viewExtras(email, product), product === "meta" ? pendingPages(email) : Promise.resolve(null)])
+  return { ...v, choose: pending?.choose || [] }
 }
 
 // Newsletter (customer's own SMTP)
@@ -464,6 +514,15 @@ export async function itemAction(email: string, product: ToolKey, input: Obj) {
     if (Date.parse(iso) < Date.now()) throw new Error("Pick a time in the future.")
     return update("ap_items", id, { scheduledAt: iso })
   }
+  if (op === "send-to" && product !== "newsletter") {
+    // Where it goes: the main profile (0) or one of the extra ones.
+    const to = Number(input.profile) || 0
+    if (to && !(await extraFor(email, product, to))) throw new Error("Pick one of your connected profiles.")
+    const design = { ...it.design }
+    if (to) design.profile = to
+    else delete design.profile
+    return update("ap_items", id, { design: JSON.stringify(design), ...(it.status === "failed" || it.status === "blocked" ? { status: "draft", error: "" } : {}) })
+  }
   if (op === "test" && product === "newsletter") return sendTest(email, it)
   throw new Error("Unknown change.")
 }
@@ -504,20 +563,24 @@ export async function publishItem(id: number): Promise<Result> {
   if (!canPublish(sub)) return block(it, sub, PRODUCTS[it.product].unit)
   const c = await channelFor(it.email, it.product)
   try {
-    if (!c || !c.connected || !c.secretEnc) throw new Error(it.product === "meta" ? "Facebook / Instagram isn't connected." : "Your WordPress site isn't connected.")
-    const secret = parse(open(c.secretEnc))
+    if (!c) throw new Error(it.product === "meta" ? "Facebook / Instagram isn't connected." : "Your WordPress site isn't connected.")
+    // An extra profile (Page or site) when the post was set to go there; otherwise the main one.
+    const extra = await targetFor(it.email, it.product, it.design.profile)
+    const to = extra ? { meta: extra.meta, secretEnc: extra.secretEnc, connected: extra.connected } : { meta: c.meta, secretEnc: c.secretEnc, connected: c.connected }
+    if (!to.connected || !to.secretEnc) throw new Error(it.product === "meta" ? "Facebook / Instagram isn't connected." : "Your WordPress site isn't connected.")
+    const secret = parse(open(to.secretEnc))
     let url = ""
     if (it.product === "meta") {
       if (it.format === "photo" && !it.design.photos?.length) throw new Error("Add your photos to this post first, or switch it to another type.")
       const img = metaImages(it)
       const targets = (c.settings.targets as "both" | "instagram" | "facebook") || "both"
-      const r = await metaPublish({ id: String(c.meta.pageId), igId: String(c.meta.igId || ""), token: String(secret.token) }, c.meta.igId ? targets : "facebook", it.text, img)
+      const r = await metaPublish({ id: String(to.meta.pageId), igId: String(to.meta.igId || ""), token: String(secret.token) }, to.meta.igId ? targets : "facebook", it.text, img)
       url = r.ig || r.fb || ""
       await update("ap_items", id, { status: "posted", postedAt: new Date().toISOString(), ref: [r.ig, r.fb].filter(Boolean).join(" "), error: (r as Obj).warning ? String((r as Obj).warning).slice(0, 300) : "" })
     } else {
       const cta = String(c.settings.cta || "").trim()
       const html = mdToHtml(it.text + (cta ? `\n\n${cta}` : ""))
-      const r = await wpPublish(String(c.meta.site), String(c.meta.user), String(secret.pass), { title: it.title, html, excerpt: it.summary, status: c.settings.publishMode === "draft" ? "draft" : "publish" })
+      const r = await wpPublish(String(to.meta.site), String(to.meta.user), String(secret.pass), { title: it.title, html, excerpt: it.summary, status: c.settings.publishMode === "draft" ? "draft" : "publish" })
       url = r.link
       await update("ap_items", id, { status: "posted", postedAt: new Date().toISOString(), ref: r.link, error: "" })
     }

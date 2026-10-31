@@ -12,6 +12,7 @@ import { RewriteMenu } from "./rewrite"
 import { AudiencePicker, CampaignCard, DesignPanel, EmailTabs, FormPanel, SequencesPanel, SubscribersPanel, useTags, type Audience, type EmailTab } from "./email-app"
 import { DesignFields, DesignPreview, FormatPicker, GoalFields, PhotoPicker, TemplatePicker } from "./design-editor"
 import { GOAL_LABEL, GOALS, META_FORMATS, META_MIXES, type Design, type Format } from "@/lib/autopilot/formats"
+import { ExtraProfiles, PostTo, ProfilesCtx, type Extras } from "./extra-profiles"
 
 type Tool = Exclude<ProductKey, "linkedin">
 type Settings = Record<string, string | number>
@@ -35,7 +36,7 @@ type Item = {
   error: string
 }
 type Contacts = { total: number; subscribed: number; cap: number; recent: { id: number; email: string; name: string; status: string }[] }
-type State = { ok: true; sub: Subscription; channel: Channel | null; items: Item[]; contacts: Contacts | null; ready: { connect: boolean; payments: boolean; razorpayKey: string; upi: Upi | null }; added?: { added: number; skipped: number; total: number }; tested?: boolean }
+type State = { ok: true; sub: Subscription; channel: Channel | null; extras: Extras | null; items: Item[]; contacts: Contacts | null; ready: { connect: boolean; payments: boolean; razorpayKey: string; upi: Upi | null }; added?: { added: number; skipped: number; total: number }; tested?: boolean }
 type Act = (b: Record<string, unknown>) => Promise<State | null>
 
 const COPY: Record<Tool, { flow: string; about: string; aboutHint: string; topics: string; topicsHint: string; item: string; account: string }> = {
@@ -187,9 +188,12 @@ export function ToolApp({ product, bare = false }: { product: Tool; bare?: boole
               ) : null}
             </div>
           </div>
+          {product !== "newsletter" && s.channel?.connected ? <ExtraProfiles product={product} extras={s.extras} sub={s.sub} mainName={s.channel.connName} mainConnected={s.channel.connected} busy={busy} act={act} /> : null}
           {product === "newsletter" && ready ? <CampaignCard onDone={load} /> : null}
           {writing ? <Notice tone="info">{writing}</Notice> : null}
-          <Items product={product} s={s} busy={busy || !!writing} ready={ready} act={act} onGenerate={generate} />
+          <ProfilesCtx.Provider value={product === "newsletter" ? null : { product, mainName: s.channel?.connName || "", extras: s.extras }}>
+            <Items product={product} s={s} busy={busy || !!writing} ready={ready} act={act} onGenerate={generate} />
+          </ProfilesCtx.Provider>
         </>
       ) : null}
     </>
@@ -704,6 +708,7 @@ function ItemCard({ it, product, busy, act }: { it: Item; product: Tool; busy: b
                 ? `Planned for ${istTime(it.scheduledAt)}`
                 : ""}
         </span>
+        {open && product !== "newsletter" ? <PostTo value={it.design.profile} busy={busy} onPick={(profile) => act({ op: "send-to", id: it.id, profile })} /> : null}
         {links.map((u) => (
           <a key={u} href={u} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-[var(--brand)] hover:underline">
             {u.includes("instagram.com") ? "Instagram" : u.includes("facebook.com") ? "Facebook" : "View article"} <ExternalLink className="h-3 w-3" />

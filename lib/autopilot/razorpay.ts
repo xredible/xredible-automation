@@ -7,7 +7,7 @@
 // tagged with notes.xd = "<product>-<plan>", and reused after that.
 
 import { createHmac, timingSafeEqual } from "node:crypto"
-import { PRODUCTS, planOf, priceOf, limitOf, type Cycle, type PlanKey, type ProductKey } from "./products"
+import { extraText, PRODUCTS, planOf, priceOf, limitOf, type Cycle, type PlanKey, type ProductKey } from "./products"
 
 const API = "https://api.razorpay.com/v1"
 
@@ -30,8 +30,9 @@ async function rp<T>(path: string, init?: { method?: string; body?: unknown }): 
 type RpPlan = { id: string; notes?: Record<string, string> }
 const planIds = new Map<string, string>()
 
-async function planId(product: ProductKey, plan: PlanKey, cycle: Cycle = "monthly"): Promise<string> {
-  const tag = cycle === "yearly" ? `${product}-${plan}-yearly` : `${product}-${plan}`
+async function planId(product: ProductKey, plan: PlanKey, cycle: Cycle = "monthly", extra = 0): Promise<string> {
+  // Extra profiles change the price, so each count is its own Razorpay plan ("linkedin-starter-x2").
+  const tag = (cycle === "yearly" ? `${product}-${plan}-yearly` : `${product}-${plan}`) + (extra ? `-x${extra}` : "")
   const known = planIds.get(tag)
   if (known) return known
   const list = await rp<{ items: RpPlan[] }>("/plans?count=100")
@@ -48,10 +49,10 @@ async function planId(product: ProductKey, plan: PlanKey, cycle: Cycle = "monthl
       period: cycle === "yearly" ? "yearly" : "monthly",
       interval: 1,
       item: {
-        name: `${PRODUCTS[product].name} ${p.name}${cycle === "yearly" ? " (yearly)" : ""}`,
-        amount: priceOf(product, plan, cycle),
+        name: `${PRODUCTS[product].name} ${p.name}${cycle === "yearly" ? " (yearly)" : ""}${extra ? ` ${extraText(product, extra)}` : ""}`,
+        amount: priceOf(product, plan, cycle, extra),
         currency: "INR",
-        description: cycle === "yearly" ? `${limitOf(product, plan, cycle)} ${PRODUCTS[product].unit} a year` : `${p.posts} ${PRODUCTS[product].unit} a month`,
+        description: cycle === "yearly" ? `${limitOf(product, plan, cycle, extra)} ${PRODUCTS[product].unit} a year` : `${limitOf(product, plan, cycle, extra)} ${PRODUCTS[product].unit} a month`,
       },
       notes: { xd: tag },
     },
@@ -60,10 +61,10 @@ async function planId(product: ProductKey, plan: PlanKey, cycle: Cycle = "monthl
   return made.id
 }
 
-export async function createSubscription(product: ProductKey, plan: PlanKey, email: string, cycle: Cycle = "monthly"): Promise<{ id: string; shortUrl: string }> {
+export async function createSubscription(product: ProductKey, plan: PlanKey, email: string, cycle: Cycle = "monthly", extra = 0): Promise<{ id: string; shortUrl: string }> {
   const s = await rp<{ id: string; short_url: string }>("/subscriptions", {
     method: "POST",
-    body: { plan_id: await planId(product, plan, cycle), total_count: cycle === "yearly" ? 10 : 120, quantity: 1, customer_notify: 1, notes: { email, product, plan, cycle } },
+    body: { plan_id: await planId(product, plan, cycle, extra), total_count: cycle === "yearly" ? 10 : 120, quantity: 1, customer_notify: 1, notes: { email, product, plan, cycle, extra: String(extra) } },
   })
   return { id: s.id, shortUrl: s.short_url }
 }

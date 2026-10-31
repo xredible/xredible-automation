@@ -3,9 +3,9 @@
 // Shared pieces of the customer dashboard: styles, notices, and the plan / payment card
 // used by every Autopilot tool.
 
-import { useEffect, useState, type ReactNode } from "react"
+import { useEffect, useRef, useState, type ReactNode } from "react"
 import { useInApp } from "@/lib/dashboard/app-mode"
-import { isFree, lapsed, limitOf, pendingUpi, priceOf, PRODUCTS, remaining, rupees, type Cycle, type PlanKey, type ProductKey, type Subscription } from "@/lib/autopilot/products"
+import { canHaveExtra, EXTRA_LABEL, extraText, isFree, lapsed, limitOf, MAX_EXTRA, pendingUpi, priceOf, PRODUCTS, remaining, rupees, type Cycle, type PlanKey, type ProductKey, type Subscription } from "@/lib/autopilot/products"
 
 export type Upi = { id: string; plans: { key: PlanKey; link: string; qr: string }[] }
 export type PlanState = { sub: Subscription; ready: { payments: boolean; razorpayKey: string; upi: Upi | null } }
@@ -42,6 +42,20 @@ export function PlanCard({ product, s, onChanged }: { product: ProductKey; s: Pl
   const [upiPlan, setUpiPlan] = useState<PlanKey | null>(null)
   const [cycle, setCycle] = useState<Cycle>(sub.cycle === "yearly" ? "yearly" : "monthly")
   const [changing, setChanging] = useState(false)
+  // Extra profiles on top of the plan (LinkedIn profiles, Facebook Pages, WordPress sites).
+  const [extra, setExtra] = useState(sub.extra || 0)
+  const box = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    // "Add an extra profile to my plan" (the More profiles card) opens the plan picker here with one more.
+    const open = (e: Event) => {
+      if ((e as CustomEvent<{ product: string }>).detail?.product !== product) return
+      setChanging(true)
+      setExtra((n) => Math.min(MAX_EXTRA, Math.max(n, (sub.extra || 0) + 1)))
+      box.current?.scrollIntoView({ behavior: "smooth", block: "start" })
+    }
+    window.addEventListener("xd-add-profile", open)
+    return () => window.removeEventListener("xd-add-profile", open)
+  }, [product, sub.extra])
   const left = remaining(sub)
   const trial = sub.status === "trial"
   const active = sub.status === "active" && !lapsed(sub)
@@ -54,7 +68,7 @@ export function PlanCard({ product, s, onChanged }: { product: ProductKey; s: Pl
     setBusy(plan)
     setMsg(null)
     try {
-      const r = await fetch("/dashboard/billing", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ op: "subscribe", product, plan, cycle }) })
+      const r = await fetch("/dashboard/billing", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ op: "subscribe", product, plan, cycle, extra }) })
       const j = (await r.json()) as { ok: boolean; error?: string; subscriptionId?: string; key?: string; name?: string; email?: string }
       if (!j.ok || !j.subscriptionId) throw new Error(j.error || "Could not start checkout.")
       await loadRazorpay()
@@ -63,7 +77,7 @@ export function PlanCard({ product, s, onChanged }: { product: ProductKey; s: Pl
         key: j.key,
         subscription_id: j.subscriptionId,
         name: "Xredible",
-        description: `${p.name} ${plan === "pro" ? "Pro" : "Starter"} (${cycle})`,
+        description: `${p.name} ${plan === "pro" ? "Pro" : "Starter"} (${cycle})${extra ? ` ${extraText(product, extra)}` : ""}`,
         prefill: { name: j.name, email: j.email },
         theme: { color: "#10203f" },
         handler: async (resp: Record<string, string>) => {
@@ -94,11 +108,12 @@ export function PlanCard({ product, s, onChanged }: { product: ProductKey; s: Pl
 
   const planName = (k: string) => (k === "pro" ? "Pro" : "Starter")
   return (
-    <div className={card}>
+    <div className={card} ref={box}>
       <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
         <div>
           <div className={small}>Plan</div>
           <div className="text-base font-semibold">{free ? "Pro · free access" : trial ? "Free trial" : `${planName(sub.plan)}${sub.cycle === "yearly" ? " · yearly" : ""} · ${active ? "active" : lapsed(sub) ? "ended" : sub.status}`}</div>
+          {!trial && sub.extra ? <div className="text-[12.5px] text-[var(--muted)]">{extraText(product, sub.extra)}</div> : null}
         </div>
         <div>
           <div className={small}>{trial ? `Free ${p.unit} left` : `${p.unit[0].toUpperCase() + p.unit.slice(1)} left this ${free ? "month" : sub.cycle === "yearly" ? "year" : "period"}`}</div>
@@ -131,7 +146,7 @@ export function PlanCard({ product, s, onChanged }: { product: ProductKey; s: Pl
       {pend ? (
         <div className="mt-3">
           <Notice tone="info">
-            We got your UPI payment{pend.amount ? ` of ${rupees(pend.amount)}` : ""} (UTR {pend.utr}). We&rsquo;ll switch on {planName(pend.plan)} {pend.cycle === "yearly" ? "(yearly)" : ""} after checking it, usually within a few hours, and email your receipt.
+            We got your UPI payment{pend.amount ? ` of ${rupees(pend.amount)}` : ""} (UTR {pend.utr}). We&rsquo;ll switch on {planName(pend.plan)} {pend.cycle === "yearly" ? "(yearly)" : ""}{pend.extra ? ` ${extraText(product, pend.extra)}` : ""} after checking it, usually within a few hours, and email your receipt.
           </Notice>
         </div>
       ) : null}
@@ -146,15 +161,32 @@ export function PlanCard({ product, s, onChanged }: { product: ProductKey; s: Pl
               ))}
             </div>
             {changing ? (
-              <button type="button" className="text-[13px] text-[var(--muted)] underline" onClick={() => { setChanging(false); setUpiPlan(null) }}>
+              <button type="button" className="text-[13px] text-[var(--muted)] underline" onClick={() => { setChanging(false); setUpiPlan(null); setExtra(sub.extra || 0) }}>
                 Keep my current plan
               </button>
             ) : null}
           </div>
+          {canHaveExtra(product) ? (
+            <div className="mt-3 flex flex-wrap items-center gap-3 rounded-xl border border-[var(--line)] px-3 py-2.5">
+              <div className="min-w-0 flex-1 text-sm">
+                <b>Extra {EXTRA_LABEL[product].many}</b>
+                <div className="text-[12.5px] text-[var(--muted)]">Post to more than one {EXTRA_LABEL[product].one} from this brand. Each extra one is half the plan price and adds the plan&rsquo;s full {p.unit}.</div>
+              </div>
+              <div className="inline-flex items-center rounded-lg border border-[var(--line)]" role="group" aria-label={`Extra ${EXTRA_LABEL[product].many}`}>
+                <button type="button" className="px-3 py-1.5 text-base disabled:opacity-40" disabled={extra <= 0} onClick={() => { setExtra(extra - 1); setUpiPlan(null) }} aria-label="One fewer">
+                  −
+                </button>
+                <span className="min-w-8 px-1 text-center text-sm font-semibold tabular-nums" aria-live="polite">{extra}</span>
+                <button type="button" className="px-3 py-1.5 text-base disabled:opacity-40" disabled={extra >= MAX_EXTRA} onClick={() => { setExtra(extra + 1); setUpiPlan(null) }} aria-label="One more">
+                  +
+                </button>
+              </div>
+            </div>
+          ) : null}
           <div className="mt-3 grid gap-3 sm:grid-cols-2">
             {p.plans.map((pl) => {
-              const price = priceOf(product, pl.key, cycle)
-              const current = active && sub.plan === pl.key && sub.cycle === cycle
+              const price = priceOf(product, pl.key, cycle, extra)
+              const current = active && sub.plan === pl.key && sub.cycle === cycle && (sub.extra || 0) === extra
               return (
                 <div key={pl.key} className={`rounded-xl border p-4 ${current ? "border-[var(--brand)]" : "border-[var(--line)]"}`}>
                   <div className="flex items-baseline justify-between gap-2">
@@ -168,8 +200,9 @@ export function PlanCard({ product, s, onChanged }: { product: ProductKey; s: Pl
                     </div>
                   </div>
                   <div className="mt-1 text-sm text-[var(--muted)]">
-                    {cycle === "yearly" ? `${limitOf(product, pl.key, cycle)} ${p.unit} a year · ${rupees(Math.round(price / 12 / 100) * 100)}/month` : `${pl.posts} ${p.unit} a month · ${pl.blurb}`}
+                    {cycle === "yearly" ? `${limitOf(product, pl.key, cycle, extra)} ${p.unit} a year · ${rupees(Math.round(price / 12 / 100) * 100)}/month` : `${limitOf(product, pl.key, cycle, extra)} ${p.unit} a month · ${extra ? `${1 + extra} ${EXTRA_LABEL[product].many}` : pl.blurb}`}
                   </div>
+                  {extra ? <div className="mt-0.5 text-[12px] text-[var(--faint)]">{rupees(priceOf(product, pl.key, cycle))} plan + {extra} × {rupees((priceOf(product, pl.key, cycle, 1) - priceOf(product, pl.key, cycle)))}</div> : null}
                   {s.ready.payments ? (
                     <button type="button" className={primary + " mt-3 w-full"} disabled={busy !== null} onClick={() => subscribe(pl.key)}>
                       {busy === pl.key ? "Opening checkout…" : `Pay by card · ${pl.name}`}
@@ -184,7 +217,7 @@ export function PlanCard({ product, s, onChanged }: { product: ProductKey; s: Pl
               )
             })}
             {upiPlan && s.ready.upi ? (
-              <UpiPay key={upiPlan + cycle} product={product} plan={upiPlan} cycle={cycle} onDone={(t) => { setMsg({ tone: "good", text: t }); setUpiPlan(null); setChanging(false); onChanged() }} />
+              <UpiPay key={upiPlan + cycle + extra} product={product} plan={upiPlan} cycle={cycle} extra={extra} onDone={(t) => { setMsg({ tone: "good", text: t }); setUpiPlan(null); setChanging(false); onChanged() }} />
             ) : null}
             {!s.ready.payments && !s.ready.upi ? <div className="text-xs text-[var(--faint)] sm:col-span-2">Payments are being switched on. Your free trial works meanwhile.</div> : null}
             {active || sub.plan !== "trial" ? <div className="text-xs text-[var(--faint)] sm:col-span-2">Paying again for the same plan adds to your current period. A different plan starts on the day it&rsquo;s activated. UPI plans don&rsquo;t renew by themselves; we email you 3 days before they end.</div> : null}
@@ -200,7 +233,7 @@ const renewSoon = (s: Subscription) => !isFree(s) && s.status === "active" && !s
 
 type Quote = { amount: number; full: number; couponError: string | null; percent: number; upi: { id: string; link: string; qr: string } | null }
 
-function UpiPay({ product, plan, cycle, onDone }: { product: ProductKey; plan: PlanKey; cycle: Cycle; onDone: (msg: string) => void }) {
+function UpiPay({ product, plan, cycle, extra, onDone }: { product: ProductKey; plan: PlanKey; cycle: Cycle; extra: number; onDone: (msg: string) => void }) {
   const p = PRODUCTS[product].plans.find((x) => x.key === plan)!
   const [coupon, setCoupon] = useState("")
   const [applied, setApplied] = useState("")
@@ -210,7 +243,7 @@ function UpiPay({ product, plan, cycle, onDone }: { product: ProductKey; plan: P
   const [err, setErr] = useState<string | null>(null)
   useEffect(() => {
     let alive = true
-    fetch("/dashboard/billing", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ op: "quote", product, plan, cycle, coupon: applied }) })
+    fetch("/dashboard/billing", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ op: "quote", product, plan, cycle, coupon: applied, extra }) })
       .then((r) => r.json())
       .then((j: Quote & { ok: boolean; error?: string }) => {
         if (!alive) return
@@ -221,12 +254,12 @@ function UpiPay({ product, plan, cycle, onDone }: { product: ProductKey; plan: P
     return () => {
       alive = false
     }
-  }, [product, plan, cycle, applied])
-  const amount = q ? q.amount : priceOf(product, plan, cycle)
+  }, [product, plan, cycle, applied, extra])
+  const amount = q ? q.amount : priceOf(product, plan, cycle, extra)
   return (
     <div className="rounded-xl border border-[var(--brand)] p-4 sm:col-span-2">
       <div className="font-semibold">
-        Pay {rupees(amount)} for {p.name} ({cycle}) by UPI
+        Pay {rupees(amount)} for {p.name} ({cycle}){extra ? ` ${extraText(product, extra)}` : ""} by UPI
         {q && q.amount < q.full ? <span className="ml-2 text-sm font-normal text-[var(--good)]">{q.percent}% off · was {rupees(q.full)}</span> : null}
       </div>
       <form
@@ -269,7 +302,7 @@ function UpiPay({ product, plan, cycle, onDone }: { product: ProductKey; plan: P
           setBusy(true)
           setErr(null)
           try {
-            const r = await fetch("/dashboard/billing", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ op: "upi", product, plan, cycle, coupon: applied, utr }) })
+            const r = await fetch("/dashboard/billing", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ op: "upi", product, plan, cycle, coupon: applied, utr, extra }) })
             const j = (await r.json()) as { ok: boolean; error?: string }
             if (j.ok) onDone("Thanks! We'll switch on your plan after checking the payment, usually within a few hours, and email your receipt.")
             else setErr(j.error || "That didn't work.")
