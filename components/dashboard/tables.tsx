@@ -9,6 +9,7 @@ import type { Column, DataTable, Items, Row } from "@/lib/dashboard/types"
 import { countryName, dateTime, download, flag, fmt, prettyLabel, toCsv } from "./format"
 import { Card } from "./ui"
 import { ShareBar } from "./charts"
+import { DocViewer } from "./doc-viewer"
 
 const label = (t: DataTable, r: Row, c: Column) => {
   const raw = r[c.key]
@@ -51,6 +52,7 @@ export function ReportTable({ t, onFilter }: { t: DataTable; onFilter?: (key: st
   const [sort, setSort] = useState<{ key: string; dir: 1 | -1 } | null>(null)
   const [q, setQ] = useState("")
   const [all, setAll] = useState(false)
+  const [open, setOpen] = useState<Row | null>(null)
   const rows = useMemo(() => {
     let r = t.rows.filter((x) => !q || String(x[first.key] ?? "").toLowerCase().includes(q.toLowerCase()) || String(x[first.sub || ""] ?? "").toLowerCase().includes(q.toLowerCase()))
     if (sort) r = [...r].sort((a, b) => (Number(a[sort.key] ?? -Infinity) - Number(b[sort.key] ?? -Infinity) || String(a[sort.key]).localeCompare(String(b[sort.key]))) * sort.dir)
@@ -122,7 +124,11 @@ export function ReportTable({ t, onFilter }: { t: DataTable; onFilter?: (key: st
                         {first.thumb && r[first.thumb] ? <img onError={(e) => { e.currentTarget.style.visibility = "hidden" }} src={String(r[first.thumb])} alt="" loading="lazy" referrerPolicy="no-referrer" className="h-8 w-12 shrink-0 rounded object-cover" /> : null}
                         <span className="min-w-0">
                           <span className="flex items-center gap-1.5">
-                            {href ? (
+                            {first.doc && r[first.doc] ? (
+                              <button type="button" onClick={() => setOpen(r)} className="truncate text-left font-medium text-[var(--brand)] hover:underline" title={`Read: ${name}`}>
+                                {name || "(not set)"}
+                              </button>
+                            ) : href ? (
                               <a href={href} target="_blank" rel="noreferrer" className="truncate text-[var(--ink)] hover:underline" title={name}>
                                 {name || "(not set)"}
                               </a>
@@ -169,6 +175,7 @@ export function ReportTable({ t, onFilter }: { t: DataTable; onFilter?: (key: st
       ) : (
         <div className="h-2" />
       )}
+      {open && first.doc ? <DocViewer title={label(t, open, first)} subtitle={first.sub ? String(open[first.sub] || "") : ""} html={String(open[first.doc] || "")} onClose={() => setOpen(null)} /> : null}
     </Card>
   )
 }
