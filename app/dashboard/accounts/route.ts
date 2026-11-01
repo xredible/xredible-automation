@@ -89,6 +89,11 @@ export async function POST(request: Request) {
     if (typeof b.name === "string" && b.name.trim()) next.name = b.name.trim().slice(0, 80)
     if (role) next.role = role
     if (businesses) next.businesses = businesses
+    // A self sign-up customer only ever sees their own automations; giving them a business makes them a member.
+    if (next.role === "customer" && next.businesses.some((x) => x !== "autopilot")) {
+      next.role = "member"
+      if (!next.businesses.includes("autopilot")) next.businesses = [...next.businesses, "autopilot"]
+    }
     if (typeof b.active === "boolean") next.active = b.active
     if ((self || lastAdmin) && (next.role !== "admin" || !next.active)) return json({ ok: false, error: self ? "You can't remove your own admin access." : "Keep at least one active admin." }, 400)
     if (next.role === "member" && !next.businesses.length) return json({ ok: false, error: "Pick at least one business." }, 400)

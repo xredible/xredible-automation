@@ -12,7 +12,7 @@ import { changeMyPassword, type FormState } from "@/app/dashboard/actions"
 
 export type Me = { name: string; email: string; role: "admin" | "member" | "customer" }
 
-type Account = { email: string; name: string; role: "admin" | "member"; businesses: BusinessKey[]; active: boolean; lastLogin: string | null; free?: boolean }
+type Account = { email: string; name: string; role: "admin" | "member" | "customer"; businesses: BusinessKey[]; active: boolean; lastLogin: string | null; free?: boolean }
 
 const field = "mt-1 w-full rounded-lg border border-[var(--line)] bg-[var(--panel)] px-3 py-2 text-sm text-[var(--ink)] outline-none focus:border-[var(--brand)]"
 const small = "text-[12px] font-medium text-[var(--muted)]"
@@ -263,8 +263,16 @@ function NewAccount({ onDone }: { onDone: (saved: boolean) => void }) {
 
 function EditAccount({ a, self, onSaved }: { a: Account; self: boolean; onSaved: () => void }) {
   const [name, setName] = useState(a.name)
-  const [role, setRole] = useState(a.role)
-  const [biz, setBiz] = useState<BusinessKey[]>(a.businesses)
+  // A self sign-up Autopilot customer sees only their own automations. Ticking a business turns them
+  // into a member (keeping their own automations), so the change actually gives them that business.
+  const [role, setRole] = useState<Account["role"]>(a.role)
+  const [biz, setBizRaw] = useState<BusinessKey[]>(a.role === "customer" ? (a.businesses.length ? a.businesses : ["autopilot"]) : a.businesses)
+  const setBiz = (v: BusinessKey[]) => {
+    if (role === "customer" && v.some((k) => k !== "autopilot")) {
+      setRole("member")
+      setBizRaw(v.includes("autopilot") ? v : [...v, "autopilot"])
+    } else setBizRaw(v)
+  }
   const [active, setActive] = useState(a.active)
   const [pw, setPw] = useState("")
   const [confirmDelete, setConfirmDelete] = useState(false)
@@ -286,10 +294,12 @@ function EditAccount({ a, self, onSaved }: { a: Account; self: boolean; onSaved:
         </label>
         <label className="block">
           <span className={small}>Role</span>
-          <select value={role} disabled={self} onChange={(e) => setRole(e.target.value as "member" | "admin")} className={field}>
+          <select value={role} disabled={self} onChange={(e) => setRole(e.target.value as Account["role"])} className={field}>
+            {a.role === "customer" ? <option value="customer">Customer: only their own automations</option> : null}
             <option value="member">Member</option>
             <option value="admin">Admin</option>
           </select>
+          {role === "customer" ? <span className="mt-1 block text-[12px] text-[var(--muted)]">Signed up for Autopilot themselves. Tick a business below to make them a member who can see it.</span> : null}
         </label>
       </div>
       <div className="mt-3">
