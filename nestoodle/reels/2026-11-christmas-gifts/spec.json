@@ -1,0 +1,71 @@
+{
+ "fps": 30,
+ "logo": "logo-small.png",
+ "scenes": [
+  {
+   "kind": "hook",
+   "chip": "15 gift ideas",
+   "headline": "Christmas gifts kids can make <em>themselves</em> 🎁",
+   "text": "Need a Christmas gift your kids can actually make themselves? Here are four that grandparents love.",
+   "vo": "vo/hook.wav",
+   "images": [
+    "christmas-crafts-for-kids-to-make-as-gifts-2.webp",
+    "christmas-crafts-for-kids-to-make-as-gifts-5.webp",
+    "christmas-crafts-for-kids-to-make-as-gifts-10.webp",
+    "christmas-crafts-for-kids-to-make-as-gifts-15.webp"
+   ]
+  },
+  {
+   "kind": "item",
+   "n": 1,
+   "image": "christmas-crafts-for-kids-to-make-as-gifts-2.webp",
+   "title": "Salt Dough Ornaments",
+   "text": "Mix flour, salt and water, cut out stars, bake, then paint.",
+   "vo": "vo/dough.wav"
+  },
+  {
+   "kind": "item",
+   "n": 2,
+   "image": "christmas-crafts-for-kids-to-make-as-gifts-5.webp",
+   "title": "Fingerprint Light Mugs",
+   "text": "Draw a loopy string, then press painted fingertips along it as the bulbs.",
+   "vo": "vo/mug.wav"
+  },
+  {
+   "kind": "item",
+   "n": 3,
+   "image": "christmas-crafts-for-kids-to-make-as-gifts-10.webp",
+   "title": "Hot Cocoa Jar",
+   "text": "Layer cocoa, sugar, chocolate chips and mini marshmallows, then add a tag.",
+   "vo": "vo/cocoa.wav"
+  },
+  {
+   "kind": "item",
+   "n": 4,
+   "image": "christmas-crafts-for-kids-to-make-as-gifts-15.webp",
+   "title": "Pom-Pom Gnomes",
+   "text": "A pom-pom beard, a bead nose, and a little felt hat.",
+   "vo": "vo/gnome.wav"
+  },
+  {
+   "kind": "printable",
+   "subtitle": "Gift craft cards + gift tags",
+   "pages": [
+    "page-1.png",
+    "page-2.png",
+    "page-4.png"
+   ],
+   "text": "Free printable gift craft cards for all 15 gifts, plus cut-out gift tags.",
+   "vo": "vo/printable.wav"
+  },
+  {
+   "kind": "cta",
+   "keyword": "GIFT",
+   "sub": "and we'll DM you the<br>free printable link 🎁",
+   "text": "Comment GIFT",
+   "caption": false,
+   "vo": "vo/cta.wav",
+   "tail": 2.2
+  }
+ ]
+}
