@@ -12,7 +12,7 @@ npx playwright install --with-deps chromium
 node render.mjs /absolute/work/spec.json /absolute/work/reel.mp4
 ```
 
-The work folder contains `reel.html`, `assets/`, local scene images, and local WAV voice clips. Scene types are `hook`, `item`, and `cta`. Each has `text`, `headline`/`title`, `image`, and `vo`. Timing comes from the actual voice duration. No third-party music is added.
+The work folder contains `reel.html`, `assets/`, local scene images, and local WAV voice clips. Scene types are `hook`, `item`, and `cta`. Each has `text`, `headline`/`title`, `image`, and `vo`. Timing comes from the actual voice duration. Every render includes an original, locally synthesized soft instrumental bed with fade-in/out. Narration is normalized and the music automatically ducks under speech. No downloaded track or external music service is required. Existing narration WAVs must be regenerated after a speech-text correction; mixing cannot remove words already spoken in old clips.
 
 ## Automatic worker
 
