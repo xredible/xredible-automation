@@ -1,0 +1,59 @@
+name: Nestoodle reels
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - tools/reels/**
+      - .github/workflows/nestoodle-reels.yml
+  schedule:
+    - cron: '17,47 * * * *'
+concurrency:
+  group: nestoodle-reel-renderer
+  cancel-in-progress: false
+permissions:
+  contents: read
+jobs:
+  render:
+    # Disabled until authenticated endpoints and first-run review are verified.
+    if: github.event_name != 'pull_request' && vars.NESTOODLE_REELS_ENABLED == 'true'
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: tools/reels/package-lock.json
+      - run: npm ci --prefix tools/reels
+      - run: npx --prefix tools/reels playwright install --with-deps chromium
+      - run: sudo apt-get update && sudo apt-get install -y ffmpeg
+      - run: node tools/reels/job.mjs
+        env:
+          N8N_REELS_SECRET: ${{ secrets.N8N_REELS_SECRET }}
+
+  smoke:
+    if: github.event_name != 'schedule'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: tools/reels/package-lock.json
+      - run: npm ci --prefix tools/reels
+      - run: npx --prefix tools/reels playwright install --with-deps chromium
+      - run: sudo apt-get update && sudo apt-get install -y ffmpeg
+      - run: node --check tools/reels/job.mjs && node --check tools/reels/render.mjs
+      - run: node tools/reels/smoke.mjs /tmp/reel-smoke
+      - uses: actions/upload-artifact@v4
+        with:
+          name: renderer-smoke
+          path: |
+            /tmp/reel-smoke/reel.mp4
+            /tmp/reel-smoke/cover.jpg
+            /tmp/reel-smoke/render-info.json
