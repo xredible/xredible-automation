@@ -49,6 +49,7 @@ jobs:
       - run: npx --prefix tools/reels playwright install --with-deps chromium
       - run: sudo apt-get update && sudo apt-get install -y ffmpeg
       - run: node --check tools/reels/job.mjs && node --check tools/reels/render.mjs
+      - run: node --test tools/reels/*.test.mjs
       - run: node tools/reels/smoke.mjs /tmp/reel-smoke
       - uses: actions/upload-artifact@v4
         with:

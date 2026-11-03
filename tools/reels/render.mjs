@@ -1,5 +1,6 @@
 // node render.mjs <work-dir>/spec.json <output.mp4>. Local assets only.
 import fs from 'node:fs';
+import {mixAudio} from './audio.mjs';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { createRequire } from 'node:module';
@@ -24,9 +25,6 @@ const finished=new Promise((resolve,reject)=>{ff.on('error',reject);ff.on('close
 for(let f=0;f<Math.ceil(total*fps);f++){await page.evaluate(t=>window.renderAt(t),f/fps);const buf=await page.screenshot({type:'jpeg',quality:88});if(!ff.stdin.write(buf))await new Promise((resolve,reject)=>{const cleanup=()=>{ff.stdin.off('drain',drain);ff.stdin.off('error',fail)};const drain=()=>{cleanup();resolve()};const fail=error=>{cleanup();reject(error)};ff.stdin.once('drain',drain);ff.stdin.once('error',fail)});}
 ff.stdin.end();await finished;
 await page.evaluate(()=>{window.renderAt(1.6);document.querySelectorAll('.caption,.progress').forEach(el=>el.style.visibility='hidden')});await page.screenshot({path:path.join(path.dirname(outPath),'cover.jpg'),type:'jpeg',quality:92});
-const inputs=[],filters=[],labels=[];let offset=0,index=1;
-for(const s of spec.scenes){if(s.vo){inputs.push('-i',local(s.vo));filters.push(`[${index}:a]aresample=48000,adelay=${Math.round((offset+.15)*1000)}:all=1[a${index}]`);labels.push(`[a${index}]`);index++;}offset+=s.dur;}
-if(labels.length){filters.push(`${labels.join('')}amix=inputs=${labels.length}:normalize=0,apad,alimiter=limit=0.95[mix]`);execFileSync('ffmpeg',['-y','-loglevel','error','-i',silent,...inputs,'-filter_complex',filters.join(';'),'-map','0:v','-map','[mix]','-c:v','copy','-c:a','aac','-b:a','192k','-t',String(total),'-movflags','+faststart',outPath]);}
-else execFileSync('ffmpeg',['-y','-loglevel','error','-i',silent,'-f','lavfi','-i','anullsrc=r=48000:cl=mono','-c:v','copy','-c:a','aac','-t',String(total),'-movflags','+faststart',outPath]);
+mixAudio(silent, spec.scenes, total, outPath, local);
 fs.writeFileSync(path.join(path.dirname(outPath),'render-info.json'),JSON.stringify({seconds:probe(outPath),width:1080,height:1920,fps}));
 }finally{await browser?.close();if(fs.existsSync(silent))fs.unlinkSync(silent);}
