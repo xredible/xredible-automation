@@ -12,7 +12,7 @@ text='@ElevatingCHRIST'
 d.text(((1080-d.textlength(text,font=font))/2,445),text,font=font,fill=(89,94,104,255))
 im.save('/tmp/bilingual-panel.png')
 PY
-ffmpeg -v error -i "$dir/reel.mp4" -loop 1 -i /tmp/bilingual-panel.png -filter_complex "[0:v][1:v]overlay=0:1360:shortest=1,ass=$dir/subtitles-bilingual-v1.ass[v]" -map "[v]" -map 0:a:0 -c:v libx264 -preset medium -crf 20 -pix_fmt yuv420p -c:a copy -movflags +faststart -shortest "$dir/reel-bilingual-v1.mp4"
+ffmpeg -v error -i "$dir/reel.mp4" -loop 1 -i /tmp/bilingual-panel.png -filter_complex "[0:v][1:v]overlay=0:1360:shortest=1,ass=$dir/subtitles-bilingual-v1.ass[v]" -map "[v]" -map 0:a:0 -c:v libx264 -preset medium -crf 20 -pix_fmt yuv420p -c:a copy -movflags +faststart "$dir/reel-bilingual-v1.mp4"
 ffmpeg -v error -xerror -i "$dir/reel-bilingual-v1.mp4" -f null -
 ffmpeg -v error -i "$dir/reel.mp4" -map 0:a:0 -c:a copy -f hash -hash md5 /tmp/source-audio.md5
 ffmpeg -v error -i "$dir/reel-bilingual-v1.mp4" -map 0:a:0 -c:a copy -f hash -hash md5 /tmp/output-audio.md5
