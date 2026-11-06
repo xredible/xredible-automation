@@ -22,8 +22,8 @@ jobs:
           ffprobe -v error -show_entries format=duration:stream=codec_name,width,height -of json elevating-christ/sermon-clips/2026-11-06-buddhi-vishwas/reel.mp4
           ffmpeg -v error -xerror -i elevating-christ/sermon-clips/2026-11-06-buddhi-vishwas/reel.mp4 -f null -
           echo FULL_DECODE_PASSED
-          ffmpeg -v error -ss 1 -i elevating-christ/sermon-clips/2026-11-06-buddhi-vishwas/reel.mp4 -frames:v 1 -q:v 2 elevating-christ/sermon-clips/2026-11-06-buddhi-vishwas/cover.jpg
-          ffmpeg -v error -i elevating-christ/sermon-clips/2026-11-06-buddhi-vishwas/cover.jpg -vf scale=270:-1 -frames:v 1 /tmp/ec-cover-preview.jpg
+          ffmpeg -y -v error -ss 10 -i elevating-christ/sermon-clips/2026-11-06-buddhi-vishwas/reel.mp4 -frames:v 1 -q:v 2 elevating-christ/sermon-clips/2026-11-06-buddhi-vishwas/cover.jpg
+          ffmpeg -y -v error -i elevating-christ/sermon-clips/2026-11-06-buddhi-vishwas/reel.mp4 -vf "fps=1/5,scale=270:-1,tile=5x1" -frames:v 1 /tmp/ec-cover-preview.jpg
           echo COVER_PREVIEW_BEGIN
           base64 -w0 /tmp/ec-cover-preview.jpg
           echo
