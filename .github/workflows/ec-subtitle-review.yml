@@ -4,20 +4,15 @@ on:
     branches: [media]
     paths: ['.github/workflows/ec-subtitle-review.yml']
 permissions:
-  contents: read
+  contents: write
 jobs:
-  review:
+  render:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with: {ref: media}
-      - name: Inspect source audio and caption timing
+      - name: Render proofread Hindi and English subtitles
         run: |
-          set -euo pipefail
           sudo apt-get update -qq
-          sudo apt-get install -y -qq ffmpeg
-          ffmpeg -v error -i elevating-christ/sermon-clips/2026-11-06-buddhi-vishwas/reel.mp4 -vn -ac 1 -ar 22050 -b:a 40k /tmp/sermon-review.mp3
-          echo AUDIO_BEGIN
-          base64 -w0 /tmp/sermon-review.mp3
-          echo
-          echo AUDIO_END
+          sudo apt-get install -y -qq ffmpeg fonts-noto-core python3-pil
+          bash elevating-christ/sermon-clips/2026-11-06-buddhi-vishwas/render-bilingual-v1.sh
