@@ -17,4 +17,4 @@ jobs:
           sudo apt-get install -y -qq ffmpeg fonts-noto-core python3-pil
           bash elevating-christ/sermon-clips/2026-11-06-buddhi-vishwas/render-bilingual-v1.sh
 
-# Preserve all source audio packets, including the final AAC frame.
+# Final mobile legibility pass: larger Hindi and English captions.

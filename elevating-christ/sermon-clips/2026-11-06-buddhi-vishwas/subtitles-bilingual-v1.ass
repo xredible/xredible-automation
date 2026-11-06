@@ -7,15 +7,15 @@ ScaledBorderAndShadow: yes
 
 [V4+ Styles]
 Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
-Style: Hindi,Noto Sans Devanagari,55,&H00182711,&H00182711,&H00E7F0FA,&H00000000,0,0,0,0,100,100,0,0,1,0,0,5,90,110,0,1
-Style: English,Noto Sans,43,&H00236989,&H00236989,&H00E7F0FA,&H00000000,0,0,0,0,100,100,0,0,1,0,0,5,90,110,0,1
+Style: Hindi,Noto Sans Devanagari,70,&H00182711,&H00182711,&H00E7F0FA,&H00000000,0,0,0,0,100,100,0,0,1,0,0,5,90,110,0,1
+Style: English,Noto Sans,54,&H00236989,&H00236989,&H00E7F0FA,&H00000000,0,0,0,0,100,100,0,0,1,0,0,5,90,110,0,1
 
 [Events]
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
 Dialogue: 0,0:00:00.10,0:00:01.12,Hindi,,0,0,0,,{\pos(525,1505)}उन्होंने क्या किया?
 Dialogue: 0,0:00:00.10,0:00:01.12,English,,0,0,0,,{\pos(525,1650)}What did they do?
 Dialogue: 0,0:00:01.16,0:00:02.55,Hindi,,0,0,0,,{\pos(525,1505)}उन्होंने दिमाग नहीं लगाया।
-Dialogue: 0,0:00:01.16,0:00:02.55,English,,0,0,0,,{\pos(525,1650)}They did not rely on their reasoning.
+Dialogue: 0,0:00:01.16,0:00:02.55,English,,0,0,0,,{\pos(525,1650)}They did not rely\Non their reasoning.
 Dialogue: 0,0:00:02.55,0:00:03.65,Hindi,,0,0,0,,{\pos(525,1505)}यह जो दिमाग है ना,
 Dialogue: 0,0:00:02.55,0:00:03.65,English,,0,0,0,,{\pos(525,1650)}This mind of yours
 Dialogue: 0,0:00:03.65,0:00:06.48,Hindi,,0,0,0,,{\pos(525,1505)}यह तुम्हारे चमत्कार में\Nसबसे बड़ी बाधा है।
@@ -32,7 +32,7 @@ Dialogue: 0,0:00:15.05,0:00:15.95,Hindi,,0,0,0,,{\pos(525,1505)}हालेल�
 Dialogue: 0,0:00:15.05,0:00:15.95,English,,0,0,0,,{\pos(525,1650)}Hallelujah!
 Dialogue: 0,0:00:16.65,0:00:18.65,Hindi,,0,0,0,,{\pos(525,1505)}परमेश्वर के वचन को\Nफॉलो करूँगा।
 Dialogue: 0,0:00:16.65,0:00:18.65,English,,0,0,0,,{\pos(525,1650)}I will follow God's Word.
-Dialogue: 0,0:00:18.65,0:00:21.08,Hindi,,0,0,0,,{\pos(525,1505)}अगर मैं परमेश्वर के वचन को मानूँगा,
+Dialogue: 0,0:00:18.65,0:00:21.08,Hindi,,0,0,0,,{\pos(525,1505)}अगर मैं परमेश्वर के वचन को\Nमानूँगा,
 Dialogue: 0,0:00:18.65,0:00:21.08,English,,0,0,0,,{\pos(525,1650)}If I obey God's Word,
 Dialogue: 0,0:00:21.08,0:00:22.91,Hindi,,0,0,0,,{\pos(525,1505)}तो परमेश्वर अपने वायदों को\Nपूरा करेगा।
 Dialogue: 0,0:00:21.08,0:00:22.91,English,,0,0,0,,{\pos(525,1650)}then God will fulfill\NHis promises.
