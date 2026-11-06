@@ -1,0 +1,37 @@
+name: Prepare November 6 sermon assets
+on:
+  push:
+    branches: [media]
+    paths: ['.github/workflows/ec-nov6-assets.yml']
+permissions:
+  contents: write
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: media
+      - name: Download and verify video
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg
+          mkdir -p elevating-christ/sermon-clips/2026-11-06-buddhi-vishwas
+          curl -fsSL --retry 3 -o elevating-christ/sermon-clips/2026-11-06-buddhi-vishwas/reel.mp4 https://assets.vidiq.com/shorts-creation-prod/clips/454ddad7-09fa-5116-8d3f-5d51edacc4d7.mp4
+          ffprobe -v error -show_entries format=duration:stream=codec_name,width,height -of json elevating-christ/sermon-clips/2026-11-06-buddhi-vishwas/reel.mp4
+          ffmpeg -v error -xerror -i elevating-christ/sermon-clips/2026-11-06-buddhi-vishwas/reel.mp4 -f null -
+          echo FULL_DECODE_PASSED
+          ffmpeg -v error -ss 1 -i elevating-christ/sermon-clips/2026-11-06-buddhi-vishwas/reel.mp4 -frames:v 1 -q:v 2 elevating-christ/sermon-clips/2026-11-06-buddhi-vishwas/cover.jpg
+          ffmpeg -v error -i elevating-christ/sermon-clips/2026-11-06-buddhi-vishwas/cover.jpg -vf scale=270:-1 -frames:v 1 /tmp/ec-cover-preview.jpg
+          echo COVER_PREVIEW_BEGIN
+          base64 -w0 /tmp/ec-cover-preview.jpg
+          echo
+          echo COVER_PREVIEW_END
+      - name: Store prepared assets
+        run: |
+          git config user.name media-bot
+          git config user.email media-bot@users.noreply.github.com
+          git add elevating-christ/sermon-clips/2026-11-06-buddhi-vishwas
+          git commit -m "Prepare verified November 6 sermon clip and cover"
+          git push
