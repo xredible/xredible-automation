@@ -1,12 +1,79 @@
 <!doctype html><html><head><meta charset="utf-8"><style>
+/* Nestoodle explainer reel (Nov 2026). Dark "app UI" look: warm glow, step progress bar, step header,
+   animated card in the middle, running checklist, word-by-word captions with the current word in coral.
+   Spec contract is unchanged: scenes[] of {kind: hook|item|cta, headline, title, text, image, n, dur}. */
 @font-face{font-family:Baloo;src:url(assets/Baloo2-ExtraBold.ttf)}@font-face{font-family:Karla;src:url(assets/Karla-Bold.ttf)}
-*{box-sizing:border-box}html,body{margin:0;width:1080px;height:1920px;overflow:hidden;background:#faf3e7;color:#332b22}#stage{width:1080px;height:1920px;position:relative;font-family:Karla,sans-serif}.scene{position:absolute;inset:0;overflow:hidden}.photo{position:absolute;inset:-60px;background-size:cover;background-position:center}.shade{position:absolute;inset:0;background:linear-gradient(#0005,#0001 50%,#0009)}.title{position:absolute;left:60px;right:60px;top:340px;background:#fffcf6;padding:32px 40px;border-radius:36px;border-bottom:12px solid #3e8fa6;font:78px/1.05 Baloo;color:#332b22}.hook .title{top:600px;background:#e0653cf2;color:white;text-align:center;font-size:94px}.number{position:absolute;top:175px;left:60px;width:130px;height:130px;border-radius:50%;background:#e0653c;color:white;text-align:center;font:90px/140px Baloo}.caption{position:absolute;bottom:420px;left:70px;right:70px;text-align:center;color:white;font:74px/1.1 Baloo;-webkit-text-stroke:3px #000b;paint-order:stroke fill;text-shadow:0 5px 12px #0008}.brand{position:absolute;top:70px;right:55px;display:flex;align-items:center;gap:16px;border-radius:50px;padding:10px 25px 10px 12px;background:#fffcf6ed;font:42px Baloo}.brand img{width:65px;height:65px}.cta{background:#e0653c}.cta .title{top:760px;font-size:86px;text-align:center;color:#e0653c}.cta-logo{position:absolute;top:350px;left:370px;width:340px;height:340px;background:#fffcf6;border-radius:50%;padding:40px}.cta .caption{bottom:380px;font-size:52px}.progress{position:absolute;top:0;left:0;height:12px;background:#3e8fa6}.footer{position:absolute;bottom:230px;width:100%;text-align:center;color:#fff9;font-size:46px}
-</style></head><body><div id="stage"></div><script>
+:root{--bg:#121a24;--card:#1b2532;--line:#2a3646;--coral:#ef7a4f;--coral2:#f7a07c;--teal:#3fb5a0;--cream:#fff4e6;--dim:#8a97a8}
+*{box-sizing:border-box}html,body{margin:0;width:1080px;height:1920px;overflow:hidden;background:var(--bg);color:var(--cream)}
+#stage{width:1080px;height:1920px;position:relative;font-family:Karla,sans-serif;overflow:hidden}
+.glow{position:absolute;left:-200px;right:-200px;top:-520px;height:1200px;background:radial-gradient(closest-side,#ef7a4f55,#ef7a4f18 55%,transparent);pointer-events:none}
+.glow2{position:absolute;left:-300px;right:-300px;bottom:-700px;height:1200px;background:radial-gradient(closest-side,#3a5b8a33,transparent);pointer-events:none}
+.scene{position:absolute;inset:0}
+.kicker{position:absolute;top:170px;width:100%;text-align:center;font:30px Karla;letter-spacing:6px;color:var(--coral)}
+.kicker:before{content:"";display:inline-block;width:16px;height:16px;border-radius:50%;background:var(--coral);margin-right:16px;vertical-align:3px}
+.steps{position:absolute;top:70px;left:50px;right:50px;display:flex;gap:14px}
+.steps .seg{flex:1;min-width:0}
+.steps .bar{height:8px;border-radius:8px;background:var(--line);overflow:hidden}
+.steps .fill{height:100%;width:0;background:var(--coral)}
+.steps .lab{margin-top:12px;font:24px Karla;letter-spacing:2px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.steps .seg.on .lab{color:var(--cream)}.steps .seg.done .lab{color:var(--teal)}
+.head{position:absolute;top:175px;left:60px;right:60px;text-align:center;font:40px Karla;color:var(--cream)}
+.head b{color:var(--coral);letter-spacing:2px;margin-right:14px}
+.hook-title{position:absolute;top:250px;left:60px;right:60px;text-align:center;font:96px/1.05 Baloo;color:#fff}
+.hook-title em{font-style:normal;color:var(--coral)}
+.window{position:absolute;left:90px;right:90px;top:300px;height:820px;border-radius:44px;background:var(--card);border:2px solid var(--line);box-shadow:0 40px 90px #0009;overflow:hidden}
+.window .dots{position:absolute;top:26px;left:32px;display:flex;gap:12px;z-index:2}
+.window .dots i{width:18px;height:18px;border-radius:50%;background:#ef7a4f}.window .dots i:nth-child(2){background:#f2c14e}.window .dots i:nth-child(3){background:#3fb5a0}
+.window .pic{position:absolute;inset:70px 26px 26px;border-radius:28px;background-size:cover;background-position:center}
+.badge{position:absolute;right:66px;top:270px;width:120px;height:120px;border-radius:50%;background:var(--coral);color:#fff;font:76px/124px Baloo;text-align:center;box-shadow:0 0 0 14px #ef7a4f33,0 18px 40px #0008;z-index:3}
+.grid{position:absolute;left:70px;right:70px;top:560px;height:620px;display:grid;grid-template-columns:1fr 1fr;gap:22px}
+.grid div{border-radius:32px;background-size:cover;background-position:center;border:2px solid var(--line)}
+.list{position:absolute;left:90px;right:90px;top:1160px;display:flex;flex-direction:column;gap:14px}
+.row{display:flex;align-items:center;gap:22px;padding:18px 26px;border-radius:24px;background:#1b2532cc;border:2px solid var(--line);font:34px Karla;color:var(--dim)}
+.row .num{font:38px Baloo;color:var(--coral);width:56px}
+.row .chk{margin-left:auto;width:44px;height:44px;border-radius:50%;border:3px solid var(--line);flex:none}
+.row.done{color:var(--cream)}.row.done .chk{background:var(--teal);border-color:var(--teal);box-shadow:inset 0 0 0 9px var(--teal)}
+.row.done .chk:after{content:"";display:block;width:12px;height:22px;border:solid #fff;border-width:0 6px 6px 0;transform:translate(14px,6px) rotate(45deg)}
+.row.now{border-color:var(--coral);color:#fff;background:#2a1f1cdd}
+.cta-title{position:absolute;top:220px;left:60px;right:60px;text-align:center;font:44px Karla;letter-spacing:6px;color:var(--coral)}
+.cta .list{top:330px}
+.pill{position:absolute;left:120px;right:120px;top:1000px;padding:34px;border-radius:40px;background:linear-gradient(90deg,var(--coral),var(--coral2));color:#fff;text-align:center;font:52px/1.15 Baloo;box-shadow:0 24px 60px #ef7a4f55}
+.logo{position:absolute;top:1220px;left:440px;width:200px;height:200px;border-radius:50%;background:var(--cream);padding:26px}
+.caption{position:absolute;bottom:250px;left:60px;right:60px;text-align:center;font:72px/1.15 Baloo;color:#fff;text-shadow:0 6px 18px #000a}
+.caption span{opacity:.35}.caption span.said{opacity:1}.caption span.cur{opacity:1;color:var(--coral)}
+.brand{position:absolute;bottom:120px;width:100%;text-align:center;font:34px Karla;letter-spacing:4px;color:var(--dim)}
+.progress{position:absolute;top:0;left:0;height:8px;background:var(--coral)}
+</style></head><body><div id="stage"><div class="glow"></div><div class="glow2"></div></div><script>
 // All generated copy is assigned via textContent. No LLM text or URL is interpolated into HTML.
-let scenes=[],starts=[],built=false,total=0;
+let scenes=[],starts=[],built=false,total=0,items=[],segs=[];
 const stage=document.getElementById('stage');
 const add=(parent,tag,cls,text)=>{const el=document.createElement(tag);if(cls)el.className=cls;if(text!==undefined)el.textContent=text;parent.appendChild(el);return el};
-const ease=x=>1-Math.pow(1-Math.max(0,Math.min(1,x)),3);
-function build(){const spec=window.SPEC;for(const [i,s] of spec.scenes.entries()){starts.push(total);total+=s.dur;const el=add(stage,'div',`scene ${s.kind}`);if(s.kind!=='cta'){const photo=add(el,'div','photo');photo.style.backgroundImage=`url(${JSON.stringify(s.image||'')})`;add(el,'div','shade');if(s.kind==='item')add(el,'div','number',String(s.n||i));}else{const logo=add(el,'img','cta-logo');logo.src=spec.logo;add(el,'div','footer','nestoodle.com');}add(el,'div','title',s.kind==='hook'?s.headline:s.kind==='cta'?(s.headline||'Full guide at nestoodle.com'):s.title);add(el,'div','caption');const brand=add(el,'div','brand');add(brand,'img').src=spec.logo;add(brand,'span','', 'nestoodle');scenes.push(el);}add(stage,'div','progress');built=true;}
-window.renderAt=t=>{if(!built)build();window.SPEC.scenes.forEach((s,i)=>{const el=scenes[i],time=t-starts[i],visible=time>=0&&time<s.dur;el.style.display=visible?'block':'none';if(!visible)return;const title=el.querySelector('.title');title.style.transform=`translateY(${(1-ease(time/.4))*-60}px)`;const photo=el.querySelector('.photo');if(photo)photo.style.transform=`scale(${1.02+.1*time/s.dur}) translateX(${(i%2?-1:1)*16*time/s.dur}px)`;const words=String(s.text||'').split(/\s+/).filter(Boolean);const group=Math.min(Math.ceil(words.length/3)-1,Math.floor(Math.max(0,time-.15)/Math.max(.3,s.dur-.5)*Math.ceil(words.length/3)));el.querySelector('.caption').textContent=s.caption===false?'':words.slice(group*3,group*3+3).join(' ');});stage.querySelector('.progress').style.width=`${1080*Math.min(1,t/total)}px`;};
+const clamp=x=>Math.max(0,Math.min(1,x));const ease=x=>1-Math.pow(1-clamp(x),3);const pop=x=>{x=clamp(x);return x<1?1-Math.pow(1-x,3)*Math.cos(x*4.2):1};
+const short=t=>String(t||'').split(/\s+/).slice(0,2).join(' ').toUpperCase();
+function list(parent,upto,now){const box=add(parent,'div','list');items.forEach((s,k)=>{const r=add(box,'div','row'+(k<upto?' done':'')+(k===now?' now':''));add(r,'span','num',String(k+1).padStart(2,'0'));add(r,'span','',s.title||s.headline||'');add(r,'span','chk');});return box}
+function build(){const spec=window.SPEC;items=spec.scenes.filter(s=>s.kind==='item');
+  const steps=add(stage,'div','steps');items.forEach((s,k)=>{const seg=add(steps,'div','seg');const bar=add(seg,'div','bar');add(bar,'div','fill');add(seg,'div','lab',String(k+1).padStart(2,'0')+' '+short(s.title));segs.push(seg)});
+  let itemNo=0;for(const [i,s] of spec.scenes.entries()){starts.push(total);total+=s.dur;const el=add(stage,'div',`scene ${s.kind}`);
+    if(s.kind==='hook'){add(el,'div','kicker','NESTOODLE · '+String(spec.kicker||'KIDS ACTIVITIES').toUpperCase());const h=add(el,'div','hook-title');const w=String(s.headline||spec.title||'').split(/\s+/);w.forEach((x,k)=>{const span=add(h,k>=w.length-2?'em':'span','',x);h.appendChild(document.createTextNode(' '))});const g=add(el,'div','grid');const pics=[s.image,...items.map(x=>x.image)].filter(Boolean).slice(0,4);pics.forEach(p=>{add(g,'div').style.backgroundImage=`url(${JSON.stringify(p)})`});}
+    else if(s.kind==='item'){const k=itemNo++;s._k=k;const hd=add(el,'div','head');add(hd,'b','','STEP '+String(k+1).padStart(2,'0'));hd.appendChild(document.createTextNode('·  '+(s.title||'')));const win=add(el,'div','window');const d=add(win,'div','dots');add(d,'i');add(d,'i');add(d,'i');add(win,'div','pic').style.backgroundImage=`url(${JSON.stringify(s.image||'')})`;add(el,'div','badge',String(k+1));const L=list(el,k,k);L.style.display='flex';}
+    else{add(el,'div','cta-title','THE FULL LIST');list(el,items.length,-1);add(el,'div','pill',s.headline||'Full guide + free printable at nestoodle.com');const lg=add(el,'img','logo');lg.src=spec.logo;}
+    add(el,'div','caption');add(el,'div','brand','nestoodle.com');scenes.push(el);}
+  add(stage,'div','progress');built=true;}
+function caption(el,s,time){const cap=el.querySelector('.caption');if(s.caption===false&&s.kind!=='cta'){cap.textContent='';return}
+  const words=String(s.text||'').split(/\s+/).filter(Boolean);if(!words.length){cap.textContent='';return}
+  const speak=Math.max(.6,s.dur-.6),len=words.map(w=>w.length+2),sum=len.reduce((a,b)=>a+b,0);let acc=0,cur=words.length-1;const tt=Math.max(0,time-.1)/speak*sum;
+  for(let k=0;k<words.length;k++){acc+=len[k];if(tt<acc){cur=k;break}}const start=Math.floor(cur/3)*3;cap.textContent='';
+  words.slice(start,start+3).forEach((w,k)=>{const idx=start+k;add(cap,'span',idx<cur?'said':idx===cur?'cur':'',w);cap.appendChild(document.createTextNode(' '))});}
+window.renderAt=t=>{if(!built)build();const spec=window.SPEC;let active=0;
+  spec.scenes.forEach((s,i)=>{const el=scenes[i],time=t-starts[i],visible=time>=0&&time<s.dur;el.style.display=visible?'block':'none';if(!visible)return;active=i;const p=time/s.dur;
+    if(s.kind==='hook'){const h=el.querySelector('.hook-title');h.style.opacity=ease(time/.35);h.style.transform=`translateY(${(1-ease(time/.45))*40}px)`;el.querySelectorAll('.grid div').forEach((g,k)=>{const q=pop((time-.15-k*.18)/.5);g.style.opacity=clamp((time-.15-k*.18)/.25);g.style.transform=`scale(${.6+.4*q}) rotate(${(k%2?1:-1)*(1-q)*6}deg)`});}
+    else if(s.kind==='item'){const w=el.querySelector('.window'),q=pop(time/.55);w.style.transform=`translateY(${(1-q)*120}px) scale(${.9+.1*q})`;w.style.opacity=clamp(time/.3);el.querySelector('.pic').style.transform=`scale(${1.04+.08*p})`;const b=el.querySelector('.badge');b.style.transform=`scale(${pop((time-.35)/.45)})`;
+      const hd=el.querySelector('.head');hd.style.opacity=ease(time/.3);const rows=el.querySelectorAll('.row');rows.forEach((r,k)=>{const d=clamp((time-.25-k*.06)/.3);r.style.opacity=d;r.style.transform=`translateX(${(1-ease(d))*-40}px)`;if(k===s._k){const done=time>s.dur*.72;r.className='row now'+(done?' done':'')}});}
+    else{el.querySelectorAll('.row').forEach((r,k)=>{const d=clamp((time-.2-k*.22)/.3);r.style.opacity=d;r.style.transform=`translateX(${(1-ease(d))*-40}px)`;r.className='row'+(time>.45+k*.22?' done':'')});const pill=el.querySelector('.pill');const pq=pop((time-.4-items.length*.22)/.5);pill.style.transform=`scale(${.7+.3*pq})`;pill.style.opacity=clamp((time-.4-items.length*.22)/.25);const lg=el.querySelector('.logo');lg.style.transform=`scale(${pop((time-.7-items.length*.22)/.5)})`;}
+    caption(el,s,time);});
+  const cur=spec.scenes[active],k=cur.kind==='item'?cur._k:cur.kind==='cta'?items.length:-1;const tIn=t-starts[active];
+  segs.forEach((seg,j)=>{const f=j<k?1:j===k?clamp(tIn/cur.dur):0;seg.querySelector('.fill').style.width=(f*100)+'%';seg.className='seg'+(j<k?' done':'')+(j===k?' on':'')});
+  stage.querySelector('.steps').style.opacity=cur.kind==='hook'?clamp((tIn-.8)/.4):1;
+  stage.querySelector('.glow').style.transform=`translateX(${Math.sin(t*.6)*60}px)`;
+  stage.querySelector('.progress').style.width=`${1080*Math.min(1,t/total)}px`;};
 </script></body></html>
