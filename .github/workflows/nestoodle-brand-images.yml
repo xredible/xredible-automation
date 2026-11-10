@@ -1,0 +1,67 @@
+name: Nestoodle brand images
+on:
+  workflow_dispatch:
+    inputs:
+      manifest:
+        description: Committed brand job manifest
+        default: tools/brand-images/samples/indoor-winter-activities-for-kids/job.json
+        required: true
+        type: string
+      publish_media:
+        description: Write rendered files to media branch (does not publish social posts)
+        default: false
+        type: boolean
+  pull_request:
+    paths:
+      - tools/brand-images/**
+      - tools/reels/assets/**
+      - .github/workflows/nestoodle-brand-images.yml
+permissions:
+  contents: read
+concurrency:
+  group: nestoodle-brand-images
+  cancel-in-progress: false
+jobs:
+  render:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: tools/brand-images/package-lock.json
+      - run: npm ci --prefix tools/brand-images
+      - run: npx --prefix tools/brand-images playwright install --with-deps chromium
+      - run: npm test --prefix tools/brand-images
+      - run: node tools/brand-images/job.mjs
+        env:
+          BRAND_MANIFEST: ${{ inputs.manifest || 'tools/brand-images/samples/indoor-winter-activities-for-kids/job.json' }}
+          BRAND_OUTPUT: ${{ runner.temp }}/brand-images
+      - uses: actions/upload-artifact@v4
+        with:
+          name: nestoodle-brand-images
+          path: ${{ runner.temp }}/brand-images/
+          if-no-files-found: error
+  media:
+    needs: render
+    if: github.event_name == 'workflow_dispatch' && inputs.publish_media && github.ref == 'refs/heads/main'
+    permissions:
+      contents: write
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/download-artifact@v4
+        with:
+          name: nestoodle-brand-images
+          path: ${{ runner.temp }}/brand-images
+      - run: node tools/brand-images/publish.mjs
+        env:
+          BRAND_OUTPUT: ${{ runner.temp }}/brand-images
