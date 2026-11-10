@@ -19,7 +19,7 @@ export function eligible(posts,pins,ledger=[]){
 }
 export function variations(post){
  const keyword=text(post.keyword||post.meta?._yoast_wpseo_focuskw||post.slug.replaceAll('-',' '));
- if(!keyword||keyword.length>78)throw new Error('Keyword too long for a clear Pinterest title');
+ if(!keyword||keyword.length>74)throw new Error('Keyword too long for a clear Pinterest title');
  const suffixes=['Easy Ideas','Simple Crafts to Try','Creative Play Ideas','Step-by-Step Ideas','Make It Your Own'];
  return suffixes.map((suffix,i)=>({title:`${keyword}: ${suffix}`,headline:keyword,benefit:['Simple ideas to try together','Make room for creative play','Find your next craft idea','Materials and steps inside','Choose a project together'][i],description:`Explore ${keyword.toLowerCase()} with practical ideas from Nestoodle. Visit the full guide for materials, step-by-step directions, and tips to choose an activity for your child.`,keywords:[keyword,'kids activities','creative play'].join(', ')}));
 }

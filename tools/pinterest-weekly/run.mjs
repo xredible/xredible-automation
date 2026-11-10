@@ -2,7 +2,7 @@ import {readFile,writeFile,mkdir,copyFile} from 'node:fs/promises';
 import path from 'node:path';
 import {createHash} from 'node:crypto';
 import {chromium} from '../brand-images/node_modules/playwright/index.mjs';
-import {render} from '../brand-images/render.mjs';
+import {render,verifyPrintable} from '../brand-images/render.mjs';
 import {eligible,boardFor,variations,schedule,csv} from './plan.mjs';
 const out=path.resolve(process.env.PINTEREST_OUTPUT||'pinterest-output');
 const secret=process.env.N8N_REELS_SECRET;
@@ -31,7 +31,12 @@ const limit=Math.max(0,Math.min(18,Math.floor((56-reserved)/3)));
 const deferred=posts.slice(limit).map(p=>p.id),skipped=[],groups=[];
 for(const p of posts.slice(0,limit)){
  try{
-  const board=boardFor(p,data.boards),vs=variations(p),pins=[],hashes=new Set();
+  const board=boardFor(p,data.boards);let printableUrl;
+  for(const match of String(p.html||'').matchAll(/href=["'](https:\/\/nestoodle\.com\/[^"']+\.pdf)["']/gi)){
+   try{await verifyPrintable({printableUrl:match[1]});printableUrl=match[1];break;}catch{}
+  }
+  if(!printableUrl&&/\bfree\b/i.test(p.keyword||p.meta?._yoast_wpseo_focuskw||''))throw new Error('Free printable promise needs a linked, verified PDF');
+  const vs=variations(p),pins=[],hashes=new Set();
   const candidates=[...String(p.html||p.content?.raw||'').matchAll(/<img[^>]+src=["']([^"']+)["'][^>]*>/gi)].map(m=>m[1]);
   for(const src of [...new Set(candidates)].slice(0,18)){
    if(pins.length===5)break;
@@ -50,7 +55,7 @@ for(const p of posts.slice(0,limit)){
    const ext={'image/jpeg':'.jpg','image/png':'.png','image/webp':'.webp'}[mime];
    await writeFile(path.join(folder,'photo'+ext),buf);
    const job={slug:p.slug,title:vs[n].title,benefit:vs[n].benefit,keyword:'READ',photos:[{src:'photo'+ext,alt:p.title,review:{approved:true,reviewer:'NST clean-photo checker',faceFree:true,score:v.score}}],steps:[]};
-   // No printable claim unless an actual PDF is verified; weekly pins conservatively omit the badge.
+   if(printableUrl){job.printableUrl=printableUrl;job.printableVerified=true;} // Badge requires this article's linked PDF and a verified PDF signature.
    await writeFile(path.join(folder,'job.json'),JSON.stringify(job));
    await render(path.join(folder,'job.json'),folder,{pinOnly:true});
    const file=`${p.id}-${n+1}.jpg`;await copyFile(path.join(folder,'pin.jpg'),path.join(out,file));

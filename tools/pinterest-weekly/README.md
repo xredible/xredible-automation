@@ -8,8 +8,9 @@ The renderer reuses the approved 1000×1500 brand pin HTML, fonts, logo, fit che
 and face protection. Each variant has a different keyword-led title and distinct
 photo bytes. Existing article photos must pass strict visual review; no unchecked
 images, text banners, human faces or distorted/off-topic photos are accepted.
-Posts with fewer than three usable photos are skipped and reported. Weekly pins
-omit printable claims/badges conservatively; article text is never changed.
+Posts with fewer than three usable photos are skipped and reported. The Free printable
+badge appears only for an article-linked PDF verified by signature; free promises
+without a verified PDF cause a skip. Article text is never changed.
 
 Coverage policy: fewer than three confirmed owned article-link pins plus prior
 export reservations qualifies a post. Export reservations are explicitly separate
