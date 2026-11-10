@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { chromium } from 'playwright';
 import { readFile, writeFile, mkdir, realpath } from 'node:fs/promises';
 import path from 'node:path';
@@ -8,13 +9,16 @@ const fail = message => { throw new Error(message); };
 function shortText(value, field, max=200) { if(typeof value!=='string'||!value.trim()||value.length>max||/[\x00-\x1f<>]/.test(value)) fail(`Invalid ${field}`); }
 export function validate(job) {
  if(!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(job.slug)||job.slug.length>100) fail('Invalid slug');
- for(const key of ['title','eyebrow','benefit','keyword']) shortText(job[key],key);
+ for(const key of ['title','benefit','keyword']) shortText(job[key],key);
+ if(job.eyebrow)shortText(job.eyebrow,'eyebrow');
+ const titleWords=new Set(job.title.toLowerCase().match(/[a-z]+/g)||[]);
+ if((String(job.eyebrow||'').toLowerCase().match(/[a-z]+/g)||[]).some(word=>titleWords.has(word)))fail('Eyebrow must not repeat title words');
  if(job.title.trim().split(/\s+/).length>8) fail('Headline must have at most 8 words; supply an editorial short title');
  if(!/^[A-Z0-9]{2,24}$/.test(job.keyword)) fail('Invalid keyword');
  if(job.highlight && !job.title.includes(job.highlight)) fail('Highlight must occur in title');
  if(job.printableUrl && !/^https:\/\/nestoodle\.com\/.+\.pdf(?:\?.*)?$/.test(job.printableUrl)) fail('Printable must be a verified Nestoodle PDF');
  if(job.printableUrl && job.printableVerified!==true) fail('Verify printable exists and belongs to this post');
- if(!Array.isArray(job.photos)||job.photos.length<2||job.photos.length>12) fail('Need 2–12 reviewed clean photos');
+ if(!Array.isArray(job.photos)||job.photos.length<3||job.photos.length>12) fail('Need 3–12 reviewed clean photos: cover plus unique step photos');
  for(const photo of job.photos){
   shortText(photo.src,'photo src',2000);shortText(photo.alt,'photo alt',500);
   const r=photo.review;
@@ -24,7 +28,9 @@ export function validate(job) {
   for(const box of r.faces??[]) if(!Array.isArray(box)||box.length!==4||box.some(n=>!Number.isFinite(n)||n<0||n>1)||box[2]<=0||box[3]<=0||box[0]+box[2]>1||box[1]+box[3]>1) fail('Invalid normalized face box');
  }
  if(!Array.isArray(job.steps)||!job.steps.length||job.steps.length>8) fail('Need 1–8 steps');
- for(const step of job.steps){shortText(step.title,'step title');shortText(step.body,'step body',300);if(step.title.split(/\s+/).length>8) fail('Step headline exceeds 8 words');if(!Number.isInteger(step.photo)||!job.photos[step.photo]) fail('Invalid step photo');}
+ const cover=job.coverPhoto??0;if(!Number.isInteger(cover)||!job.photos[cover])fail('Invalid cover photo');
+ const used=new Set([job.photos[cover].src]);
+ for(const step of job.steps){shortText(step.title,'step title');shortText(step.body,'step body',300);if(step.title.split(/\s+/).length>8) fail('Step headline exceeds 8 words');if(!Number.isInteger(step.photo)||!job.photos[step.photo]) fail('Invalid step photo');if(step.photo===cover||used.has(job.photos[step.photo].src))fail('Each step needs a different photo; never reuse the cover');used.add(job.photos[step.photo].src);}
  return job;
 }
 async function dataUri(file) { const ext=path.extname(file).toLowerCase(); const mime={'.png':'image/png','.jpg':'image/jpeg','.jpeg':'image/jpeg','.webp':'image/webp','.ttf':'font/ttf'}[ext];if(!mime) fail('Unsupported image/font type');return `data:${mime};base64,${(await readFile(file)).toString('base64')}`; }
@@ -43,9 +49,22 @@ async function photoData(photo, base) {
  const root=await realpath(base), target=await realpath(path.resolve(base,photo.src));
  if(!target.startsWith(root+path.sep)) fail('Photo must be inside job directory');return dataUri(target);
 }
-export async function render(jobPath,outDir) {
+export async function verifyPrintable(job,fetcher=fetch){
+ if(!job.printableUrl)return;
+ const url=new URL(job.printableUrl);
+ if(url.protocol!=='https:'||url.hostname!=='nestoodle.com'||url.username||url.password||url.port||url.hash)fail('Printable must be a public Nestoodle PDF');
+ const response=await fetcher(url,{headers:{Range:'bytes=0-4'},redirect:'error',signal:AbortSignal.timeout(30000)});
+ if(!response.ok)fail('Printable PDF could not be verified');
+ const reader=response.body.getReader();let bytes=Buffer.alloc(0);
+ try{while(bytes.length<5){const part=await reader.read();if(part.done)break;bytes=Buffer.concat([bytes,Buffer.from(part.value)]);}}finally{await reader.cancel();}
+ if(bytes.subarray(0,5).toString('ascii')!=='%PDF-')fail('Printable link did not return a PDF');
+}
+export async function render(jobPath,outDir,options={}) {
  const job=validate(JSON.parse(await readFile(jobPath,'utf8')));
+ await verifyPrintable(job,options.fetchPrintable??fetch);
  const photos=await Promise.all(job.photos.map(p=>photoData(p,path.dirname(jobPath))));
+ const hashes=photos.map(p=>createHash('sha256').update(Buffer.from(p.split(',')[1],'base64')).digest('hex'));
+ const usedHashes=new Set([hashes[job.coverPhoto??0]]);for(const step of job.steps){if(usedHashes.has(hashes[step.photo]))fail('Step photo bytes duplicate the cover or another step');usedHashes.add(hashes[step.photo]);}
  const css=(await readFile(path.join(here,'templates/shared.css'),'utf8')).replace('{{BALOO}}',await dataUri(path.join(here,'../reels/assets/Baloo2-ExtraBold.ttf'))).replace('{{KARLA}}',await dataUri(path.join(here,'../reels/assets/Karla-Regular.ttf'))).replace('{{KARLABOLD}}',await dataUri(path.join(here,'../reels/assets/Karla-Bold.ttf')));
  const logo=await dataUri(path.join(here,'../reels/assets/nestoodle-logo.png'));
  await mkdir(outDir,{recursive:true});
@@ -66,14 +85,16 @@ export async function render(jobPath,outDir) {
      const at=fields.title.indexOf(job.highlight);el.replaceChildren(document.createTextNode(fields.title.slice(0,at)));const em=document.createElement('em');em.textContent=job.highlight;el.append(em,document.createTextNode(fields.title.slice(at+job.highlight.length)));
     }
    });
-   document.querySelectorAll('[data-photo]').forEach(img=>{const photoIndex=step?step.photo:template==='article-photo'?index:Number(img.dataset.photo);img.dataset.source=photoIndex;img.src=photos[photoIndex];img.alt=job.photos[photoIndex].alt;});
+   document.querySelectorAll('[data-printable-badge]').forEach(el=>{if(!job.printableUrl)el.remove();});
+   if(!job.eyebrow)document.querySelectorAll('[data-field=eyebrow]').forEach(el=>el.remove());
+   document.querySelectorAll('[data-photo]').forEach(img=>{const photoIndex=step?step.photo:template==='article-photo'?index:template==='featured-collage'?Number(img.dataset.photo):job.coverPhoto??0;img.dataset.source=photoIndex;img.src=photos[photoIndex];img.alt=job.photos[photoIndex].alt;});
    document.querySelectorAll('[data-logo]').forEach(img=>{img.src=logo;});
    const dots=document.querySelector('[data-dots]');if(dots) for(let n=0;n<job.steps.length;n++){const dot=document.createElement('i');if(n===index)dot.className='active';dots.append(dot);}
    await document.fonts.ready;
    await Promise.all([...document.images].map(img=>img.decode()));
   },{job,photos,logo,step,index,template,name});
   const report=await page.evaluate(({job,width,height,template})=>{
-   const result={text:[],faces:[],size:[width,height]};
+   const result={text:[],faces:[],size:[width,height],printableBadge:!!document.querySelector('[data-printable-badge]'),photoSources:[...document.querySelectorAll('[data-photo]')].map(img=>Number(img.dataset.source))};
    for(const el of document.querySelectorAll('[data-fit]')) {
     const min=Math.ceil(36*width/1080),max=Number(el.dataset.max)||parseFloat(getComputedStyle(el).fontSize),maxLines=Number(el.dataset.lines)||3;
     let found=false;
@@ -84,6 +105,7 @@ export async function render(jobPath,outDir) {
     }
     if(!found)throw new Error(`Text cannot fit: ${template}/${el.dataset.field??el.className} ${el.clientWidth}x${el.clientHeight} scroll ${el.scrollWidth}x${el.scrollHeight} style ${getComputedStyle(el).lineHeight}`);
    }
+   if(template==='ig-step'){const card=document.querySelector('.photo-card');card.style.top=Math.ceil(document.querySelector('.copy').getBoundingClientRect().bottom+30)+'px';if(card.getBoundingClientRect().height<420)throw new Error('Step copy leaves too little photo space');}
    const overlays=[...document.querySelectorAll('[data-overlay]')];
    for(let i=0;i<overlays.length;i++)for(let j=i+1;j<overlays.length;j++){const a=overlays[i],b=overlays[j];if(a.contains(b)||b.contains(a))continue;const r=a.getBoundingClientRect(),s=b.getBoundingClientRect();if(r.left<s.right-1&&r.right>s.left+1&&r.top<s.bottom-1&&r.bottom>s.top+1)throw new Error('Text/logo panels overlap');}
    if(template==='ig-step'&&document.querySelector('.copy').getBoundingClientRect().bottom>document.querySelector('.photo-card').getBoundingClientRect().top-20)throw new Error('Step text overlaps photo');

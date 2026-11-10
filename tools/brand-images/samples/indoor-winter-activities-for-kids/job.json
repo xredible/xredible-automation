@@ -3,10 +3,19 @@
   "articleUrl": "https://nestoodle.com/indoor-winter-activities-for-kids/",
   "title": "10 Easy Indoor Winter Activities",
   "highlight": "Winter",
-  "eyebrow": "AGES 2–5 · LOW-PREP PLAY",
+  "eyebrow": "Ages 2–5 · 10–15 min",
   "benefit": "Screen-free fun. Everyday supplies.",
   "keyword": "INDOOR",
   "photos": [
+    {
+      "src": "box-fort.png",
+      "alt": "A low cardboard-box fort with a cream blanket, sage cushions and a clear entrance in a family living room.",
+      "review": {
+        "approved": true,
+        "faceFree": true,
+        "reviewer": "Codex visual review 2026-11-10; no people, text or unsafe items"
+      }
+    },
     {
       "src": "tape-maze.png",
       "alt": "Child follows a painter’s tape path on a wooden floor with adult supervision.",
@@ -30,12 +39,13 @@
     {
       "title": "Tape Shape Maze",
       "body": "Make a path with painter’s tape. Let little feet follow the shapes.",
-      "photo": 0
+      "photo": 1
     },
     {
       "title": "Kitchen Pot Drumming",
       "body": "Set out pots and wooden spoons. Tap a rhythm together.",
-      "photo": 1
+      "photo": 2
     }
-  ]
+  ],
+  "coverPhoto": 0
 }

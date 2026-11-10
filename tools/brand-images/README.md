@@ -37,8 +37,8 @@ Facebook shares the cover layout but uses “Read the guide” rather than a car
 Copy the sample `job.json` to `jobs/<slug>/job.json`. Fields:
 
 - `slug`, `articleUrl`, editorial short `title` (at most 8 words), `highlight` (exact substring), `eyebrow`, one-line `benefit`, uppercase `keyword`.
-- `photos`: at least two `{src, alt, review}` objects. Local JPEG/PNG/WebP paths must resolve within the job directory. HTTPS sources must be public Nestoodle WP uploads or this repo’s Nestoodle media branch, without query strings, credentials or redirects. Downloads are capped at 12 MB.
-- `steps`: 1–8 objects `{title, body, photo}`; photo is a zero-based index. Step bodies fit in two lines.
+- `photos`: at least three `{src, alt, review}` objects. Local JPEG/PNG/WebP paths must resolve within the job directory. HTTPS sources must be public Nestoodle WP uploads or this repo’s Nestoodle media branch, without query strings, credentials or redirects. Downloads are capped at 12 MB.
+- `steps`: 1–8 objects `{title, body, photo}`; photo is a zero-based index. Cover defaults to photo 0; step photos must be unique and must never reuse the cover (indices 1 and 2 in the sample). Step bodies fit in two lines.
 - Optional `printableUrl` (Nestoodle PDF) **and** `printableVerified: true`: producer must verify the actual PDF and article relationship first. Only this combination permits “+ free printable.” The winter sample deliberately promises only the full guide.
 
 Every photo needs `review: {approved: true, reviewer: "who/when", faceFree: true}` **after actual visual inspection** for activity, anatomy, safety, logos and text. If faces are present, omit faceFree and supply `faces: [[x,y,width,height], ...]` normalized to the original image. Annotate **every** face. The renderer maps boxes through the center cover crop and rejects cropped faces or overlays within 24px of them (45px crop/rounded-corner clearance). It does not detect faces or certify photo quality itself. The future producer must provide a trustworthy visual review/detection step; never assume faceFree just because generation requested it.
@@ -50,3 +50,9 @@ Headlines auto-shrink to fit at most three lines; body/eyebrow/benefit limits ar
 One published article: https://nestoodle.com/indoor-winter-activities-for-kids/. “10” comes from the article’s actual activity count. The two sample steps are from the article; photos are newly generated realistic illustrations, not documentary photographs. Both were visually checked: hands/materials, no faces, no text. The sample is a four-slide carousel (cover, two example steps, CTA), not a claim to reproduce all ten activities in the carousel.
 
 **Template design approved by the owner on 10 Nov 2026.** n8n integration sources are maintained in the private operations repository. New article/social content still requires owner review. Preserve/recheck all existing triggers and connections before publishing any n8n draft; save those sources in the private operations repository. Writer: clean photo prompt suffix, 2-photo featured collage, OG social image. NST-SOC: dedicated pin/carousel/Facebook outputs, replacing article-image/wsrv reuse. Photos must retain their alt text on upload.
+
+## Owner refinements, 10 Nov 2026
+
+Pin headline starts at 110px (+25%), benefit at 42px; three-line maximum and minimum legibility stay enforced. Step titles start at 96px and body at 50px; the photo starts 30px below actual fitted copy, avoiding unused gaps. Every step must use a separate photo; matching paths and identical image bytes are rejected. The cover has its own photo.
+
+Eyebrows must not repeat headline words (numbers are compared as quantities, not words). The producer derives age intersection and time range from the chosen activities’ explicit article metadata; if unavailable it leaves the eyebrow absent rather than invent ages/times. Pin and IG cover display a coral Free printable badge only for an article-linked Nestoodle PDF whose response starts with the actual PDF signature. A failed PDF check fails the render. No PDF exists for the winter sample, so it has no badge.
