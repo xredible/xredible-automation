@@ -7,6 +7,10 @@ on:
         default: tools/brand-images/samples/indoor-winter-activities-for-kids/job.json
         required: true
         type: string
+      job_json:
+        description: Authenticated n8n producer job JSON (blank for committed manifest)
+        required: false
+        type: string
       publish_media:
         description: Write rendered files to media branch (does not publish social posts)
         default: false
@@ -41,11 +45,16 @@ jobs:
         env:
           BRAND_MANIFEST: ${{ inputs.manifest || 'tools/brand-images/samples/indoor-winter-activities-for-kids/job.json' }}
           BRAND_OUTPUT: ${{ runner.temp }}/brand-images
+          BRAND_JOB_JSON: ${{ inputs.job_json }}
+          N8N_REELS_SECRET: ${{ github.event_name == 'workflow_dispatch' && secrets.N8N_REELS_SECRET || '' }}
       - uses: actions/upload-artifact@v4
         with:
           name: nestoodle-brand-images
-          path: ${{ runner.temp }}/brand-images/
+          path: |
+            ${{ runner.temp }}/brand-images/*.jpg
+            ${{ runner.temp }}/brand-images/render-info.json
           if-no-files-found: error
+          include-hidden-files: false
   media:
     needs: render
     if: github.event_name == 'workflow_dispatch' && inputs.publish_media && github.ref == 'refs/heads/main'
@@ -65,3 +74,7 @@ jobs:
       - run: node tools/brand-images/publish.mjs
         env:
           BRAND_OUTPUT: ${{ runner.temp }}/brand-images
+      - run: node tools/brand-images/callback.mjs done
+        env:
+          BRAND_OUTPUT: ${{ runner.temp }}/brand-images
+          N8N_REELS_SECRET: ${{ secrets.N8N_REELS_SECRET }}
