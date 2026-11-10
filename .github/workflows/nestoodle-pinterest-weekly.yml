@@ -1,0 +1,86 @@
+name: Nestoodle Pinterest weekly CSV
+on:
+  workflow_dispatch:
+    inputs:
+      scope:
+        description: Published posts to include (manual CSV only)
+        type: choice
+        options: [all, this-week]
+        default: all
+      deliver_only:
+        description: Re-deliver files from an earlier successful render run ID (blank for new export)
+        type: string
+        required: false
+  pull_request:
+    paths:
+      - tools/pinterest-weekly/**
+      - tools/brand-images/render.mjs
+      - .github/workflows/nestoodle-pinterest-weekly.yml
+permissions:
+  contents: read
+concurrency:
+  group: nestoodle-pinterest-weekly
+  cancel-in-progress: false
+jobs:
+  test:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --test tools/pinterest-weekly/plan.test.mjs
+  export:
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
+    needs: test
+    runs-on: ubuntu-24.04
+    timeout-minutes: 55
+    permissions:
+      contents: write
+      actions: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        if: inputs.deliver_only == ''
+        with:
+          ref: media
+          path: media-input
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: tools/brand-images/package-lock.json
+      - run: npm ci --prefix tools/brand-images
+        if: inputs.deliver_only == ''
+      - run: npx --prefix tools/brand-images playwright install --with-deps chromium
+        if: inputs.deliver_only == ''
+      - run: node tools/pinterest-weekly/run.mjs
+        if: inputs.deliver_only == ''
+        env:
+          N8N_REELS_SECRET: ${{ secrets.N8N_REELS_SECRET }}
+          PINTEREST_SCOPE: ${{ inputs.scope }}
+      - uses: actions/upload-artifact@v4
+        if: inputs.deliver_only == ''
+        with:
+          name: nestoodle-pinterest-weekly
+          path: |
+            pinterest-output/pinterest.csv
+            pinterest-output/preview.jpg
+            pinterest-output/manifest.json
+            pinterest-output/ledger.json
+            pinterest-output/*.jpg
+          if-no-files-found: error
+      - run: node tools/pinterest-weekly/publish.mjs
+        if: inputs.deliver_only == ''
+      - uses: actions/download-artifact@v4
+        if: inputs.deliver_only != ''
+        with:
+          name: nestoodle-pinterest-weekly
+          path: pinterest-output
+          run-id: ${{ inputs.deliver_only }}
+          github-token: ${{ github.token }}
+      - run: node tools/pinterest-weekly/deliver.mjs
+        env:
+          N8N_REELS_SECRET: ${{ secrets.N8N_REELS_SECRET }}
