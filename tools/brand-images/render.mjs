@@ -7,18 +7,18 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 export const sizes = {pin:[1000,1500], 'ig-cover':[1080,1350], 'ig-step':[1080,1350], 'ig-cta':[1080,1350], og:[1200,630], story:[1080,1920], 'featured-collage':[1200,800], 'article-photo':[1200,800]};
 const fail = message => { throw new Error(message); };
 function shortText(value, field, max=200) { if(typeof value!=='string'||!value.trim()||value.length>max||/[\x00-\x1f<>]/.test(value)) fail(`Invalid ${field}`); }
-export function validate(job) {
+export function validate(job, options={}) {
  if(!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(job.slug)||job.slug.length>100) fail('Invalid slug');
  for(const key of ['title','benefit','keyword']) shortText(job[key],key);
  if(job.eyebrow)shortText(job.eyebrow,'eyebrow');
  const titleWords=new Set(job.title.toLowerCase().match(/[a-z]+/g)||[]);
  if((String(job.eyebrow||'').toLowerCase().match(/[a-z]+/g)||[]).some(word=>titleWords.has(word)))fail('Eyebrow must not repeat title words');
- if(job.title.trim().split(/\s+/).length>8) fail('Headline must have at most 8 words; supply an editorial short title');
+ if(!options.pinOnly && job.title.trim().split(/\s+/).length>8) fail('Headline must have at most 8 words; supply an editorial short title');
  if(!/^[A-Z0-9]{2,24}$/.test(job.keyword)) fail('Invalid keyword');
  if(job.highlight && !job.title.includes(job.highlight)) fail('Highlight must occur in title');
  if(job.printableUrl && !/^https:\/\/nestoodle\.com\/.+\.pdf(?:\?.*)?$/.test(job.printableUrl)) fail('Printable must be a verified Nestoodle PDF');
  if(job.printableUrl && job.printableVerified!==true) fail('Verify printable exists and belongs to this post');
- if(!Array.isArray(job.photos)||job.photos.length<3||job.photos.length>12) fail('Need 3–12 reviewed clean photos: cover plus unique step photos');
+ if(!Array.isArray(job.photos)||job.photos.length<(options.pinOnly?1:3)||job.photos.length>12) fail('Need 3–12 reviewed clean photos: cover plus unique step photos');
  for(const photo of job.photos){
   shortText(photo.src,'photo src',2000);shortText(photo.alt,'photo alt',500);
   const r=photo.review;
@@ -27,7 +27,7 @@ export function validate(job) {
   if(r.faceFree===true && r.faces?.length) fail('Conflicting face review');
   for(const box of r.faces??[]) if(!Array.isArray(box)||box.length!==4||box.some(n=>!Number.isFinite(n)||n<0||n>1)||box[2]<=0||box[3]<=0||box[0]+box[2]>1||box[1]+box[3]>1) fail('Invalid normalized face box');
  }
- if(!Array.isArray(job.steps)||!job.steps.length||job.steps.length>8) fail('Need 1–8 steps');
+ if(!Array.isArray(job.steps)||(!options.pinOnly&&!job.steps.length)||job.steps.length>8) fail('Need 1–8 steps');
  const cover=job.coverPhoto??0;if(!Number.isInteger(cover)||!job.photos[cover])fail('Invalid cover photo');
  const used=new Set([job.photos[cover].src]);
  for(const step of job.steps){shortText(step.title,'step title');shortText(step.body,'step body',300);if(step.title.split(/\s+/).length>8) fail('Step headline exceeds 8 words');if(!Number.isInteger(step.photo)||!job.photos[step.photo]) fail('Invalid step photo');if(step.photo===cover||used.has(job.photos[step.photo].src))fail('Each step needs a different photo; never reuse the cover');used.add(job.photos[step.photo].src);}
@@ -60,7 +60,7 @@ export async function verifyPrintable(job,fetcher=fetch){
  if(bytes.subarray(0,5).toString('ascii')!=='%PDF-')fail('Printable link did not return a PDF');
 }
 export async function render(jobPath,outDir,options={}) {
- const job=validate(JSON.parse(await readFile(jobPath,'utf8')));
+ const job=validate(JSON.parse(await readFile(jobPath,'utf8')),options);
  await verifyPrintable(job,options.fetchPrintable??fetch);
  const photos=await Promise.all(job.photos.map(p=>photoData(p,path.dirname(jobPath))));
  const hashes=photos.map(p=>createHash('sha256').update(Buffer.from(p.split(',')[1],'base64')).digest('hex'));
@@ -71,7 +71,7 @@ export async function render(jobPath,outDir,options={}) {
  const browser=await chromium.launch({headless:true,...(process.env.CHROMIUM_PATH?{executablePath:process.env.CHROMIUM_PATH}:{})});
  const reports=[];
  try {
- const slides=[['pin','pin'],['ig-cover','ig-cover'],...job.steps.map((s,i)=>['ig-step',`ig-step-${String(i+1).padStart(2,'0')}`,i]),['ig-cta','ig-cta'],['ig-cover','facebook'],['og','og'],['story','story'],['featured-collage','featured-collage'],...job.photos.map((_,i)=>['article-photo',`article-photo-${String(i+1).padStart(2,'0')}`,i])];
+ const slides=options.pinOnly?[['pin','pin']]:[['pin','pin'],['ig-cover','ig-cover'],...job.steps.map((s,i)=>['ig-step',`ig-step-${String(i+1).padStart(2,'0')}`,i]),['ig-cta','ig-cta'],['ig-cover','facebook'],['og','og'],['story','story'],['featured-collage','featured-collage'],...job.photos.map((_,i)=>['article-photo',`article-photo-${String(i+1).padStart(2,'0')}`,i])];
  for(const [template,name,index] of slides){
   const [width,height]=sizes[template],page=await browser.newPage({viewport:{width,height},deviceScaleFactor:1});
   await page.route('**/*',route=>route.abort()); // All assets embedded; no external page requests.

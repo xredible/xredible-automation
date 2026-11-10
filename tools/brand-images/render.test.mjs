@@ -36,3 +36,8 @@ test('printable badges require a real PDF response; both badge layouts fit',asyn
  await assert.rejects(verifyPrintable(job,async()=>new Response('missing',{status:404})),/could not be verified/);
  await withJob(job,async(file,out)=>{const reports=await render(file,out,{fetchPrintable:async()=>new Response('%PDF-1.7 fixture')});assert.ok(reports.find(r=>r.file==='pin.jpg').printableBadge);assert.ok(reports.find(r=>r.file==='ig-cover.jpg').printableBadge);assert.deepEqual(reports.filter(r=>r.template==='ig-step').map(r=>r.photoSources[0]),[1,2]);for(const step of reports.filter(r=>r.template==='ig-step'))assert.equal(step.text.find(t=>t.field==='body').fontSize,58);assert.ok(reports.find(r=>r.file==='pin.jpg').text.find(t=>t.field==='title').fontSize>=100);});
 });
+test('pin-only mode uses one reviewed photo, fits long keyword-led titles, renders no social side effects',async()=>{
+ const job=structuredClone(fixture);job.title='Thanksgiving Crafts for Kids with Toilet Paper Rolls: Creative Play Ideas';job.photos=job.photos.slice(0,1);job.steps=[];delete job.eyebrow;delete job.highlight;delete job.printableUrl;delete job.printableVerified;
+ assert.throws(()=>validate(job));
+ await withJob(job,async(file,out)=>{const reports=await render(file,out,{pinOnly:true});assert.equal(reports.length,1);assert.deepEqual(reports[0].size,[1000,1500]);assert.equal(reports[0].file,'pin.jpg');assert(reports[0].text.find(t=>t.field==='title').lines<=3);});
+});
