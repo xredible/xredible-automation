@@ -1,0 +1,52 @@
+{
+  "jobId": "bi-paper-tearing-activities-1794313844176",
+  "slug": "paper-tearing-activities",
+  "articleUrl": "https://nestoodle.com/paper-tearing-activities/",
+  "title": "Easy Paper Tearing Play for Preschoolers",
+  "highlight": "Tearing",
+  "eyebrow": "Ages 3–6 · 10–15 min",
+  "benefit": "Builds hand strength and coordination",
+  "keyword": "GUIDE",
+  "coverPhoto": 0,
+  "photos": [
+    {
+      "src": "source/garden.jpg",
+      "alt": "Torn-paper flowers and green paper grass arranged on a sage tray",
+      "review": {
+        "approved": true,
+        "faceFree": true,
+        "reviewer": "n8n Gemini 3.1 Flash-Lite visual check, executions 77640–77645"
+      }
+    },
+    {
+      "src": "source/road.jpg",
+      "alt": "Wide torn charcoal paper strips forming a road beside a plain wooden toy car",
+      "review": {
+        "approved": true,
+        "faceFree": true,
+        "reviewer": "n8n Gemini 3.1 Flash-Lite visual check, executions 77640–77645"
+      }
+    },
+    {
+      "src": "source/collage.jpg",
+      "alt": "Overlapping torn coral, blue and yellow paper shapes glued onto white cardstock",
+      "review": {
+        "approved": true,
+        "faceFree": true,
+        "reviewer": "n8n Gemini 3.1 Flash-Lite visual check, executions 77640–77645"
+      }
+    }
+  ],
+  "steps": [
+    {
+      "title": "Tear a Paper Road",
+      "body": "Tear wide strips and make a road for toy cars.",
+      "photo": 1
+    },
+    {
+      "title": "Make a Torn-Paper Collage",
+      "body": "Glue torn paper shapes onto cardstock.",
+      "photo": 2
+    }
+  ]
+}
