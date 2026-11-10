@@ -108,7 +108,7 @@ export async function render(jobPath,outDir) {
   reports.push({file:`${name}.jpg`,template,...report});
   await page.screenshot({path:path.join(outDir,`${name}.jpg`),type:'jpeg',quality:94});await page.close();
  }
- await writeFile(path.join(outDir,'render-info.json'),JSON.stringify({slug:job.slug,articleUrl:job.articleUrl,renderer:1,approval:'pending owner review',photos:job.photos.map(({alt,review})=>({alt,review})),outputs:reports},null,2)+'\n');
+ await writeFile(path.join(outDir,'render-info.json'),JSON.stringify({slug:job.slug,articleUrl:job.articleUrl,renderer:1,approval:'template approved 2026-11-10; new article/social content remains subject to owner review',photos:job.photos.map(({alt,review})=>({alt,review})),outputs:reports},null,2)+'\n');
  } finally {await browser.close();}
  return reports;
 }
