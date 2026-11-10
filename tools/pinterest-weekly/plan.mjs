@@ -23,10 +23,11 @@ export function variations(post){
  const suffixes=['Easy Ideas','Simple Crafts to Try','Creative Play Ideas','Step-by-Step Ideas','Make It Your Own'];
  return suffixes.map((suffix,i)=>({title:`${keyword}: ${suffix}`,headline:keyword,benefit:['Simple ideas to try together','Make room for creative play','Find your next craft idea','Materials and steps inside','Choose a project together'][i],description:`Explore ${keyword.toLowerCase()} with practical ideas from Nestoodle. Visit the full guide for materials, step-by-step directions, and tips to choose an activity for your child.`,keywords:[keyword,'kids activities','creative play'].join(', ')}));
 }
-export function schedule(groups,start,mediaBase,now=Date.now()){
+export function schedule(groups,start,mediaBase,now=Date.now(),reservations=[]){
  if(!/^\d{4}-\d{2}-\d{2}$/.test(start))throw new Error('Invalid start date');
  const days=Array.from({length:7},(_,i)=>({date:new Date(Date.parse(start+'T00:00:00Z')+i*86400000).toISOString().slice(0,10),posts:new Set(),rows:[]}));
  const rows=[];let cursor=0;
+ for(const r of reservations){if(!r.publishDate)continue;const date=new Date(Date.parse(r.publishDate+'Z')+19800000).toISOString().slice(0,10),day=days.find(d=>d.date===date);if(day){day.posts.add(r.postId);day.rows.push(r);}}
  for(let round=0;round<5;round++)for(const group of groups){
   const pin=group.pins[round];if(!pin)continue;
   let chosen;

@@ -13,3 +13,7 @@ test('published coverage and prior exports exclude covered posts, ignore foreign
 test('CSV quotes commas, quotes, Unicode and preserves all eight exact headers',()=>{const row=schedule(groups.slice(0,1),'2030-01-01','https://example.com',0)[0];row.Title='Crafts, "easy"';const output=csv([row]);assert(output.startsWith('\ufeff"Title","Media URL","Pinterest board","Thumbnail","Description","Link","Publish date","Keywords"\r\n'));assert(output.includes('"Crafts, ""easy"""'));});
 test('missing boards fail rather than silently creating a board on CSV import',()=>{assert.throws(()=>boardFor({slug:'thanksgiving-crafts',title:'Crafts'},[]));});
 test('keyword-led variations differ, descriptions have two sentences',()=>{const vs=variations({keyword:'Thanksgiving crafts for kids'});assert.equal(new Set(vs.map(v=>v.title)).size,5);for(const v of vs){assert(v.title.startsWith('Thanksgiving crafts for kids'));assert.equal(v.description.split(/[.!?]+/).filter(x=>x.trim()).length,2);}});
+test('overlapping earlier exports reserve capacity and prevent same-post same-day',()=>{
+ const old=Array.from({length:8},(_,i)=>({postId:100+i,publishDate:`2030-01-01T${String(3+2*i).padStart(2,'0')}:30:00`}));
+ const rows=schedule(groups.slice(0,1),'2030-01-01','https://example.com',0,old);assert(rows.every(r=>r['Publish date'].slice(0,10)!=='2030-01-01'));
+});

@@ -26,8 +26,10 @@ if(process.env.PINTEREST_SCOPE==='this-week'){
  const d=new Date(today+'T00:00:00Z'),day=d.getUTCDay();d.setUTCDate(d.getUTCDate()-((day+6)%7));
  const monday=d.toISOString().slice(0,10);posts=posts.filter(p=>p.date.slice(0,10)>=monday);
 }
-const deferred=posts.slice(18).map(p=>p.id),skipped=[],groups=[];
-for(const p of posts.slice(0,18)){
+const reserved=ledger.filter(r=>r.publishDate&&new Date(r.publishDate+'Z').getTime()>=Date.parse(start+'T00:00:00+05:30')&&new Date(r.publishDate+'Z').getTime()<Date.parse(start+'T00:00:00+05:30')+7*86400000).length;
+const limit=Math.max(0,Math.min(18,Math.floor((56-reserved)/3)));
+const deferred=posts.slice(limit).map(p=>p.id),skipped=[],groups=[];
+for(const p of posts.slice(0,limit)){
  try{
   const board=boardFor(p,data.boards),vs=variations(p),pins=[],hashes=new Set();
   const candidates=[...String(p.html||p.content?.raw||'').matchAll(/<img[^>]+src=["']([^"']+)["'][^>]*>/gi)].map(m=>m[1]);
@@ -59,7 +61,7 @@ for(const p of posts.slice(0,18)){
  }catch(e){skipped.push({id:p.id,reason:String(e.message).slice(0,250)});}
 }
 const base=`https://raw.githubusercontent.com/xredible/xredible-automation/media/nestoodle/pinterest/${batch}`;
-const rows=schedule(groups,start,base);
+const rows=schedule(groups,start,base,Date.now(),ledger);
 await writeFile(path.join(out,'pinterest.csv'),csv(rows));
 const escape=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const browser=await chromium.launch({headless:true,...(process.env.CHROMIUM_PATH?{executablePath:process.env.CHROMIUM_PATH}:{})});
@@ -76,5 +78,5 @@ try{
 }finally{await browser.close();}
 const manifest={batch,start,count:rows.length,groups:groups.map(g=>({id:g.id,actual:g.actual,previouslyExported:g.exported})),skipped,deferred,files:['pinterest.csv','preview.jpg',...rows.map(r=>r['Media URL'].split('/').pop())],rows:rows.map(({localFile,...r})=>r)};
 await writeFile(path.join(out,'manifest.json'),JSON.stringify(manifest,null,2));
-await writeFile(path.join(out,'ledger.json'),JSON.stringify([...ledger,...rows.map(r=>({batch,postId:r.postId,link:r.Link,media:r['Media URL'],photoHash:r.photoHash,status:'exported-not-confirmed-published'}))],null,2));
+await writeFile(path.join(out,'ledger.json'),JSON.stringify([...ledger,...rows.map(r=>({batch,postId:r.postId,link:r.Link,media:r['Media URL'],photoHash:r.photoHash,publishDate:r['Publish date'],title:r.Title,status:'exported-not-confirmed-published'}))],null,2));
 console.log(`Prepared ${rows.length} manual-upload pins; ${skipped.length} posts skipped, ${deferred.length} deferred`);
