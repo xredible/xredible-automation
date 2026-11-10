@@ -1,0 +1,244 @@
+{
+  "slug": "indoor-winter-activities-for-kids",
+  "articleUrl": "https://nestoodle.com/indoor-winter-activities-for-kids/",
+  "renderer": 1,
+  "approval": "pending owner review",
+  "photos": [
+    {
+      "alt": "Child follows a painter’s tape path on a wooden floor with adult supervision.",
+      "review": {
+        "approved": true,
+        "faceFree": true,
+        "reviewer": "Codex visual review 2026-11-10"
+      }
+    },
+    {
+      "alt": "Child taps upside-down kitchen pots with wooden spoons beside an adult.",
+      "review": {
+        "approved": true,
+        "faceFree": true,
+        "reviewer": "Codex visual review 2026-11-10"
+      }
+    }
+  ],
+  "outputs": [
+    {
+      "file": "pin.jpg",
+      "template": "pin",
+      "text": [
+        {
+          "field": "eyebrow",
+          "fontSize": 36,
+          "lines": 1
+        },
+        {
+          "field": "title",
+          "fontSize": 88,
+          "lines": 2
+        },
+        {
+          "field": "benefit",
+          "fontSize": 38,
+          "lines": 1
+        }
+      ],
+      "faces": [],
+      "size": [
+        1000,
+        1500
+      ]
+    },
+    {
+      "file": "ig-cover.jpg",
+      "template": "ig-cover",
+      "text": [
+        {
+          "field": "eyebrow",
+          "fontSize": 36,
+          "lines": 1
+        },
+        {
+          "field": "title",
+          "fontSize": 100,
+          "lines": 2
+        },
+        {
+          "field": "navigation",
+          "fontSize": 38,
+          "lines": 1
+        }
+      ],
+      "faces": [],
+      "size": [
+        1080,
+        1350
+      ]
+    },
+    {
+      "file": "ig-step-01.jpg",
+      "template": "ig-step",
+      "text": [
+        {
+          "field": "title",
+          "fontSize": 76,
+          "lines": 1
+        },
+        {
+          "field": "body",
+          "fontSize": 42,
+          "lines": 2
+        }
+      ],
+      "faces": [],
+      "size": [
+        1080,
+        1350
+      ]
+    },
+    {
+      "file": "ig-step-02.jpg",
+      "template": "ig-step",
+      "text": [
+        {
+          "field": "title",
+          "fontSize": 76,
+          "lines": 1
+        },
+        {
+          "field": "body",
+          "fontSize": 42,
+          "lines": 2
+        }
+      ],
+      "faces": [],
+      "size": [
+        1080,
+        1350
+      ]
+    },
+    {
+      "file": "ig-cta.jpg",
+      "template": "ig-cta",
+      "text": [
+        {
+          "field": "save",
+          "fontSize": 110,
+          "lines": 2
+        },
+        {
+          "field": "keyword",
+          "fontSize": 78,
+          "lines": 1
+        },
+        {
+          "field": "cta",
+          "fontSize": 48,
+          "lines": 1
+        }
+      ],
+      "faces": [],
+      "size": [
+        1080,
+        1350
+      ]
+    },
+    {
+      "file": "facebook.jpg",
+      "template": "ig-cover",
+      "text": [
+        {
+          "field": "eyebrow",
+          "fontSize": 36,
+          "lines": 1
+        },
+        {
+          "field": "title",
+          "fontSize": 100,
+          "lines": 2
+        },
+        {
+          "field": "navigation",
+          "fontSize": 38,
+          "lines": 1
+        }
+      ],
+      "faces": [],
+      "size": [
+        1080,
+        1350
+      ]
+    },
+    {
+      "file": "og.jpg",
+      "template": "og",
+      "text": [
+        {
+          "field": "title",
+          "fontSize": 66,
+          "lines": 3
+        }
+      ],
+      "faces": [],
+      "size": [
+        1200,
+        630
+      ]
+    },
+    {
+      "file": "story.jpg",
+      "template": "story",
+      "text": [
+        {
+          "field": "eyebrow",
+          "fontSize": 36,
+          "lines": 1
+        },
+        {
+          "field": "title",
+          "fontSize": 112,
+          "lines": 2
+        },
+        {
+          "field": "benefit",
+          "fontSize": 44,
+          "lines": 1
+        }
+      ],
+      "faces": [],
+      "size": [
+        1080,
+        1920
+      ]
+    },
+    {
+      "file": "featured-collage.jpg",
+      "template": "featured-collage",
+      "text": [],
+      "faces": [],
+      "size": [
+        1200,
+        800
+      ]
+    },
+    {
+      "file": "article-photo-01.jpg",
+      "template": "article-photo",
+      "text": [],
+      "faces": [],
+      "size": [
+        1200,
+        800
+      ]
+    },
+    {
+      "file": "article-photo-02.jpg",
+      "template": "article-photo",
+      "text": [],
+      "faces": [],
+      "size": [
+        1200,
+        800
+      ]
+    }
+  ]
+}
