@@ -5,11 +5,19 @@
   "approval": "template approved 2026-11-10; new article/social content remains subject to owner review",
   "photos": [
     {
+      "alt": "A low cardboard-box fort with a cream blanket, sage cushions and a clear entrance in a family living room.",
+      "review": {
+        "approved": true,
+        "faceFree": true,
+        "reviewer": "Codex visual review 2026-11-10; no people, text or unsafe items"
+      }
+    },
+    {
       "alt": "Child follows a painter’s tape path on a wooden floor with adult supervision.",
       "review": {
         "approved": true,
         "faceFree": true,
-        "reviewer": "Owner-approved sample; Codex visual review 2026-11-10"
+        "reviewer": "Codex visual review 2026-11-10"
       }
     },
     {
@@ -17,7 +25,7 @@
       "review": {
         "approved": true,
         "faceFree": true,
-        "reviewer": "Owner-approved sample; Codex visual review 2026-11-10"
+        "reviewer": "Codex visual review 2026-11-10"
       }
     }
   ],
@@ -33,12 +41,12 @@
         },
         {
           "field": "title",
-          "fontSize": 88,
+          "fontSize": 110,
           "lines": 2
         },
         {
           "field": "benefit",
-          "fontSize": 38,
+          "fontSize": 42,
           "lines": 1
         }
       ],
@@ -46,6 +54,10 @@
       "size": [
         1000,
         1500
+      ],
+      "printableBadge": false,
+      "photoSources": [
+        0
       ]
     },
     {
@@ -59,7 +71,7 @@
         },
         {
           "field": "title",
-          "fontSize": 99,
+          "fontSize": 100,
           "lines": 2
         },
         {
@@ -72,6 +84,10 @@
       "size": [
         1080,
         1350
+      ],
+      "printableBadge": false,
+      "photoSources": [
+        0
       ]
     },
     {
@@ -80,12 +96,12 @@
       "text": [
         {
           "field": "title",
-          "fontSize": 76,
+          "fontSize": 96,
           "lines": 1
         },
         {
           "field": "body",
-          "fontSize": 42,
+          "fontSize": 50,
           "lines": 2
         }
       ],
@@ -93,6 +109,10 @@
       "size": [
         1080,
         1350
+      ],
+      "printableBadge": false,
+      "photoSources": [
+        1
       ]
     },
     {
@@ -101,12 +121,12 @@
       "text": [
         {
           "field": "title",
-          "fontSize": 76,
+          "fontSize": 96,
           "lines": 1
         },
         {
           "field": "body",
-          "fontSize": 42,
+          "fontSize": 50,
           "lines": 2
         }
       ],
@@ -114,6 +134,10 @@
       "size": [
         1080,
         1350
+      ],
+      "printableBadge": false,
+      "photoSources": [
+        2
       ]
     },
     {
@@ -140,7 +164,9 @@
       "size": [
         1080,
         1350
-      ]
+      ],
+      "printableBadge": false,
+      "photoSources": []
     },
     {
       "file": "facebook.jpg",
@@ -153,7 +179,7 @@
         },
         {
           "field": "title",
-          "fontSize": 99,
+          "fontSize": 100,
           "lines": 2
         },
         {
@@ -166,6 +192,10 @@
       "size": [
         1080,
         1350
+      ],
+      "printableBadge": false,
+      "photoSources": [
+        0
       ]
     },
     {
@@ -182,6 +212,10 @@
       "size": [
         1200,
         630
+      ],
+      "printableBadge": false,
+      "photoSources": [
+        0
       ]
     },
     {
@@ -195,8 +229,8 @@
         },
         {
           "field": "title",
-          "fontSize": 106,
-          "lines": 3
+          "fontSize": 112,
+          "lines": 2
         },
         {
           "field": "benefit",
@@ -208,6 +242,10 @@
       "size": [
         1080,
         1920
+      ],
+      "printableBadge": false,
+      "photoSources": [
+        0
       ]
     },
     {
@@ -218,6 +256,11 @@
       "size": [
         1200,
         800
+      ],
+      "printableBadge": false,
+      "photoSources": [
+        0,
+        1
       ]
     },
     {
@@ -228,6 +271,10 @@
       "size": [
         1200,
         800
+      ],
+      "printableBadge": false,
+      "photoSources": [
+        0
       ]
     },
     {
@@ -238,8 +285,25 @@
       "size": [
         1200,
         800
+      ],
+      "printableBadge": false,
+      "photoSources": [
+        1
+      ]
+    },
+    {
+      "file": "article-photo-03.jpg",
+      "template": "article-photo",
+      "text": [],
+      "faces": [],
+      "size": [
+        1200,
+        800
+      ],
+      "printableBadge": false,
+      "photoSources": [
+        2
       ]
     }
-  ],
-  "jobId": "bi-indoor-winter-activities-for-kids-1794306947870"
+  ]
 }
