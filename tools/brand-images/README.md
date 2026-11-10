@@ -11,7 +11,9 @@ node tools/brand-images/job.mjs tools/brand-images/samples/indoor-winter-activit
 npm test --prefix tools/brand-images
 ```
 
-JPGs and `render-info.json` go to `tools/brand-images/output/` (ignored). Set `CHROMIUM_PATH` only to use an existing Chromium installation. Browser assets are embedded; page network requests are blocked.
+JPGs and `render-info.json` go to `tools/brand-images/output/` (ignored). For n8n, the manual Action also accepts `job_json`: a reviewed manifest with `jobId`. The worker writes media, then acknowledges its exact output manifest to the authenticated n8n callback using the existing renderer secret. Incoming manifests are excluded from artifacts. The callback only updates job state; it never publishes posts.
+
+Set `CHROMIUM_PATH` only to use an existing Chromium installation. Browser assets are embedded; page network requests are blocked.
 
 GitHub Actions → **Nestoodle brand images** → Run workflow. Select a committed manifest and leave **publish_media** false for artifact-only review. True writes the validated artifact to the `media` branch under `nestoodle/brand/<slug>/`; this is permitted only on main. There is **no schedule**. PR runs test/render without write permission. The separate media job serializes publication and rebases concurrent media changes; it never overwrites other media folders. GitHub-hosted rendering needs no service secrets.
 
@@ -35,7 +37,7 @@ Facebook shares the cover layout but uses “Read the guide” rather than a car
 Copy the sample `job.json` to `jobs/<slug>/job.json`. Fields:
 
 - `slug`, `articleUrl`, editorial short `title` (at most 8 words), `highlight` (exact substring), `eyebrow`, one-line `benefit`, uppercase `keyword`.
-- `photos`: at least two `{src, alt, review}` objects. Local JPEG/PNG paths must resolve within the job directory. HTTPS sources must be public Nestoodle WP uploads or this repo’s Nestoodle media branch, without query strings, credentials or redirects. Downloads are capped at 12 MB.
+- `photos`: at least two `{src, alt, review}` objects. Local JPEG/PNG/WebP paths must resolve within the job directory. HTTPS sources must be public Nestoodle WP uploads or this repo’s Nestoodle media branch, without query strings, credentials or redirects. Downloads are capped at 12 MB.
 - `steps`: 1–8 objects `{title, body, photo}`; photo is a zero-based index. Step bodies fit in two lines.
 - Optional `printableUrl` (Nestoodle PDF) **and** `printableVerified: true`: producer must verify the actual PDF and article relationship first. Only this combination permits “+ free printable.” The winter sample deliberately promises only the full guide.
 
@@ -47,4 +49,4 @@ Headlines auto-shrink to fit at most three lines; body/eyebrow/benefit limits ar
 
 One published article: https://nestoodle.com/indoor-winter-activities-for-kids/. “10” comes from the article’s actual activity count. The two sample steps are from the article; photos are newly generated realistic illustrations, not documentary photographs. Both were visually checked: hands/materials, no faces, no text. The sample is a four-slide carousel (cover, two example steps, CTA), not a claim to reproduce all ten activities in the carousel.
 
-**Approval gate:** do not connect the article writer or NST-SOC until the owner approves these samples. After approval, preserve/recheck all existing triggers and connections before publishing any n8n draft; save those sources in the private operations repository. Writer: clean photo prompt suffix, 2-photo featured collage, OG social image. NST-SOC: dedicated pin/carousel/Facebook outputs, replacing article-image/wsrv reuse. Photos must retain their alt text on upload.
+**Template design approved by the owner on 10 Nov 2026.** n8n integration sources are maintained in the private operations repository. New article/social content still requires owner review. Preserve/recheck all existing triggers and connections before publishing any n8n draft; save those sources in the private operations repository. Writer: clean photo prompt suffix, 2-photo featured collage, OG social image. NST-SOC: dedicated pin/carousel/Facebook outputs, replacing article-image/wsrv reuse. Photos must retain their alt text on upload.
