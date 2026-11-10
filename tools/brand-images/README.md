@@ -53,6 +53,8 @@ One published article: https://nestoodle.com/indoor-winter-activities-for-kids/.
 
 ## Owner refinements, 10 Nov 2026
 
-Pin headline starts at 110px (+25%), benefit at 42px; three-line maximum and minimum legibility stay enforced. Step titles start at 96px and body at 50px; the photo starts 30px below actual fitted copy, avoiding unused gaps. Every step must use a separate photo; matching paths and identical image bytes are rejected. The cover has its own photo.
+Pin headline starts at 110px (+25%), benefit at 42px; three-line maximum and minimum legibility stay enforced. Step titles start at 96px and body at 58px; the photo starts 30px below actual fitted copy, avoiding unused gaps. Every step must use a separate photo; matching paths and identical image bytes are rejected. The cover has its own photo.
 
 Eyebrows must not repeat headline words (numbers are compared as quantities, not words). The producer derives age intersection and time range from the chosen activities’ explicit article metadata; if unavailable it leaves the eyebrow absent rather than invent ages/times. Pin and IG cover display a coral Free printable badge only for an article-linked Nestoodle PDF whose response starts with the actual PDF signature. A failed PDF check fails the render. No PDF exists for the winter sample, so it has no badge.
+
+V2 final polish: step body starts at 58px (about 16% above v2’s 50px), with room for two lines. Auto-shrink and the dynamic photo position remain enabled. Applies to new writer/NST-SOC renders; existing-post backfill is deferred.
