@@ -27,7 +27,7 @@ export function validate(job) {
  for(const step of job.steps){shortText(step.title,'step title');shortText(step.body,'step body',300);if(step.title.split(/\s+/).length>8) fail('Step headline exceeds 8 words');if(!Number.isInteger(step.photo)||!job.photos[step.photo]) fail('Invalid step photo');}
  return job;
 }
-async function dataUri(file) { const ext=path.extname(file).toLowerCase(); const mime={'.png':'image/png','.jpg':'image/jpeg','.jpeg':'image/jpeg','.ttf':'font/ttf'}[ext];if(!mime) fail('Unsupported image/font type');return `data:${mime};base64,${(await readFile(file)).toString('base64')}`; }
+async function dataUri(file) { const ext=path.extname(file).toLowerCase(); const mime={'.png':'image/png','.jpg':'image/jpeg','.jpeg':'image/jpeg','.webp':'image/webp','.ttf':'font/ttf'}[ext];if(!mime) fail('Unsupported image/font type');return `data:${mime};base64,${(await readFile(file)).toString('base64')}`; }
 async function photoData(photo, base) {
  if(/^https:\/\//.test(photo.src)) {
   let url=new URL(photo.src);
@@ -35,7 +35,7 @@ async function photoData(photo, base) {
   if(!((url.hostname==='nestoodle.com'&&url.pathname.startsWith('/wp-content/uploads/'))||(url.hostname==='raw.githubusercontent.com'&&url.pathname.startsWith('/xredible/xredible-automation/media/nestoodle/')))) fail('Photo host/path not allowed');
   const response=await fetch(url,{redirect:'error',signal:AbortSignal.timeout(30000)});
   if(!response.ok) fail(`Photo fetch failed (${response.status})`);
-  const mime=response.headers.get('content-type')?.split(';')[0];if(!['image/jpeg','image/png'].includes(mime)) fail('Photo must be JPEG/PNG');
+  const mime=response.headers.get('content-type')?.split(';')[0];if(!['image/jpeg','image/png','image/webp'].includes(mime)) fail('Photo must be JPEG/PNG/WebP');
   const limit=12*1024*1024;if(Number(response.headers.get('content-length'))>limit) fail('Photo too large');
   const chunks=[];let length=0;for await(const chunk of response.body){length+=chunk.length;if(length>limit)fail('Photo too large');chunks.push(chunk);}
   return `data:${mime};base64,${Buffer.concat(chunks).toString('base64')}`;
