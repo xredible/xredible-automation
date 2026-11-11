@@ -1,6 +1,8 @@
 """Root-only installer smoke test; key is read from a file, never argv/stdout."""
 import json
 import os
+import re
+import time
 from pathlib import Path
 from urllib.request import Request, urlopen
 
@@ -22,7 +24,24 @@ if __name__ == "__main__":
     )
     request = Request("http://127.0.0.1:8099/detect", data=json.dumps({"text": sample}).encode(),
                       headers={"Content-Type": "application/json", "X-Detect-Key": key_from_file()})
-    with urlopen(request, timeout=180) as response:
+    with urlopen(request, timeout=20) as response:
         result = json.load(response)
+    deadline = time.monotonic() + 300
+    job_id = result.get("job_id")
+    if not isinstance(job_id, str) or not re.fullmatch(r"[a-f0-9]{32}", job_id):
+        raise SystemExit("Async job response invalid")
+    while time.monotonic() < deadline:
+        time.sleep(10)
+        poll = Request("http://127.0.0.1:8099/result/" + job_id,
+                       headers={"X-Detect-Key": key_from_file()})
+        with urlopen(poll, timeout=15) as response:
+            status = json.load(response)
+        if status.get("status") == "done":
+            result = status["result"]
+            break
+        if status.get("status") == "error":
+            raise SystemExit("Detector sample failed; inspect service health (no key needed)")
+    else:
+        raise SystemExit("Detector sample exceeded five minutes")
     assert 0 <= result["ai_percent"] <= 100 and result["paragraphs"]
     print(json.dumps({k: result[k] for k in ("ai_percent", "label", "model", "seconds")}))

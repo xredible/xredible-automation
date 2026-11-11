@@ -1,8 +1,49 @@
 # Nestoodle AI-text check on a Raspberry Pi
 
+## Async v2 / existing Oracle installation update
+
+The owner now hosts the service on Oracle n8n-1. Existing canonical installations
+can update application code without reinstalling dependencies/model or changing
+the unit, key, tunnel, firewall or loopback binding:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/xredible/xredible-automation/main/tools/ai-detector/update.sh -o /tmp/nestoodle-ai-detector-update.sh && sudo bash /tmp/nestoodle-ai-detector-update.sh
+```
+
+For a pinned release replace `main` with the supplied commit and pass
+`--ref THE_SAME_COMMIT` to sudo bash. The updater checks the existing canonical
+entry point, switches a new application release atomically, waits for API v2,
+and runs an authenticated async sample without printing the key. It rolls back
+the application if readiness/sample fails. Existing installs with a different
+layout stop before switching and need an adapted update.
+
+**POST /detect now returns HTTP 202 immediately**:
+`{"job_id":"32 lowercase hex characters","status":"running","poll_after_seconds":10}`.
+Poll **GET /result/JOB_ID** with the **same X-Detect-Key** every 10 seconds:
+
+- HTTP 202: `{"job_id":"...","status":"running"}`.
+- HTTP 200 done: `{"job_id":"...","status":"done","result":{...score fields below...}}`.
+- HTTP 200 failed: `{"job_id":"...","status":"error","error":"safe generic reason"}`.
+- HTTP 404: missing/expired job (including a service restart).
+
+Each HTTP request is short (n8n should use 15–20-second request timeouts), so
+Cloudflare does not have to hold a request open for CPU inference. n8n's complete
+polling window is **five minutes from POST**, including network/wait time;
+stop and skip on expiry/error. A job has a **270-second cooperative compute
+deadline** (DETECT_JOB_TIMEOUT, capped at 270), independent of the legacy 90-second
+DETECT_TIMEOUT. One active job only; concurrent POST returns 429, no growing queue.
+Results live **in process memory**, at most 32 retained, expire after 15 minutes,
+and are lost on restart. No article input is stored in the result cache or logs.
+All result responses use `Cache-Control: no-store`; no public file/result URL.
+Jobs continue when the POST caller disconnects. No partial score on failure.
+
+`/health` advertises `api_version: 2`, `mode: async`, `job_timeout_seconds` and
+`busy`. `/detect?wait=true` retains the old synchronous contract for compatibility
+tests only; the writer must use the default asynchronous endpoint.
+
 ## Alternative: private Hugging Face Space
 
-The owner-authorized GitHub Actions workflow **Deploy private AI detector Space**
+The manual-only GitHub Actions workflow **Deploy private AI detector Space**
 uses the repository secret `HF_TOKEN` to create/deploy
 https://huggingface.co/spaces/Xrediblee/nestoodle-ai-detector.
 It enforces private visibility and refuses paid hardware. Only allowlisted source
@@ -136,7 +177,8 @@ the owner has installed and exposed the service.
 Blank lines and `<p>`/block elements split paragraphs; scripts/styles/HTML and
 WordPress shortcode tags are stripped. Indexes are **one-based original paragraph
 order**. `ai_score` and `ai_percent` are both **0–100**, not 0–1. Paragraphs are
-sorted descending by score, with stable original-order ties. A response has:
+sorted descending by score, with stable original-order ties. A completed job's
+`result` (or the legacy synchronous response) has:
 
 ```json
 {
@@ -174,16 +216,17 @@ Use the ranked openings for Sakshi’s review, keep Draft status, and retain
 **“Run Copyleaks before publishing”**. Never manufacture personal stories to
 change a detector score.
 
-Only one request runs at a time; another gets 429 (Retry-After 60). Inference runs
-off the HTTP event loop so health remains responsive. Time budget 90 seconds;
-CPU work checks cancellation/deadline between windows. A single active forward
-pass can finish after a disconnected/timed-out caller, then releases the worker;
-there is no growing job queue. No partial article score is returned on timeout.
+Only one job runs at a time; another gets 429 (Retry-After 60). Inference runs
+off the HTTP event loop so health/polls remain responsive. Async budget is 270
+seconds; the legacy synchronous budget remains 90. CPU work checks deadlines
+between windows. A single active forward pass can finish after a deadline, then
+releases the worker; no growing queue or partial score on timeout.
 401 means wrong/missing key, 422 invalid/short text, 413 oversized JSON, 429 busy,
 503 unavailable, 504 timeout. Neither input text nor key is echoed in errors.
 
-After confirmation, n8n will use a 180-second HTTP timeout, continue on detector
-failure, save the result as private draft review data, and append the top 3–5
+After confirmation, n8n will use short authenticated HTTP requests and ten-second
+polling for up to five minutes, continue on detector failure, save the result as
+private draft review data, and append the top 3–5
 paragraph openings to the owner alert. Unavailable/slow checks are marked skipped;
 they never block a draft or remove the manual Copyleaks reminder.
 
