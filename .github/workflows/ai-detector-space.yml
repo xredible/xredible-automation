@@ -1,0 +1,29 @@
+name: Deploy private AI detector Space
+on:
+  push:
+    branches: [main]
+    paths:
+      - tools/ai-detector/**
+      - .github/workflows/ai-detector-space.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: ai-detector-space
+  cancel-in-progress: false
+jobs:
+  deploy:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install huggingface-hub==0.36.2
+      - name: Create private free-CPU Space and upload source
+        run: python tools/ai-detector/deploy_space.py
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
