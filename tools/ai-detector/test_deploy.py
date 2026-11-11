@@ -33,7 +33,7 @@ class DeploymentTests(unittest.TestCase):
         self.assertTrue(api.create_repo.call_args.kwargs["private"])
         names = {call.kwargs["path_in_repo"] for call in hub.CommitOperationAdd.call_args_list}
         self.assertEqual(names, {"requirements.txt", "constants.py", "model.py", "engine.py", "text.py",
-                                 "app.py", "download_model.py", "THIRD_PARTY.md", "Dockerfile", "README.md"})
+                                 "app.py", "jobs.py", "download_model.py", "THIRD_PARTY.md", "Dockerfile", "README.md"})
         api.add_space_secret.assert_not_called()
         api.request_space_hardware.assert_not_called()
 

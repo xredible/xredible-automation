@@ -28,7 +28,7 @@ class ServiceTests(unittest.TestCase):
     def test_full_article_weighting_and_sorted_paragraph_indices(self):
         content = " ".join(["human"] * 40) + "\n\n" + " ".join(["ai"] * 30) + "\n\n" + " ".join(["human"] * 10)
         with TestClient(create_app(WordScorer, key=KEY)) as client:
-            response = client.post("/detect", headers=HEADERS, json={"text": content})
+            response = client.post("/detect?wait=true", headers=HEADERS, json={"text": content})
             self.assertEqual(response.status_code, 200)
             result = response.json()
             self.assertEqual(result["ai_percent"], 37.5)
@@ -39,17 +39,17 @@ class ServiceTests(unittest.TestCase):
     def test_limits_auth_and_validation_never_echo_input_or_key(self):
         with TestClient(create_app(WordScorer, key=KEY)) as client:
             self.assertEqual(client.get("/health").status_code, 200)
-            response = client.post("/detect", json={"text": "human " * 50})
+            response = client.post("/detect?wait=true", json={"text": "human " * 50})
             self.assertEqual(response.status_code, 401)
             self.assertNotIn(KEY, response.text)
             for value in ["x" * 199, "x" * 100001, "<script>" + "x" * 300 + "</script>", None, 22]:
-                response = client.post("/detect", headers=HEADERS, json={"text": value})
+                response = client.post("/detect?wait=true", headers=HEADERS, json={"text": value})
                 self.assertEqual(response.status_code, 422)
                 self.assertNotIn("x" * 50, response.text)
             for length in [200, 100000]:
-                self.assertEqual(client.post("/detect", headers=HEADERS, json={"text": "x" * length}).status_code, 200)
-            self.assertEqual(client.post("/detect", headers=HEADERS, content="not json").status_code, 422)
-            self.assertEqual(client.post("/detect", headers=HEADERS, content=b"x" * 1300001).status_code, 413)
+                self.assertEqual(client.post("/detect?wait=true", headers=HEADERS, json={"text": "x" * length}).status_code, 200)
+            self.assertEqual(client.post("/detect?wait=true", headers=HEADERS, content="not json").status_code, 422)
+            self.assertEqual(client.post("/detect?wait=true", headers=HEADERS, content=b"x" * 1300001).status_code, 413)
             self.assertEqual(client.get("/docs").status_code, 404)
 
     def test_visible_paragraphs_and_shortcodes(self):
@@ -67,11 +67,11 @@ class ServiceTests(unittest.TestCase):
                 return 0.2
 
         with TestClient(create_app(Blocking, key=KEY)) as client, concurrent.futures.ThreadPoolExecutor() as pool:
-            first = pool.submit(client.post, "/detect", headers=HEADERS, json={"text": "x" * 200})
+            first = pool.submit(client.post, "/detect?wait=true", headers=HEADERS, json={"text": "x" * 200})
             self.assertTrue(entered.wait(2))
             try:
                 self.assertTrue(client.get("/health").json()["busy"])
-                self.assertEqual(client.post("/detect", headers=HEADERS, json={"text": "x" * 200}).status_code, 429)
+                self.assertEqual(client.post("/detect?wait=true", headers=HEADERS, json={"text": "x" * 200}).status_code, 429)
             finally:
                 release.set()
             self.assertEqual(first.result(timeout=3).status_code, 200)
@@ -83,7 +83,7 @@ class ServiceTests(unittest.TestCase):
                 return 0.9
 
         with TestClient(create_app(Slow, key=KEY, budget=0.02)) as client:
-            response = client.post("/detect", headers=HEADERS, json={"text": "x" * 200})
+            response = client.post("/detect?wait=true", headers=HEADERS, json={"text": "x" * 200})
             self.assertEqual(response.status_code, 504)
             self.assertNotIn("ai_percent", response.text)
             time.sleep(0.2)
@@ -95,7 +95,7 @@ class ServiceTests(unittest.TestCase):
                 raise RuntimeError(KEY + " private article")
 
         with TestClient(create_app(Broken, key=KEY)) as client:
-            response = client.post("/detect", headers=HEADERS, json={"text": "x" * 200})
+            response = client.post("/detect?wait=true", headers=HEADERS, json={"text": "x" * 200})
             self.assertEqual(response.status_code, 503)
             self.assertNotIn(KEY, response.text)
             self.assertNotIn("private article", response.text)

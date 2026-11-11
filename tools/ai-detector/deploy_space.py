@@ -7,7 +7,7 @@ from huggingface_hub import HfApi
 
 SPACE = "Xrediblee/nestoodle-ai-detector"
 ROOT = Path(__file__).resolve().parent
-FILES = ["requirements.txt", "constants.py", "model.py", "engine.py", "text.py",
+FILES = ["requirements.txt", "constants.py", "model.py", "engine.py", "text.py", "jobs.py",
          "app.py", "download_model.py", "THIRD_PARTY.md"]
 STAGE = "initialization"
 

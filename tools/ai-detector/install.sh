@@ -30,7 +30,7 @@ chmod 755 "$release"
 cleanup() { unset detector_key; }
 trap cleanup EXIT
 base="https://raw.githubusercontent.com/xredible/xredible-automation/$ref/tools/ai-detector"
-for file in app.py serve.py constants.py text.py engine.py model.py download_model.py client_test.py requirements.txt ai-detector.service README.md THIRD_PARTY.md; do
+for file in app.py jobs.py serve.py constants.py text.py engine.py model.py download_model.py client_test.py requirements.txt ai-detector.service README.md THIRD_PARTY.md; do
     curl --fail --silent --show-error --location --proto '=https' --tlsv1.2 "$base/$file" -o "$release/$file"
     chmod 644 "$release/$file"
 done

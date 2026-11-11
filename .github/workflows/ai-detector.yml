@@ -25,6 +25,7 @@ jobs:
           cache: pip
           cache-dependency-path: tools/ai-detector/requirements.txt
       - run: bash -n tools/ai-detector/install.sh
+      - run: bash -n tools/ai-detector/update.sh
       - name: Install pinned CPU dependencies
         shell: bash
         run: |
