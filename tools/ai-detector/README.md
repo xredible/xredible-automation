@@ -1,5 +1,34 @@
 # Nestoodle AI-text check on a Raspberry Pi
 
+## Alternative: private Hugging Face Space
+
+The owner-authorized GitHub Actions workflow **Deploy private AI detector Space**
+uses the repository secret `HF_TOKEN` to create/deploy
+https://huggingface.co/spaces/Xrediblee/nestoodle-ai-detector.
+It enforces private visibility and refuses paid hardware. Only allowlisted source
+files are uploaded; the deployment token is never added to the image or Space.
+The Docker variant uses HF's required port 7860; the Pi service remains loopback-only.
+
+After creation, open the Space → **Settings → Variables and secrets → New secret**:
+name **DETECT_KEY**, value a new random 32–256-character string containing only
+letters, digits, `_`, `-` (a password manager can generate 64 hex characters).
+Save, restart if needed, and wait for Running. Do not put the value in a Variable,
+repository file, URL or chat. Keep the same value for n8n's `X-Detect-Key` header.
+
+Private HF routing also needs `Authorization: Bearer …`. Create a separate
+fine-grained **read** HF token permitted to read this Space; keep the Write token
+only in GitHub Actions. In n8n use **Custom Auth** named `[NST] AI Detector (HF)`
+with JSON containing a `headers` object whose keys are `Authorization` (value
+`Bearer ` followed by that read token) and `X-Detect-Key` (the Space secret).
+Enter actual values only in n8n's credential editor. A single Header Auth credential
+cannot supply both headers. The direct app host is shown by **Embed this Space →
+Direct URL** (normally `https://xrediblee-nestoodle-ai-detector.hf.space`);
+use `/health` and `/detect` on that host, not the huggingface.co editor URL.
+
+The model stays CPU-only with a 165-second internal budget. Free Spaces can sleep
+and cold-start slowly; writer calls must retain their 180-second timeout and skip
+without blocking a Draft on any failure. No paid upgrade or always-on guarantee.
+
 A native FastAPI service for **64-bit Debian bookworm / Python 3.11+ / arm64**,
 using `desklib/ai-text-detector-v1.01` on CPU. No paid inference or detection API.
 The requested model is DeBERTa-v3-large (about 435M parameters, **1.74 GB weights**),
