@@ -1,0 +1,310 @@
+{
+  "slug": "featured-261113-808",
+  "articleUrl": "https://nestoodle.com/indoor-winter-activities-for-kids/",
+  "renderer": 1,
+  "approval": "template approved 2026-11-10; new article/social content remains subject to owner review",
+  "photos": [
+    {
+      "alt": "Sage painter’s tape forms a zig-zag balance path and square on a clear living-room floor.",
+      "review": {
+        "approved": true,
+        "faceFree": true,
+        "reviewer": "Codex visual + native 10/10 execution84551"
+      }
+    },
+    {
+      "alt": "Plain cardboard-box fort with a cream blanket and sage cushions beside a winter window.",
+      "review": {
+        "approved": true,
+        "faceFree": true,
+        "reviewer": "Codex visual + native 10/10 execution84551"
+      }
+    },
+    {
+      "alt": "Two upside-down cooking pots and wooden spoons on a folded towel for kitchen drumming.",
+      "review": {
+        "approved": true,
+        "faceFree": true,
+        "reviewer": "Codex visual + native 10/10 execution84551"
+      }
+    }
+  ],
+  "outputs": [
+    {
+      "file": "pin.jpg",
+      "template": "pin",
+      "text": [
+        {
+          "field": "eyebrow",
+          "fontSize": 36,
+          "lines": 1
+        },
+        {
+          "field": "title",
+          "fontSize": 110,
+          "lines": 2
+        },
+        {
+          "field": "benefit",
+          "fontSize": 42,
+          "lines": 1
+        }
+      ],
+      "faces": [],
+      "size": [
+        1000,
+        1500
+      ],
+      "printableBadge": false,
+      "photoSources": [
+        0
+      ]
+    },
+    {
+      "file": "ig-cover.jpg",
+      "template": "ig-cover",
+      "text": [
+        {
+          "field": "eyebrow",
+          "fontSize": 36,
+          "lines": 1
+        },
+        {
+          "field": "title",
+          "fontSize": 100,
+          "lines": 2
+        },
+        {
+          "field": "navigation",
+          "fontSize": 38,
+          "lines": 1
+        }
+      ],
+      "faces": [],
+      "size": [
+        1080,
+        1350
+      ],
+      "printableBadge": false,
+      "photoSources": [
+        0
+      ]
+    },
+    {
+      "file": "ig-step-01.jpg",
+      "template": "ig-step",
+      "text": [
+        {
+          "field": "title",
+          "fontSize": 96,
+          "lines": 1
+        },
+        {
+          "field": "body",
+          "fontSize": 58,
+          "lines": 2
+        }
+      ],
+      "faces": [],
+      "size": [
+        1080,
+        1350
+      ],
+      "printableBadge": false,
+      "photoSources": [
+        1
+      ]
+    },
+    {
+      "file": "ig-step-02.jpg",
+      "template": "ig-step",
+      "text": [
+        {
+          "field": "title",
+          "fontSize": 96,
+          "lines": 1
+        },
+        {
+          "field": "body",
+          "fontSize": 58,
+          "lines": 2
+        }
+      ],
+      "faces": [],
+      "size": [
+        1080,
+        1350
+      ],
+      "printableBadge": false,
+      "photoSources": [
+        2
+      ]
+    },
+    {
+      "file": "ig-cta.jpg",
+      "template": "ig-cta",
+      "text": [
+        {
+          "field": "save",
+          "fontSize": 110,
+          "lines": 2
+        },
+        {
+          "field": "keyword",
+          "fontSize": 78,
+          "lines": 1
+        },
+        {
+          "field": "cta",
+          "fontSize": 48,
+          "lines": 1
+        }
+      ],
+      "faces": [],
+      "size": [
+        1080,
+        1350
+      ],
+      "printableBadge": false,
+      "photoSources": []
+    },
+    {
+      "file": "facebook.jpg",
+      "template": "ig-cover",
+      "text": [
+        {
+          "field": "eyebrow",
+          "fontSize": 36,
+          "lines": 1
+        },
+        {
+          "field": "title",
+          "fontSize": 100,
+          "lines": 2
+        },
+        {
+          "field": "navigation",
+          "fontSize": 38,
+          "lines": 1
+        }
+      ],
+      "faces": [],
+      "size": [
+        1080,
+        1350
+      ],
+      "printableBadge": false,
+      "photoSources": [
+        0
+      ]
+    },
+    {
+      "file": "og.jpg",
+      "template": "og",
+      "text": [
+        {
+          "field": "title",
+          "fontSize": 66,
+          "lines": 3
+        }
+      ],
+      "faces": [],
+      "size": [
+        1200,
+        630
+      ],
+      "printableBadge": false,
+      "photoSources": [
+        0
+      ]
+    },
+    {
+      "file": "story.jpg",
+      "template": "story",
+      "text": [
+        {
+          "field": "eyebrow",
+          "fontSize": 36,
+          "lines": 1
+        },
+        {
+          "field": "title",
+          "fontSize": 112,
+          "lines": 2
+        },
+        {
+          "field": "benefit",
+          "fontSize": 44,
+          "lines": 1
+        }
+      ],
+      "faces": [],
+      "size": [
+        1080,
+        1920
+      ],
+      "printableBadge": false,
+      "photoSources": [
+        0
+      ]
+    },
+    {
+      "file": "featured-collage.jpg",
+      "template": "featured-collage",
+      "text": [],
+      "faces": [],
+      "size": [
+        1200,
+        800
+      ],
+      "printableBadge": false,
+      "photoSources": [
+        0,
+        1
+      ]
+    },
+    {
+      "file": "article-photo-01.jpg",
+      "template": "article-photo",
+      "text": [],
+      "faces": [],
+      "size": [
+        1200,
+        800
+      ],
+      "printableBadge": false,
+      "photoSources": [
+        0
+      ]
+    },
+    {
+      "file": "article-photo-02.jpg",
+      "template": "article-photo",
+      "text": [],
+      "faces": [],
+      "size": [
+        1200,
+        800
+      ],
+      "printableBadge": false,
+      "photoSources": [
+        1
+      ]
+    },
+    {
+      "file": "article-photo-03.jpg",
+      "template": "article-photo",
+      "text": [],
+      "faces": [],
+      "size": [
+        1200,
+        800
+      ],
+      "printableBadge": false,
+      "photoSources": [
+        2
+      ]
+    }
+  ],
+  "jobId": "bi-featured-261113-808-1794509416394"
+}
