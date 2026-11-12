@@ -1,0 +1,28 @@
+{
+  "source_commit": "bca94e3b99744b75d3a10ca3a36309b14c648084",
+  "source_path": "tools/brand-images/samples/indoor-winter-activities-for-kids",
+  "reviewed_at": "2026-11-12",
+  "photos": [
+    {
+      "file": "box-fort.png",
+      "sha256": "65ea52ab172acaa9fddb7eb31f7cae41c13d55985bb465537b70144b346db233",
+      "approved": true,
+      "faceFree": true,
+      "reviewer": "Visual quality review; same unchanged source previously reviewed 2026-11-10"
+    },
+    {
+      "file": "tape-maze.png",
+      "sha256": "b681df966bf4080891ba5f622bdc2d705ea272d5f6688522f1675b5f2346027d",
+      "approved": true,
+      "faceFree": true,
+      "reviewer": "Visual quality review; same unchanged source previously reviewed 2026-11-10"
+    },
+    {
+      "file": "pot-drumming.png",
+      "sha256": "42aa7363c621045683160827abc11627bac79ffcf829bc225ee27819b2b492c1",
+      "approved": true,
+      "faceFree": true,
+      "reviewer": "Visual quality review; same unchanged source previously reviewed 2026-11-10"
+    }
+  ]
+}
