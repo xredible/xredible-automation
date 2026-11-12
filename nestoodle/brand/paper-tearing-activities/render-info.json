@@ -9,7 +9,7 @@
       "review": {
         "approved": true,
         "faceFree": true,
-        "reviewer": "n8n Gemini 3.1 Flash-Lite visual check, executions 77640–77645"
+        "reviewer": "NST-BI Gemini visual check 2026-11-10T12:30:20.907Z"
       }
     },
     {
@@ -17,7 +17,7 @@
       "review": {
         "approved": true,
         "faceFree": true,
-        "reviewer": "n8n Gemini 3.1 Flash-Lite visual check, executions 77640–77645"
+        "reviewer": "NST-BI Gemini visual check 2026-11-10T12:30:20.907Z"
       }
     },
     {
@@ -25,7 +25,7 @@
       "review": {
         "approved": true,
         "faceFree": true,
-        "reviewer": "n8n Gemini 3.1 Flash-Lite visual check, executions 77640–77645"
+        "reviewer": "NST-BI Gemini visual check 2026-11-10T12:30:20.907Z"
       }
     }
   ],
@@ -41,8 +41,8 @@
         },
         {
           "field": "title",
-          "fontSize": 92,
-          "lines": 2
+          "fontSize": 91,
+          "lines": 3
         },
         {
           "field": "benefit",
@@ -55,7 +55,7 @@
         1000,
         1500
       ],
-      "printableBadge": false,
+      "printableBadge": true,
       "photoSources": [
         0
       ]
@@ -71,8 +71,8 @@
         },
         {
           "field": "title",
-          "fontSize": 100,
-          "lines": 2
+          "fontSize": 96,
+          "lines": 3
         },
         {
           "field": "navigation",
@@ -85,7 +85,7 @@
         1080,
         1350
       ],
-      "printableBadge": false,
+      "printableBadge": true,
       "photoSources": [
         0
       ]
@@ -122,7 +122,7 @@
         {
           "field": "title",
           "fontSize": 96,
-          "lines": 2
+          "lines": 1
         },
         {
           "field": "body",
@@ -179,8 +179,8 @@
         },
         {
           "field": "title",
-          "fontSize": 100,
-          "lines": 2
+          "fontSize": 96,
+          "lines": 3
         },
         {
           "field": "navigation",
@@ -193,7 +193,7 @@
         1080,
         1350
       ],
-      "printableBadge": false,
+      "printableBadge": true,
       "photoSources": [
         0
       ]
@@ -204,7 +204,7 @@
       "text": [
         {
           "field": "title",
-          "fontSize": 65,
+          "fontSize": 59,
           "lines": 3
         }
       ],
@@ -305,5 +305,6 @@
         2
       ]
     }
-  ]
+  ],
+  "jobId": "bi-paper-tearing-activities-1794477049630"
 }
