@@ -58,7 +58,15 @@ jobs:
           for it in items:
               name = it['name']
               if not re.fullmatch(r'[A-Za-z0-9._-]+', name): raise SystemExit('bad name ' + name)
-              subprocess.run(['curl', '-fsSL', '--retry', '4', '-o', os.path.join(dest, name), it['url']], check=True)
+              url = it['url']; out = os.path.join(dest, name)
+              if re.match(r'https://(www\.)?(youtube\.com|youtu\.be)/', url):
+                  # Only the church's own channel videos are fetched this way (owner's content).
+                  subprocess.run(['pip', 'install', '-q', '-U', 'yt-dlp'], check=True)
+                  cmd = ['yt-dlp', '-f', 'bv*[height<=1080][ext=mp4]+ba[ext=m4a]/b[ext=mp4]/b', '--merge-output-format', 'mp4', '-o', out]
+                  if it.get('section'): cmd += ['--download-sections', '*' + it['section'], '--force-keyframes-at-cuts']
+                  subprocess.run(cmd + [url], check=True)
+              else:
+                  subprocess.run(['curl', '-fsSL', '--retry', '4', '-o', out, url], check=True)
               print(name, os.path.getsize(os.path.join(dest, name)))
           PY
       - name: Transcribe
