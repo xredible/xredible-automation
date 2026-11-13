@@ -1,0 +1,86 @@
+name: EC media fetch
+# Downloads media from short-lived URLs (e.g. vidIQ/S3 renders the assistant's sandbox cannot reach), optionally
+# transcribes speech/song with faster-whisper (word timestamps), and commits the files to the media branch.
+on:
+  workflow_dispatch:
+    inputs:
+      items:
+        description: 'JSON array of {"name": "file.mp4", "url": "https://..."}'
+        required: true
+      dest:
+        description: 'Folder on the media branch, e.g. elevating-christ/reels/work/2026-11-13-daniel'
+        required: true
+      transcribe:
+        description: 'Transcribe *.mp4/*.mp3 with faster-whisper (language below)'
+        type: boolean
+        default: true
+      language:
+        description: 'Whisper language code'
+        default: 'hi'
+concurrency:
+  group: ec-media-fetch
+  cancel-in-progress: false
+permissions:
+  contents: write
+jobs:
+  fetch:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - name: Validate destination
+        env:
+          DEST: ${{ inputs.dest }}
+        run: |
+          case "$DEST" in elevating-christ/*|nestoodle/*) ;; *) echo "dest must be under elevating-christ/ or nestoodle/"; exit 1;; esac
+          case "$DEST" in *..*) echo "bad dest"; exit 1;; esac
+      - uses: actions/checkout@v4
+        with:
+          ref: media
+          filter: blob:none
+          sparse-checkout: |
+            ${{ inputs.dest }}
+      - name: Download
+        env:
+          ITEMS: ${{ inputs.items }}
+          DEST: ${{ inputs.dest }}
+        run: |
+          mkdir -p "$DEST"
+          python3 - <<'PY'
+          import json, os, re, subprocess
+          items = json.loads(os.environ['ITEMS']); dest = os.environ['DEST']
+          for it in items:
+              name = it['name']
+              if not re.fullmatch(r'[A-Za-z0-9._-]+', name): raise SystemExit('bad name ' + name)
+              subprocess.run(['curl', '-fsSL', '--retry', '4', '-o', os.path.join(dest, name), it['url']], check=True)
+              print(name, os.path.getsize(os.path.join(dest, name)))
+          PY
+      - name: Transcribe
+        if: ${{ inputs.transcribe }}
+        env:
+          DEST: ${{ inputs.dest }}
+          LANG_CODE: ${{ inputs.language }}
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
+          pip install -q faster-whisper==1.1.1
+          python3 - <<'PY'
+          import json, os, glob
+          from faster_whisper import WhisperModel
+          dest = os.environ['DEST']; lang = os.environ['LANG_CODE']
+          m = WhisperModel('small', device='cpu', compute_type='int8')
+          for f in sorted(glob.glob(dest + '/*.mp4') + glob.glob(dest + '/*.mp3')):
+              segs, info = m.transcribe(f, language=lang, word_timestamps=True, vad_filter=False, beam_size=5)
+              out = []
+              for s in segs:
+                  out.append({'start': s.start, 'end': s.end, 'text': s.text, 'words': [{'start': w.start, 'end': w.end, 'word': w.word} for w in (s.words or [])]})
+              json.dump({'language': info.language, 'segments': out}, open(f + '.transcript.json', 'w'), ensure_ascii=False, indent=1)
+              print(f, len(out))
+          PY
+      - name: Commit to media branch
+        env:
+          DEST: ${{ inputs.dest }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add --sparse "$DEST"
+          git commit -m "EC media fetch: $DEST" || exit 0
+          git push origin HEAD:media
