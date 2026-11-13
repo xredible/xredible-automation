@@ -75,6 +75,21 @@ jobs:
               json.dump({'language': info.language, 'segments': out}, open(f + '.transcript.json', 'w'), ensure_ascii=False, indent=1)
               print(f, len(out))
           PY
+      - name: Shrink files over 95 MB (GitHub limit is 100 MB)
+        env:
+          DEST: ${{ inputs.dest }}
+        run: |
+          command -v ffmpeg >/dev/null || (sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg)
+          for f in "$DEST"/*.mp4; do
+            [ -f "$f" ] || continue
+            if [ "$(stat -c%s "$f")" -gt 95000000 ]; then
+              for crf in 26 30 34; do
+                ffmpeg -y -loglevel error -i "$f" -c:v libx264 -preset veryfast -crf $crf -c:a aac -b:a 160k -movflags +faststart "$f.small.mp4"
+                [ "$(stat -c%s "$f.small.mp4")" -lt 95000000 ] && break
+              done
+              mv "$f.small.mp4" "$f"; ls -la "$f"
+            fi
+          done
       - name: Commit to media branch
         env:
           DEST: ${{ inputs.dest }}
