@@ -17,6 +17,9 @@ on:
       language:
         description: 'Whisper language code'
         default: 'hi'
+      model:
+        description: 'Whisper model (small, medium, large-v3)'
+        default: 'small'
 concurrency:
   group: ec-media-fetch
   cancel-in-progress: false
@@ -60,6 +63,7 @@ jobs:
         env:
           DEST: ${{ inputs.dest }}
           LANG_CODE: ${{ inputs.language }}
+          MODEL: ${{ inputs.model }}
         run: |
           sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
           pip install -q "faster-whisper>=1.2" "av>=12,<14"
@@ -67,9 +71,9 @@ jobs:
           import json, os, glob
           from faster_whisper import WhisperModel
           dest = os.environ['DEST']; lang = os.environ['LANG_CODE']
-          m = WhisperModel('small', device='cpu', compute_type='int8')
+          m = WhisperModel(os.environ.get('MODEL') or 'small', device='cpu', compute_type='int8')
           for f in sorted(glob.glob(dest + '/*.mp4') + glob.glob(dest + '/*.mp3')):
-              segs, info = m.transcribe(f, language=lang, word_timestamps=True, vad_filter=False, beam_size=5)
+              segs, info = m.transcribe(f, language=lang, word_timestamps=True, vad_filter=True, condition_on_previous_text=False, beam_size=5)
               out = []
               for s in segs:
                   out.append({'start': s.start, 'end': s.end, 'text': s.text, 'words': [{'start': w.start, 'end': w.end, 'word': w.word} for w in (s.words or [])]})
