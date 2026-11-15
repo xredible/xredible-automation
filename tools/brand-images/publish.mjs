@@ -7,8 +7,8 @@ const git=(args,cwd=process.cwd())=>execFileSync('git',args,{cwd,stdio:'pipe',en
 const out=path.resolve(process.env.BRAND_OUTPUT??'tools/brand-images/output');
 const info=JSON.parse(await readFile(path.join(out,'render-info.json'),'utf8'));
 if(!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(info.slug)||info.slug.length>100)throw new Error('Invalid output slug');
-const files=['render-info.json',...info.outputs.map(o=>o.file)];
-if(files.some(f=>! /^(?:render-info\.json|[a-z0-9-]+\.jpg)$/.test(f)))throw new Error('Invalid output file');
+const files=['render-info.json',...info.outputs.map(o=>o.file),...(info.website?.featured?[info.website.featured]:[])];
+if(files.some(f=>! /^(?:render-info\.json|[a-z0-9-]+\.(?:jpg|webp))$/.test(f)))throw new Error('Invalid output file');
 const temp=await mkdtemp(path.join(os.tmpdir(),'brand-media-')),tree=path.join(temp,'media');
 try{
  git(['fetch','origin','media','--depth=1']);git(['worktree','add','--detach',tree,'FETCH_HEAD']);

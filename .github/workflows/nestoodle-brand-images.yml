@@ -52,6 +52,7 @@ jobs:
           name: nestoodle-brand-images
           path: |
             ${{ runner.temp }}/brand-images/*.jpg
+            ${{ runner.temp }}/brand-images/*.webp
             ${{ runner.temp }}/brand-images/render-info.json
           if-no-files-found: error
           include-hidden-files: false

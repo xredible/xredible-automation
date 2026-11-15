@@ -28,6 +28,7 @@ jobs:
           cache: npm
           cache-dependency-path: tools/reels/package-lock.json
       - run: npm ci --prefix tools/reels
+      - run: npm ci --prefix tools/brand-images
       - run: npx --prefix tools/reels playwright install --with-deps chromium
       - run: sudo apt-get update && sudo apt-get install -y ffmpeg
       - run: node tools/reels/job.mjs
@@ -46,6 +47,7 @@ jobs:
           cache: npm
           cache-dependency-path: tools/reels/package-lock.json
       - run: npm ci --prefix tools/reels
+      - run: npm ci --prefix tools/brand-images
       - run: npx --prefix tools/reels playwright install --with-deps chromium
       - run: sudo apt-get update && sudo apt-get install -y ffmpeg
       - run: node --check tools/reels/job.mjs && node --check tools/reels/render.mjs
