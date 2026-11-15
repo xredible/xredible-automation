@@ -49,7 +49,7 @@ for(const p of posts.slice(0,limit)){
    const hash=createHash('sha256').update(buf).digest('hex');if(hashes.has(hash))continue;
    const verdict=await request('nst-pinterest-photo-check',{image:buf.toString('base64'),mime,topic:p.title});
    let v;try{v=JSON.parse(verdict.content.map(c=>c.text||'').join(''));}catch{continue;}
-   if(v.pass!==true||v.score<7||v.faceFree!==true||!Array.isArray(v.problems)||v.problems.length)continue;
+   if(v.pass!==true||v.score!==10||v.faceFree!==true||!Array.isArray(v.problems)||v.problems.length)continue;
    hashes.add(hash);
    const n=pins.length,folder=path.join(out,`post-${p.id}-${n+1}`);await mkdir(folder,{recursive:true});
    const ext={'image/jpeg':'.jpg','image/png':'.png','image/webp':'.webp'}[mime];

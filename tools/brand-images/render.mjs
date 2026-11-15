@@ -18,7 +18,7 @@ export function validate(job, options={}) {
  if(job.highlight && !job.title.includes(job.highlight)) fail('Highlight must occur in title');
  if(job.printableUrl && !/^https:\/\/nestoodle\.com\/.+\.pdf(?:\?.*)?$/.test(job.printableUrl)) fail('Printable must be a verified Nestoodle PDF');
  if(job.printableUrl && job.printableVerified!==true) fail('Verify printable exists and belongs to this post');
- if(!Array.isArray(job.photos)||job.photos.length<(options.pinOnly?1:3)||job.photos.length>12) fail('Need 3–12 reviewed clean photos: cover plus unique step photos');
+ if(!Array.isArray(job.photos)||job.photos.length<((options.pinOnly||options.storyOnly||options.featuredOnly)?1:3)||job.photos.length>12) fail('Need 3–12 reviewed clean photos: cover plus unique step photos');
  for(const photo of job.photos){
   shortText(photo.src,'photo src',2000);shortText(photo.alt,'photo alt',500);
   const r=photo.review;
@@ -27,7 +27,7 @@ export function validate(job, options={}) {
   if(r.faceFree===true && r.faces?.length) fail('Conflicting face review');
   for(const box of r.faces??[]) if(!Array.isArray(box)||box.length!==4||box.some(n=>!Number.isFinite(n)||n<0||n>1)||box[2]<=0||box[3]<=0||box[0]+box[2]>1||box[1]+box[3]>1) fail('Invalid normalized face box');
  }
- if(!Array.isArray(job.steps)||(!options.pinOnly&&!job.steps.length)||job.steps.length>8) fail('Need 1–8 steps');
+ if(!Array.isArray(job.steps)||(!(options.pinOnly||options.storyOnly||options.featuredOnly)&&!job.steps.length)||job.steps.length>8) fail('Need 1–8 steps');
  const cover=job.coverPhoto??0;if(!Number.isInteger(cover)||!job.photos[cover])fail('Invalid cover photo');
  const used=new Set([job.photos[cover].src]);
  for(const step of job.steps){shortText(step.title,'step title');shortText(step.body,'step body',300);if(step.title.split(/\s+/).length>8) fail('Step headline exceeds 8 words');if(!Number.isInteger(step.photo)||!job.photos[step.photo]) fail('Invalid step photo');if(step.photo===cover||used.has(job.photos[step.photo].src))fail('Each step needs a different photo; never reuse the cover');used.add(job.photos[step.photo].src);}
@@ -71,7 +71,8 @@ export async function render(jobPath,outDir,options={}) {
  const browser=await chromium.launch({headless:true,...(process.env.CHROMIUM_PATH?{executablePath:process.env.CHROMIUM_PATH}:{})});
  const reports=[];
  try {
- const slides=options.pinOnly?[['pin','pin']]:[['pin','pin'],['ig-cover','ig-cover'],...job.steps.map((s,i)=>['ig-step',`ig-step-${String(i+1).padStart(2,'0')}`,i]),['ig-cta','ig-cta'],['ig-cover','facebook'],['og','og'],['story','story'],['featured-collage','featured-collage'],...job.photos.map((_,i)=>['article-photo',`article-photo-${String(i+1).padStart(2,'0')}`,i])];
+ let website;
+ const slides=options.storyOnly?[['story','story']]:options.featuredOnly?[['article-photo','featured-collage',0],['og','og']]:options.pinOnly?[['pin','pin']]:[['pin','pin'],['ig-cover','ig-cover'],...job.steps.map((s,i)=>['ig-step',`ig-step-${String(i+1).padStart(2,'0')}`,i]),['ig-cta','ig-cta'],['ig-cover','facebook'],['og','og'],['story','story'],['featured-collage','featured-collage'],...job.photos.map((_,i)=>['article-photo',`article-photo-${String(i+1).padStart(2,'0')}`,i])];
  for(const [template,name,index] of slides){
   const [width,height]=sizes[template],page=await browser.newPage({viewport:{width,height},deviceScaleFactor:1});
   await page.route('**/*',route=>route.abort()); // All assets embedded; no external page requests.
@@ -128,9 +129,17 @@ export async function render(jobPath,outDir,options={}) {
    return result;
   },{job,width,height,template});
   reports.push({file:`${name}.jpg`,template,...report});
-  await page.screenshot({path:path.join(outDir,`${name}.jpg`),type:'jpeg',quality:94});await page.close();
+  await page.screenshot({path:path.join(outDir,`${name}.jpg`),type:'jpeg',quality:94});
+  if(name==='featured-collage'){
+   const png=await page.screenshot({type:'png'});
+   const encoded=await page.evaluate(async src=>{const img=new Image();img.src=src;await img.decode();const canvas=document.createElement('canvas');canvas.width=1200;canvas.height=800;canvas.getContext('2d').drawImage(img,0,0,1200,800);return canvas.toDataURL('image/webp',.82);},'data:image/png;base64,'+png.toString('base64'));
+   if(!encoded.startsWith('data:image/webp;base64,'))throw new Error('WebP encoder unavailable');
+   const bytes=Buffer.from(encoded.split(',')[1],'base64');if(bytes.subarray(0,4).toString()!=='RIFF'||bytes.subarray(8,12).toString()!=='WEBP')throw new Error('Invalid website WebP');
+   await writeFile(path.join(outDir,'featured-collage.webp'),bytes);website={featured:'featured-collage.webp',quality:82,width:1200,height:800,encoder:'Chromium canvas image/webp quality0.82'};
+  }
+  await page.close();
  }
- await writeFile(path.join(outDir,'render-info.json'),JSON.stringify({slug:job.slug,articleUrl:job.articleUrl,renderer:1,approval:'template approved 2026-11-10; new article/social content remains subject to owner review',photos:job.photos.map(({alt,review})=>({alt,review})),outputs:reports},null,2)+'\n');
+ await writeFile(path.join(outDir,'render-info.json'),JSON.stringify({slug:job.slug,articleUrl:job.articleUrl,renderer:1,approval:'template approved 2026-11-10; new article/social content remains subject to owner review',photos:job.photos.map(({alt,review})=>({alt,review})),...(website?{website}:{}),outputs:reports},null,2)+'\n');
  } finally {await browser.close();}
  return reports;
 }

@@ -19,7 +19,7 @@ if(!remote&&!/^tools\/brand-images\/(?:samples|jobs)\/[a-z0-9-]+\/job\.json$/.te
 const root=await realpath(process.cwd()),file=await realpath(manifest);
 if(!remote&&!file.startsWith(root+path.sep))throw new Error('Manifest outside repo');
 try{
- const result=await render(file,out);
+ const result=await render(file,out,{featuredOnly:remote?.featuredOnly===true});
  if(remote){const reportFile=path.join(out,'render-info.json');const report=JSON.parse(await readFile(reportFile,'utf8'));report.jobId=remote.jobId;await writeFile(reportFile,JSON.stringify(report,null,2)+'\n');}
  console.log(`Validated ${result.length} outputs`);
 }catch(error){if(remote)await callback({jobId:remote.jobId,error:'Brand rendering failed validation; inspect Action logs.'}).catch(()=>{});throw error;}

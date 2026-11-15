@@ -7,5 +7,5 @@ export async function callback(body){
 }
 if(process.argv[2]==='done'){
  const info=JSON.parse(await readFile(path.join(process.env.BRAND_OUTPUT,'render-info.json'),'utf8'));
- if(info.jobId)await callback({jobId:info.jobId,slug:info.slug,files:info.outputs.map(o=>o.file)});
+ if(info.jobId)await callback({jobId:info.jobId,slug:info.slug,files:[...info.outputs.map(o=>o.file),...(info.website?.featured?[info.website.featured]:[])]});
 }

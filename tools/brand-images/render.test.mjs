@@ -41,3 +41,11 @@ test('pin-only mode uses one reviewed photo, fits long keyword-led titles, rende
  assert.throws(()=>validate(job));
  await withJob(job,async(file,out)=>{const reports=await render(file,out,{pinOnly:true});assert.equal(reports.length,1);assert.deepEqual(reports[0].size,[1000,1500]);assert.equal(reports[0].file,'pin.jpg');assert(reports[0].text.find(t=>t.field==='title').lines<=3);});
 });
+test('featured-only fallback emits a direct WebP website copy and a separate JPEG share',async()=>{
+ const job=structuredClone(fixture);job.photos=job.photos.slice(0,1);job.steps=[];
+ await withJob(job,async(file,out)=>{const reports=await render(file,out,{featuredOnly:true});assert.deepEqual(reports.map(r=>r.file),['featured-collage.jpg','og.jpg']);const info=JSON.parse(await readFile(path.join(out,'render-info.json')));assert.equal(info.website.quality,82);assert.deepEqual([info.website.width,info.website.height],[1200,800]);const bytes=await readFile(path.join(out,info.website.featured));assert.equal(bytes.subarray(0,4).toString(),'RIFF');assert.equal(bytes.subarray(8,12).toString(),'WEBP');assert.equal((await readFile(path.join(out,'og.jpg'))).subarray(0,3).toString('hex'),'ffd8ff');});
+});
+test('story-only mode accepts one reviewed cover and creates only its platform JPEG',async()=>{
+ const job=structuredClone(fixture);job.photos=job.photos.slice(0,1);job.steps=[];
+ await withJob(job,async(file,out)=>{const reports=await render(file,out,{storyOnly:true});assert.equal(reports.length,1);assert.equal(reports[0].file,'story.jpg');assert.deepEqual(reports[0].size,[1080,1920]);});
+});
