@@ -19,6 +19,14 @@ const users = [
     sessionVersion: 1,
   },
 ];
+users.push({
+  email: "customer@dashboard.invalid",
+  name: "Client (test fixture)",
+  role: "customer",
+  businesses: [],
+  active: true,
+  sessionVersion: 1,
+});
 const db = {
   nst_dashboard: [],
   ec_dashboard: [],
@@ -250,7 +258,17 @@ http
           topics,
           generatedAt: now,
         };
-      else if (b.query?.section === "queue") out = queue;
+      else if (b.query?.section === "queue")
+        out = {
+          ...queue,
+          items: queue.items.map((i) => ({
+            ...i,
+            title:
+              b.biz === "nestoodle"
+                ? "Indoor play ideas — sample draft"
+                : i.title,
+          })),
+        };
       else out = section(b.query?.section || "email");
     }
     res.writeHead(200, { "content-type": "application/json" });

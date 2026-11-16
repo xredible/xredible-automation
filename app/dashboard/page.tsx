@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next"
-import { Inter } from "next/font/google"
+import { Inter, Playfair_Display, Baloo_2, Karla, Noto_Sans_Devanagari } from "next/font/google"
 import { currentUser, isConfigured, listUsers, toPublic } from "@/lib/dashboard/auth"
 import { SetupForm, SignInForm } from "@/components/dashboard/sign-in"
 import { DashboardApp } from "@/components/dashboard/app"
@@ -22,6 +22,11 @@ export const dynamic = "force-dynamic"
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-dash", display: "swap" })
 
+const playfair = Playfair_Display({ subsets: ["latin"], weight: "600", variable: "--font-playfair", display: "swap", preload: false })
+const baloo = Baloo_2({ subsets: ["latin"], weight: "700", variable: "--font-baloo", display: "swap", preload: false })
+const karla = Karla({ subsets: ["latin"], variable: "--font-karla", display: "swap", preload: false })
+const devanagari = Noto_Sans_Devanagari({ subsets: ["devanagari"], weight: ["400", "600"], variable: "--font-devanagari", display: "swap", preload: false })
+
 async function Screen({ signup }: { signup: boolean }) {
   if (!isConfigured()) return <SignInForm configured={false} />
   const me = await currentUser()
@@ -39,7 +44,7 @@ async function Screen({ signup }: { signup: boolean }) {
 export default async function DashboardPage(props: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const q = await props.searchParams
   return (
-    <div className={`${inter.variable} notranslate`} translate="no">
+    <div className={`${inter.variable} ${playfair.variable} ${baloo.variable} ${karla.variable} ${devanagari.variable} notranslate`} translate="no">
       <RegisterSW />
       <Screen signup={q.signup !== undefined} />
     </div>
