@@ -50,3 +50,7 @@ Three-run medians, Chromium 390×844, 150 ms RTT, 1.6 Mbps down / 750 Kbps up, 4
 | Encoded first-load JS | 260.8 KB → 262.7 KB | 260.8 KB → 262.7 KB |
 
 These measurements do **not** establish live n8n targets. Cached Home here means an in-session Calendar → Home return; full document reload persistence is tested with network reports held, but its latency is not claimed to be under one second. Playwright routing suppresses HTTP asset caching, so warm HTTP reload timings are omitted. LCP is often an early shell paint, not complete Home data. Cold usability remains around five seconds, the 200 ms hub target is not consistently met and first-load JS still exceeds 200 KB (about +1.9 KB). The snapshot, shared server cache and bundle splitting in step 6 remain necessary. The benefit in this step is retained useful data during reload/range change/failure, not a claim of reduced cold-load latency.
+
+## Vercel build follow-up
+
+The separate deploy-test project initially failed in Turbopack's existing Google-font resolver (`next/font/google queries have exactly one entry` / missing internal font module); the primary project preview passed. `npm run build` now explicitly selects webpack, matching the successful local production verification, so Git builds use the same tested compiler. Runtime application code and the measured webpack bundle are unchanged by this build-command fix.
