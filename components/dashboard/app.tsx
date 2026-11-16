@@ -143,6 +143,7 @@ export function DashboardApp({ allowed, me }: { allowed: BusinessKey[]; me: Me }
                     type="button"
                     onClick={doRefresh}
                     className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-[var(--line)] bg-[var(--panel)] px-2.5 text-xs font-medium text-[var(--ink-2)] hover:border-[var(--line-strong)]"
+                    aria-label="Refresh"
                     title="Get the latest numbers now"
                   >
                     <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
@@ -229,7 +230,7 @@ export function DashboardApp({ allowed, me }: { allowed: BusinessKey[]; me: Me }
             ) : view === "printables" ? (
               biz === "nestoodle" ? <PrintablesView key={`${biz}-${tick}`} /> : <GenericPrintables key={`${biz}-${tick}`} biz={biz} />
             ) : view === "overview" ? (
-              <Overview key={biz} biz={biz} start={state.start} end={state.end} cmp={state.cmp} compareLabel={compareLabel} go={go} refreshTick={tick} />
+              <Overview key={`${me.email}-${biz}`} account={me.email} biz={biz} start={state.start} end={state.end} cmp={state.cmp} compareLabel={compareLabel} go={go} refreshTick={tick} />
             ) : !data ? (
               <SectionSkeleton />
             ) : !data.ok ? (
@@ -283,7 +284,7 @@ function BusinessSwitcher({ current, allowed, onPick }: { current: BusinessKey; 
     <>
       <img src={b.icon} alt="" width={36} height={36} className="h-9 w-9 shrink-0 rounded-lg" />
       <span className="min-w-0 text-left">
-        <span className="dash-brand-name block truncate text-[15px] font-semibold leading-tight tracking-[-0.01em]">{b.name}</span>
+        <span className="dash-brand-name block truncate lg:whitespace-normal lg:overflow-visible lg:text-clip text-[15px] font-semibold leading-tight tracking-[-0.01em]">{b.name}</span>
         <span className="block truncate text-[11.5px] text-white/55">{b.subtitle}</span>
       </span>
     </>

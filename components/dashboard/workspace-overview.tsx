@@ -10,9 +10,11 @@ import type { View } from "./state";
 export function BusinessOverview({
   biz,
   go,
+  compact = false,
 }: {
   biz: WorkspaceBusiness;
   go: (v: View) => void;
+  compact?: boolean;
 }) {
   const [data, setData] = useState<Workspace | null>(null),
     [error, setError] = useState(false);
@@ -38,6 +40,10 @@ export function BusinessOverview({
         Workspace counts could not load. Open Ideas or Image queue to retry.
       </Notice>
     );
+  if (compact) return <div className="flex flex-wrap gap-2 text-sm">
+    <button type="button" onClick={() => go("ap-ideas")} className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-[var(--line)] bg-[var(--panel)] px-3"><Lightbulb aria-hidden className="h-4 w-4" />Ideas waiting: <strong>{data ? data.ideas.filter(i => !/skipped|drafted|posted/i.test(i.status)).length : "…"}</strong></button>
+    {biz === "nestoodle" ? <button type="button" onClick={() => go("automation-images")} className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-[var(--line)] bg-[var(--panel)] px-3"><ImageIcon aria-hidden className="h-4 w-4" />Images queued: <strong>{data ? data.images.filter(i => i.status === "queued" || i.status === "in_progress").length : "…"}</strong></button> : null}
+  </div>;
   return (
     <div className="grid gap-3 sm:grid-cols-2">
       <Card

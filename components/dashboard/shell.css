@@ -490,6 +490,7 @@
      already give the way back). */
   .dash-shell-header {
     position: relative;
+    z-index: 21; /* Open menus must clear the later sticky page chips. */
   }
   .dash-shell-header:has(+ .dash-mobile-subnav) {
     border-bottom: 0;
@@ -586,3 +587,9 @@
     --faint: #a5afbe;
   }
 }
+
+/* Home reuses the calendar actions with phone-sized hit areas. */
+.dash-home button, .dash-home a { min-height: 44px; min-width: 44px; }
+.dash-home button:focus-visible, .dash-home a:focus-visible { outline: 2px solid var(--brand); outline-offset: 3px; }
+/* Channel names remain readable in both themes; the adjacent glyph keeps its identity. */
+.dash-home li .font-semibold[style] { color: var(--ink-2) !important; }
