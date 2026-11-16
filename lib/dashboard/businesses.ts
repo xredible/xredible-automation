@@ -9,6 +9,7 @@
 export type BusinessKey = "elevating-christ" | "nestoodle" | "linkedin-agency" | "autopilot"
 
 export type ViewName =
+  | "all-results"
   | "automations"
   | "automation-writer" | "automation-social" | "automation-publisher" | "automation-emails" | "automation-pinterest" | "automation-images" | "automation-shorts" | "automation-youtube-pack" | "automation-whatsapp" | "automation-live"
   | "overview"
@@ -89,7 +90,7 @@ export const BUSINESSES: Record<BusinessKey, Business> = {
       { group: "Social", items: ["instagram", "facebook", "youtube", "pinterest"] },
       { group: "Website", items: ["ga4", "sessions", "gsc"] },
       { group: "Ads", items: ["ads"] },
-      { group: "Results", items: ["email"] },
+      { group: "Results", items: ["all-results", "email"] },
       { group: "Automations", items: ["automations", "automation-publisher", "automation-shorts", "automation-emails", "automation-youtube-pack", "automation-whatsapp", "automation-live"] },
       { group: "Account", items: ["settings", "help"] },
     ],
@@ -126,7 +127,7 @@ export const BUSINESSES: Record<BusinessKey, Business> = {
       { group: "Social", items: ["instagram", "facebook", "pinterest"] },
       { group: "Website", items: ["ga4", "sessions", "gsc", "adsense"] },
       { group: "Ads", items: ["ads"] },
-      { group: "Results", items: ["email"] },
+      { group: "Results", items: ["all-results", "email"] },
       { group: "Automations", items: ["automations", "automation-writer", "automation-social", "automation-publisher", "automation-emails", "automation-pinterest", "automation-images"] },
       { group: "Account", items: ["settings", "help"] },
     ],
@@ -244,7 +245,7 @@ export type DashboardHub = { key: HubKey; label: string; phoneLabel: string; ite
 const HUB_PAGES: DashboardHub[] = [
   { key: "home", label: "Home", phoneLabel: "Home", items: ["overview"] },
   { key: "content", label: "Content", phoneLabel: "Content", items: ["schedule", "ap-ideas", "blog", "printables"] },
-  { key: "results", label: "Results", phoneLabel: "Results", items: ["results", "instagram", "facebook", "linkedin", "youtube", "pinterest", "articles", "ga4", "sessions", "gsc", "email", "newsletter", "newsletters", "ads", "adsense"] },
+  { key: "results", label: "Results", phoneLabel: "Results", items: ["all-results", "results", "instagram", "facebook", "linkedin", "youtube", "pinterest", "articles", "ga4", "sessions", "gsc", "email", "newsletter", "newsletters", "ads", "adsense"] },
   { key: "automations", label: "Automations", phoneLabel: "Automate", items: ["automations", "automation-writer", "automation-social", "automation-publisher", "automation-shorts", "automation-emails", "automation-pinterest", "automation-images", "automation-youtube-pack", "automation-whatsapp", "automation-live", "ap-linkedin", "ap-meta", "ap-blog", "ap-newsletter"] },
   { key: "brand", label: "Brand & settings", phoneLabel: "More", items: ["ap-brand", "settings", "help", "billing"] },
 ]

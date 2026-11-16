@@ -29,6 +29,7 @@ export function BusinessWorkspace({
   go,
   emailData,
   emailError,
+  compareLabel = null,
 }: {
   biz: WorkspaceBusiness;
   view: View;
@@ -36,6 +37,7 @@ export function BusinessWorkspace({
   go: (v: View) => void;
   emailData?: SectionData | null;
   emailError?: string;
+  compareLabel?: string | null;
 }) {
   const [data, setData] = useState<Workspace | null>(null),
     [error, setError] = useState(""),
@@ -256,7 +258,7 @@ export function BusinessWorkspace({
           {emailError ? (
             <Notice tone="error">{emailError}</Notice>
           ) : emailData ? (
-            <SectionView data={emailData} color="#7c6bc4" compareLabel={null} />
+            <SectionView data={emailData} color="#7c6bc4" compareLabel={compareLabel} />
           ) : (
             <Skeleton className="h-64" />
           )}

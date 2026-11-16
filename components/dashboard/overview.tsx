@@ -26,6 +26,7 @@ import {
   hubsOf,
   type BusinessKey,
 } from "@/lib/dashboard/businesses";
+import { ChannelTable } from "./results-hub";
 import { GettingStarted } from "@/components/autopilot/account-views";
 
 // The Blog page's own sections: "blogpost" needs a post id, and the overview shows neither.
@@ -73,23 +74,6 @@ export function Overview({
   const picks = business.picks.filter(
     (p) => !["ap-ideas", "automation-images"].includes(p.section),
   );
-  const channelPicks = [
-    ...picks,
-    ...HOME_SECTIONS[biz]
-      .filter(
-        (section) =>
-          section !== "queue" && !picks.some((p) => p.section === section),
-      )
-      .map((section) => {
-        const d = data[section];
-        const k = d?.ok && "kpis" in d ? d.kpis[0] : null;
-        return {
-          section: section as View,
-          key: k?.key || "",
-          label: `${PLATFORM[section]?.short || section}${k ? `: ${k.label}` : ""}`,
-        };
-      }),
-  ];
   const headlineKeys =
     biz === "elevating-christ"
       ? [
@@ -406,74 +390,7 @@ export function Overview({
         title="All channels"
         sub="Headline results for each channel. Open a channel for its full report."
       >
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead className="border-b border-[var(--line)] text-[var(--muted)]">
-              <tr>
-                <th scope="col" className="py-3 pr-3">
-                  Channel / metric
-                </th>
-                <th scope="col" className="p-3 text-right">
-                  Now
-                </th>
-                <th scope="col" className="p-3 text-right">
-                  Before
-                </th>
-                <th scope="col" className="py-3 pl-3 text-right">
-                  Change
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {channelPicks.map((p) => {
-                const d = data[p.section];
-                const k =
-                  d?.ok && "kpis" in d
-                    ? d.kpis.find((k) => k.key === p.key)
-                    : null;
-                return (
-                  <tr
-                    key={`${p.section}:${p.key}`}
-                    className="border-b border-[var(--line-soft)] last:border-0"
-                  >
-                    <th scope="row" className="py-1 pr-3 font-normal">
-                      <button
-                        type="button"
-                        onClick={() => go(p.section)}
-                        className="min-h-11 text-left font-medium text-[var(--brand)] hover:underline"
-                      >
-                        {p.label}
-                      </button>
-                      {rangeNote(p.section) || errors[p.section] ? (
-                        <span className="block pb-2 text-[var(--muted)]">
-                          {rangeNote(p.section)}
-                          {errors[p.section] ? " Refresh unavailable." : ""}
-                        </span>
-                      ) : null}
-                    </th>
-                    <td className="p-3 text-right tabular-nums">
-                      {k
-                        ? fmt(k.value, k.format, true)
-                        : d || errors[p.section]
-                          ? "—"
-                          : "…"}
-                    </td>
-                    <td className="p-3 text-right tabular-nums text-[var(--muted)]">
-                      {k?.prev != null ? fmt(k.prev, k.format, true) : "—"}
-                    </td>
-                    <td className="py-3 pl-3 text-right">
-                      {k && k.prev != null ? (
-                        <Delta cur={k.value} prev={k.prev} invert={k.invert} />
-                      ) : (
-                        "—"
-                      )}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+        <ChannelTable biz={biz} entries={entries} errors={errors} range={range} go={go} />
       </Card>
       <Card
         title="Automation shortcuts"
