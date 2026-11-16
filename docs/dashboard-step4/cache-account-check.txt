@@ -1,0 +1,1 @@
+Results cache: same-browser account change cannot display the prior account's saved figures: pass

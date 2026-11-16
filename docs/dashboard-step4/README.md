@@ -45,6 +45,7 @@ Synthetic fixture data only, with actual report components and comparison charts
 
 - TypeScript, targeted lint and production webpack scratch build pass.
 - [Results checks](feature-checks.json): one date/compare in DOM at both widths, popover bounds/Escape, presets/custom dates and compare query parameters, channel-filter isolation/restoration, Email labels, shorter source coverage, kept data on blocked reload/failure, account/cache separation and subscriber exclusion, member403/unknown-section400, customer and agency links, zero browser POSTs/page errors.
+- [Same-browser account check](cache-account-check.txt) changes accounts with the owner cache still present and the network failed; no prior-account figures appear.
 - [Home cache regression](home-checks.json) preserves cached reload, date changes, error retention, account isolation and corrupt/expired/unavailable storage after sharing the aggregate table/cache helper.
 - [Shell checks](verification.txt) cover all20hub/viewport combinations, legacy navigation, roles/admin/customer, keyboard/focus, 44px targets, contrast ≥4.5, dark/reduced motion. [Nav model](model-checks.txt) retains every existing page and adds only the two aggregate indexes.
 - Every assigned Results channel is captured at390/1366, including existing charts; one visible date/compare, 44px new controls, active-chip visibility, no overflow or page errors.
