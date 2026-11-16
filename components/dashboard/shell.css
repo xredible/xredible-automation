@@ -593,3 +593,15 @@
 .dash-home button:focus-visible, .dash-home a:focus-visible { outline: 2px solid var(--brand); outline-offset: 3px; }
 /* Channel names remain readable in both themes; the adjacent glyph keeps its identity. */
 .dash-home li .font-semibold[style] { color: var(--ink-2) !important; }
+
+/* Content pages are tabs within the same hub at every viewport. */
+.dash-content-tabs { display:flex; gap:8px; overflow-x:auto; border-bottom:1px solid var(--line); background:var(--bg); }
+.dash-content-tabs button { flex-shrink:0; min-height:44px; padding:8px 14px; border-radius:10px; font-size:13px; color:var(--muted); font-weight:600; }
+.dash-content-tabs button[aria-current="page"] { color:var(--brand); background:var(--brand-soft); }
+@media (min-width:1024px) { .dash-content-tabs { padding:12px 32px; } }
+.dash-automation-hub :is(button,input,summary) { min-height:44px; }
+.dash-automation-hub summary { list-style:none; }
+.dash-automation-hub summary::-webkit-details-marker { display:none; }
+
+.dash-workspace dialog button { min-height:44px; }
+.dash-automation-hub input::placeholder { color:var(--muted); opacity:1; }

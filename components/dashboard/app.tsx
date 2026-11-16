@@ -73,7 +73,7 @@ export function DashboardApp({ allowed, me }: { allowed: BusinessKey[]; me: Me }
   const view = ADMIN_VIEWS.includes(asked) && me.role !== "admin" ? "overview" : asked
   const filters = state?.filters[view] || {}
   const tool = TOOL_VIEW[view]
-  const workspacePage = isWorkspace(biz) && (view.startsWith("automation-") || ["ap-ideas", "ap-brand", "settings", "help", "email"].includes(view))
+  const workspacePage = isWorkspace(biz) && (view === "automations" || view.startsWith("automation-") || ["ap-ideas", "ap-brand", "settings", "help", "email"].includes(view))
   const account = ACCOUNT_VIEWS.includes(view) || ADMIN_VIEWS.includes(view)
   // Pages that load their own data (no date range).
   const page = !!tool || account || view === "printables" || (workspacePage && view !== "email")
