@@ -6,8 +6,10 @@
 import { useEffect, useRef, useState } from "react"
 import { Check, ChevronDown, ChevronsUpDown, RefreshCw, X } from "lucide-react"
 import type { BlogData, QueueData, SectionData, ToolSummary } from "@/lib/dashboard/types"
-import { ACCOUNT_VIEWS, ADMIN_VIEWS, BUSINESSES, TOOL_VIEW, hubOf, type BusinessKey } from "@/lib/dashboard/businesses"
+import { ACCOUNT_VIEWS, ADMIN_VIEWS, BUSINESSES, TOOL_VIEW, hubOf, viewsOf, type BusinessKey } from "@/lib/dashboard/businesses"
 import { AnnouncementBanner, BillingView, BrandSwitcher, ChatWidget, HelpView, SettingsView, VerifyBanner, ViewAsBanner } from "@/components/autopilot/account-views"
+import { SearchJump } from "./search-jump"
+import type { JumpEntry, JumpTarget } from "@/lib/dashboard/search-jump"
 import { BusinessWorkspace } from "./business-workspace"
 import { isWorkspace } from "@/lib/dashboard/business-workspace"
 import { IdeasView } from "@/components/autopilot/ideas-view"
@@ -48,6 +50,8 @@ export function DashboardApp({ allowed, me }: { allowed: BusinessKey[]; me: Me }
   const [state, setState] = useState<DashState | null>(null)
   const [panel, setPanel] = useState<"accounts" | "customers" | "password" | null>(null)
   const [tick, setTick] = useState(0)
+  const [jump, setJump] = useState<{biz:BusinessKey;view:View;target:JumpTarget;token:number}|null>(null)
+  const jumpToken = useRef(0)
   const [flash, setFlash] = useState<{ tone: "good" | "bad" | "info"; text: string } | null>(null)
   // Back from connecting LinkedIn / Facebook: say how it went (read before the URL is rewritten).
   useEffect(() => {
@@ -87,16 +91,37 @@ export function DashboardApp({ allowed, me }: { allowed: BusinessKey[]; me: Me }
 
   const set = (patch: Partial<DashState>) => setState((s) => (s ? { ...s, ...patch } : s))
   const go = (v: View) => {
+    setJump(null)
     set({ view: v })
     window.scrollTo({ top: 0 })
   }
   const switchTo = (b: BusinessKey) => {
+    setJump(null)
     set({ biz: b, view: "overview", filters: {} })
     window.scrollTo({ top: 0 })
   }
   const setFilters = (f: Filters) => setState((s) => (s ? { ...s, filters: { ...s.filters, [s.view]: Object.fromEntries(Object.entries(f).filter(([, v]) => v)) } } : s))
   const doRefresh = () => (view === "overview" || view === "all-results" || page ? setTick((t) => t + 1) : refresh())
   const accountPage = (v: View) => set({ biz: "autopilot", view: v, filters: {} })
+  const pickJump = (entry: JumpEntry) => {
+    if (entry.panel) {
+      if (entry.panel !== "password" && me.role !== "admin") return
+      setJump(null)
+      setPanel(entry.panel)
+      requestAnimationFrame(() => {
+        const modal = document.querySelector<HTMLElement>('[aria-modal="true"]')
+        const target = modal?.querySelector<HTMLElement>('input:not(:disabled), textarea:not(:disabled)') || modal?.querySelector<HTMLElement>('h2')
+        if (target) { if (target.tagName === "H2") target.tabIndex = -1; target.focus({preventScroll:true}) }
+      })
+      return
+    }
+    const destination = entry.biz || biz
+    if (!entry.view || !allowed.includes(destination) || !viewsOf(destination).includes(entry.view) || (ADMIN_VIEWS.includes(entry.view) && me.role !== "admin")) return
+    document.getElementById("dashboard-main")?.focus({preventScroll:true})
+    if (destination === biz) go(entry.view)
+    else { setJump(null); set({biz:destination,view:entry.view,filters:{}}); window.scrollTo({top:0}) }
+    if (entry.target && me.role === "admin") setJump({biz:destination,view:entry.view,target:entry.target,token:++jumpToken.current})
+  }
   const avatar = <AvatarMenu me={me} allowed={allowed} onAccounts={() => setPanel("accounts")} onCustomers={() => allowed.includes("autopilot") ? accountPage("admin-customers") : setPanel("customers")} onPassword={() => setPanel("password")} onPage={accountPage} />
   const brand = biz === "autopilot" && allowed.length === 1 ? <BrandSwitcher /> : <BusinessSwitcher current={biz} allowed={allowed} onPick={switchTo} />
   const meta = { ...PLATFORM[view], label: business.labels?.[view] || PLATFORM[view]?.label }
@@ -124,6 +149,7 @@ export function DashboardApp({ allowed, me }: { allowed: BusinessKey[]; me: Me }
                   <h1 className="dash-page-title">{view === "overview" ? "Home" : isResults ? "Results" : meta.label}</h1>
                 </div>
                 <div className="dash-shell-tools">
+                  <SearchJump biz={biz} view={view} admin={me.role === "admin"} hasAutopilot={allowed.includes("autopilot")} enabled={!!state} onPick={pickJump} />
                   {state && view !== "blog" && !page ? isResults ? <ResultsDateControls state={state} onChange={set} /> : <RangePicker state={state} onChange={set} /> : null}
                   {state && !isResults && view !== "schedule" && view !== "blog" && !page ? (
                     <label className="relative hidden sm:block">
@@ -179,7 +205,7 @@ export function DashboardApp({ allowed, me }: { allowed: BusinessKey[]; me: Me }
           <HubSubnav biz={biz} view={view} go={go} />
 
           <QueueActionsProvider biz={biz} onChanged={() => (view === "schedule" ? refresh() : window.dispatchEvent(new Event("ec-queue-changed")))} dataStamp={biz + view + (view === "schedule" ? updated || "" : "")}>
-          <main className="dash-main mx-auto max-w-[1280px] px-4 pb-[max(2.5rem,env(safe-area-inset-bottom))] pt-5 sm:px-6 lg:px-8">
+          <main id="dashboard-main" tabIndex={-1} className="dash-main mx-auto max-w-[1280px] px-4 pb-[max(2.5rem,env(safe-area-inset-bottom))] pt-5 sm:px-6 lg:px-8">
             {isResults ? <h2 className="sr-only">{meta.label}</h2> : null}
             <ViewBoundary key={view + (state ? sectionKey(biz, view, state.start, state.end, state.cmp, filters) : "")}>
             {biz === "autopilot" && state ? (
@@ -192,7 +218,7 @@ export function DashboardApp({ allowed, me }: { allowed: BusinessKey[]; me: Me }
             {!state ? (
               <SectionSkeleton />
             ) : workspacePage && isWorkspace(biz) ? (
-              <BusinessWorkspace key={`${biz}-${view}-${tick}`} biz={biz} view={view} owner={me.role === "admin"} go={go} emailData={sectionData} compareLabel={isResults ? reportCompareLabel : compareLabel} emailError={data && !data.ok ? data.error : undefined} />
+              <BusinessWorkspace key={`${biz}-${view}-${tick}`} biz={biz} view={view} owner={me.role === "admin"} go={go} jump={jump?.biz === biz && jump.view === view ? jump : null} onJumpHandled={() => setJump(null)} emailData={sectionData} compareLabel={isResults ? reportCompareLabel : compareLabel} emailError={data && !data.ok ? data.error : undefined} />
             ) : view === "ap-brand" ? (
               <BrandKitView key={tick} />
             ) : view === "ap-ideas" ? (

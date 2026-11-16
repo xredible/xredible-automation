@@ -1,0 +1,30 @@
+elevating-christ/home/390: correct hub, no overflow, 44px targets
+elevating-christ/content/390: correct hub, no overflow, 44px targets
+elevating-christ/results/390: correct hub, no overflow, 44px targets
+elevating-christ/automations/390: correct hub, no overflow, 44px targets
+elevating-christ/brand/390: correct hub, no overflow, 44px targets
+elevating-christ/home/1366: correct hub, no overflow, 44px targets
+elevating-christ/content/1366: correct hub, no overflow, 44px targets
+elevating-christ/results/1366: correct hub, no overflow, 44px targets
+elevating-christ/automations/1366: correct hub, no overflow, 44px targets
+elevating-christ/brand/1366: correct hub, no overflow, 44px targets
+nestoodle/home/390: correct hub, no overflow, 44px targets
+nestoodle/content/390: correct hub, no overflow, 44px targets
+nestoodle/results/390: correct hub, no overflow, 44px targets
+nestoodle/automations/390: correct hub, no overflow, 44px targets
+nestoodle/brand/390: correct hub, no overflow, 44px targets
+nestoodle/home/1366: correct hub, no overflow, 44px targets
+nestoodle/content/1366: correct hub, no overflow, 44px targets
+nestoodle/results/1366: correct hub, no overflow, 44px targets
+nestoodle/automations/1366: correct hub, no overflow, 44px targets
+nestoodle/brand/1366: correct hub, no overflow, 44px targets
+Phone hub → existing sub-page navigation and URL: pass
+Account menu Escape restores focus: pass
+Visible keyboard focus: pass
+Admin Accounts remains reachable from avatar: pass
+Legacy deep links select correct page + hub: pass
+Dark brand tokens and reduced motion: pass
+Member menu hides admin; cross-business access still denied: pass
+Autopilot customer Help/Billing remain reachable, admin hidden: pass
+Shell text contrast ≥4.5:1 (light and dark), all shell targets ≥44px
+No browser page errors

@@ -1,0 +1,12 @@
+{
+  "passed": [
+    "Ctrl K / Cmd K and phone button; empty state, arrows, Enter, native modal focus/Tab/Escape",
+    "opening/searching does not fetch or persist queries",
+    "image/writer/idea shortcuts focus existing controls, never auto-submit; original confirmations remain",
+    "existing approval/account dialogs block the search shortcut",
+    "Escape restores input, unsaved form state and scroll",
+    "context CSV uses the existing export and same data; zero browser POSTs",
+    "current-business scope; owner/member/customer/admin/account gates",
+    "phone bounds and no page errors"
+  ]
+}
