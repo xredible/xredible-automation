@@ -126,6 +126,7 @@ export function IdeaComposer({
       sub="Save a topic for review. Writing and publishing remain separate actions."
     >
       <form
+        data-dashboard-jump="idea-composer"
         onSubmit={(e) => {
           e.preventDefault();
           onAdd({ title, keyword, planned });

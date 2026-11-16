@@ -27,6 +27,7 @@ function ExportButton({ title, columns, rows }: { title: string; columns: Column
   return (
     <button
       type="button"
+      data-dashboard-export={title}
       onClick={() => download(exportName(title), toCsv(columns, rows))}
       className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium text-[var(--muted)] hover:bg-[var(--chip)] hover:text-[var(--ink)]"
       title="Download as a spreadsheet (CSV)"
