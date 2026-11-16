@@ -8,6 +8,8 @@ import { BadgeIndianRupee, CalendarRange, Check, ChevronDown, ChevronsUpDown, Ke
 import type { BlogData, QueueData, SectionData, ToolSummary } from "@/lib/dashboard/types"
 import { ACCOUNT_VIEWS, ADMIN_VIEWS, BUSINESSES, TOOL_VIEW, type BusinessKey } from "@/lib/dashboard/businesses"
 import { AnnouncementBanner, BillingView, BrandSwitcher, ChatWidget, HelpView, SettingsView, VerifyBanner, ViewAsBanner } from "@/components/autopilot/account-views"
+import { BusinessWorkspace } from "./business-workspace"
+import { isWorkspace } from "@/lib/dashboard/business-workspace"
 import { IdeasView } from "@/components/autopilot/ideas-view"
 import { BrandKitView } from "@/components/autopilot/brand-kit"
 import { AdminAnnounce, AdminCoupons, AdminCustomers, AdminHealth, AdminLeads, AdminPayments, AdminRevenue } from "./admin-views"
@@ -71,9 +73,10 @@ export function DashboardApp({ allowed, me }: { allowed: BusinessKey[]; me: Me }
   const view = ADMIN_VIEWS.includes(asked) && me.role !== "admin" ? "overview" : asked
   const filters = state?.filters[view] || {}
   const tool = TOOL_VIEW[view]
+  const workspacePage = isWorkspace(biz) && (view.startsWith("automation-") || ["ap-ideas", "ap-brand", "settings", "help", "email"].includes(view))
   const account = ACCOUNT_VIEWS.includes(view) || ADMIN_VIEWS.includes(view)
   // Pages that load their own data (no date range).
-  const page = !!tool || account || view === "printables"
+  const page = !!tool || account || view === "printables" || (workspacePage && view !== "email")
   const key = state && view !== "overview" && !page ? (view === "schedule" ? sectionKey(biz, "queue", state.start, state.end, state.cmp) : sectionKey(biz, view, state.start, state.end, state.cmp, filters)) : null
   const { data, loading, refresh } = useSection(key)
   const compareLabel = state?.cmp === "prev" ? "previous period" : state?.cmp === "yoy" ? "last year" : null
@@ -255,6 +258,8 @@ export function DashboardApp({ allowed, me }: { allowed: BusinessKey[]; me: Me }
             ) : null}
             {!state ? (
               <SectionSkeleton />
+            ) : workspacePage && isWorkspace(biz) ? (
+              <BusinessWorkspace key={`${biz}-${view}-${tick}`} biz={biz} view={view} owner={me.role === "admin"} go={go} emailData={sectionData} emailError={data && !data.ok ? data.error : undefined} />
             ) : view === "ap-brand" ? (
               <BrandKitView key={tick} />
             ) : view === "ap-ideas" ? (

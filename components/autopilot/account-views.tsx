@@ -1,4 +1,5 @@
 "use client"
+import { HelpTopics } from "./workspace-parts"
 
 // Autopilot account pages inside the dashboard: Billing, Settings, Help, plus the brand
 // switcher, the "confirm your email" banner and the getting-started checklist on Overview.
@@ -561,19 +562,7 @@ export function HelpView() {
           </a>
         </div>
       </Card>
-      <Card title="Questions people ask">
-        <div className="divide-y divide-[var(--line-soft)]">
-          {FAQ.map(([q, a]) => (
-            <details key={q} className="group py-2.5">
-              <summary className="cursor-pointer list-none text-sm font-medium text-[var(--ink)] marker:hidden">
-                <span className="mr-2 inline-block text-[var(--faint)] transition group-open:rotate-90">›</span>
-                {q}
-              </summary>
-              <p className="mt-1.5 pl-5 text-sm leading-relaxed text-[var(--muted)]">{a}</p>
-            </details>
-          ))}
-        </div>
-      </Card>
+      <HelpTopics topics={FAQ} />
       <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-[var(--muted)]">
         {[
           ...(inApp ? [] : [["Pricing", "/pricing"]]),
