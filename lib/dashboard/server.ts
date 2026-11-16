@@ -98,7 +98,7 @@ export async function runAction(business: BusinessKey, body: QueueAction): Promi
 // ---------- Blog page (edit, schedule, publish, topics, share) ----------
 
 export type BlogAction = {
-  action: "save" | "schedule" | "publish" | "draft" | "skip_topic" | "restore_topic" | "write_now" | "new_photos" | "share"
+  action: "save" | "schedule" | "publish" | "draft" | "skip_topic" | "restore_topic" | "write_now" | "share"
   id?: number
   row?: number
   title?: string
@@ -108,7 +108,7 @@ export type BlogAction = {
   date?: string
 }
 
-const BLOG_ACTIONS = ["save", "schedule", "publish", "draft", "skip_topic", "restore_topic", "write_now", "new_photos", "share"]
+const BLOG_ACTIONS = ["save", "schedule", "publish", "draft", "skip_topic", "restore_topic", "write_now", "share"]
 
 /** Checks a Blog page request strictly; returns null when it is not valid. */
 export function parseBlogAction(input: unknown): BlogAction | null {

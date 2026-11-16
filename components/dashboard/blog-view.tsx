@@ -4,7 +4,7 @@
 // editor to review, fix, schedule, publish and share each article.
 //
 // Data: section "blog" (list) and "blogpost" (one post with its block content) from
-// NST-D. Changes go through /dashboard/blog to NST-DB Blog Actions.
+// NST-D. Edits use /dashboard/blog; image work uses the existing /dashboard/workspace queue action.
 
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react"
 import { ArrowDown, ArrowLeft, ArrowUp, BookCheck, CalendarClock, Check, CircleAlert, ExternalLink, Eye, ImageOff, ImagePlus, Loader2, Pencil, Plus, Rocket, Save, Send, SkipForward, Sparkles, Trash2, Undo2, X } from "lucide-react"
@@ -42,7 +42,7 @@ function Pill({ s }: { s: string }) {
 
 async function send(biz: BusinessKey, body: Record<string, unknown>): Promise<Result> {
   try {
-    const r = await fetch("/dashboard/blog", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...body, biz }) })
+    const r = await fetch(body.op === "make_images" ? "/dashboard/workspace" : "/dashboard/blog", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...body, biz }) })
     if (r.status === 401) window.location.reload()
     return (await r.json().catch(() => ({ ok: false, error: `The dashboard server answered with HTTP ${r.status}.` }))) as Result
   } catch {
@@ -149,17 +149,17 @@ export function BlogView({ biz, data, onChanged }: { biz: BusinessKey; data: Blo
                       {busy === `r${p.id}` ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />} Rewrite
                     </button>
                   ) : null}
-                  {t ? (
+                  {biz === "nestoodle" && p.status === "draft" ? (
                     <button
                       type="button"
-                      className={btn}
+                      className={`${btn} min-h-11`}
                       disabled={!!busy}
-                      title="Make new photos for this draft; the text stays as it is"
+                      title="Queue Codex image work for this draft; text and Draft status stay unchanged"
                       onClick={() => {
-                        if (window.confirm("Replace this draft's photos (and featured image) with new ones? The text stays as it is.")) act(`i${p.id}`, { action: "new_photos", row: t.row }, "Making new photos.")
+                        if (window.confirm("Queue Codex to make images for this draft? The text stays unchanged and the post stays Draft. Codex starts within about 10 minutes.")) act(`i${p.id}`, { op: "make_images", postId: p.id, confirmed: true }, "Queued, Codex starts within about 10 minutes.")
                       }}
                     >
-                      {busy === `i${p.id}` ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <ImagePlus className="h-3.5 w-3.5" />} New photos
+                      {busy === `i${p.id}` ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <ImagePlus className="h-3.5 w-3.5" />} Make images
                     </button>
                   ) : null}
                 </PostRow>
