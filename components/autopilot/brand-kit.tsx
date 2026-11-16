@@ -7,6 +7,7 @@ import { useEffect, useMemo, useState } from "react"
 import { Check, Globe, Sparkles } from "lucide-react"
 import { Card, Notice, Skeleton } from "@/components/dashboard/ui"
 import { FONTS, NICHES, TEMPLATES, type BrandKit } from "@/lib/autopilot/brand-presets"
+import { Colour } from "./workspace-parts"
 import { PhotoPicker } from "./design-editor"
 
 type Kit = BrandKit & { saved: boolean }
@@ -52,17 +53,6 @@ async function call(body?: Record<string, unknown>): Promise<{ ok: boolean; erro
   }
 }
 
-function Colour({ name, value, onChange }: { name: string; value: string; onChange: (v: string) => void }) {
-  return (
-    <label className="block">
-      <span className={label}>{name}</span>
-      <span className="mt-1 flex items-center gap-2">
-        <input type="color" value={value} onChange={(e) => onChange(e.target.value)} className="h-10 w-12 cursor-pointer rounded-lg border border-[var(--line)] bg-[var(--panel)] p-1" aria-label={name} />
-        <input value={value} onChange={(e) => /^#[0-9a-f]{0,6}$/i.test(e.target.value) && onChange(e.target.value)} className={input + " mt-0 w-28 font-mono uppercase"} aria-label={`${name} code`} />
-      </span>
-    </label>
-  )
-}
 
 export function BrandKitView() {
   const [kit, setKit] = useState<Kit | null>(null)

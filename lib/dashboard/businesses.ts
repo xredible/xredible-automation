@@ -9,6 +9,7 @@
 export type BusinessKey = "elevating-christ" | "nestoodle" | "linkedin-agency" | "autopilot"
 
 export type ViewName =
+  | "automation-writer" | "automation-social" | "automation-publisher" | "automation-emails" | "automation-pinterest" | "automation-images" | "automation-shorts" | "automation-youtube-pack" | "automation-whatsapp" | "automation-live"
   | "overview"
   | "schedule"
   | "blog"
@@ -81,16 +82,20 @@ export const BUSINESSES: Record<BusinessKey, Business> = {
     name: "Elevating CHRIST",
     subtitle: "Ministry dashboard",
     icon: "/dashboard/elevating-christ.png",
-    labels: { printables: "Sermon Notes" },
+    labels: { printables: "Sermon Notes", email: "Newsletter / Email", "automation-emails": "Member Emails" },
     nav: [
-      { group: "", items: ["overview", "schedule", "printables"] },
+      { group: "", items: ["overview", "schedule", "ap-ideas", "ap-brand", "printables"] },
       { group: "Social", items: ["instagram", "facebook", "youtube", "pinterest"] },
       { group: "Website", items: ["ga4", "sessions", "gsc"] },
       { group: "Ads", items: ["ads"] },
-      { group: "Members", items: ["email"] },
+      { group: "Results", items: ["email"] },
+      { group: "Automations", items: ["automation-publisher", "automation-shorts", "automation-emails", "automation-youtube-pack", "automation-whatsapp", "automation-live"] },
+      { group: "Account", items: ["settings", "help"] },
     ],
     sections: ["queue", "instagram", "facebook", "youtube", "pinterest", "ga4", "sessions", "gsc", "ads", "email"],
     picks: [
+      { section: "ap-ideas", key: "waiting", label: "Ideas waiting" },
+      { section: "email", key: "openRate", label: "Email open rate" },
       { section: "ga4", key: "activeUsers", label: "Website visitors" },
       { section: "youtube", key: "views", label: "YouTube views" },
       { section: "youtube", key: "watch", label: "YouTube watch hours" },
@@ -113,16 +118,21 @@ export const BUSINESSES: Record<BusinessKey, Business> = {
     key: "nestoodle",
     name: "Nestoodle",
     subtitle: "Parenting website",
+    labels: { email: "Newsletter / Email" },
     icon: "/dashboard/nestoodle.svg",
     nav: [
-      { group: "", items: ["overview", "schedule", "blog", "printables"] },
+      { group: "", items: ["overview", "schedule", "ap-ideas", "ap-brand", "blog", "printables"] },
       { group: "Social", items: ["instagram", "facebook", "pinterest"] },
       { group: "Website", items: ["ga4", "sessions", "gsc", "adsense"] },
       { group: "Ads", items: ["ads"] },
-      { group: "Email", items: ["email"] },
+      { group: "Results", items: ["email"] },
+      { group: "Automations", items: ["automation-writer", "automation-social", "automation-publisher", "automation-emails", "automation-pinterest", "automation-images"] },
+      { group: "Account", items: ["settings", "help"] },
     ],
     sections: ["queue", "blog", "blogpost", "ga4", "sessions", "gsc", "adsense", "ads", "instagram", "facebook", "pinterest", "email"],
     picks: [
+      { section: "ap-ideas", key: "waiting", label: "Ideas waiting" },
+      { section: "email", key: "openRate", label: "Email open rate" },
       { section: "ga4", key: "activeUsers", label: "Website visitors" },
       { section: "ga4", key: "screenPageViews", label: "Page views" },
       { section: "gsc", key: "clicks", label: "Google search clicks" },
@@ -131,6 +141,7 @@ export const BUSINESSES: Record<BusinessKey, Business> = {
       { section: "facebook", key: "views", label: "Facebook views" },
       { section: "pinterest", key: "impression", label: "Pinterest impressions" },
       { section: "email", key: "subscribers", label: "Email subscribers" },
+      { section: "automation-images", key: "queued", label: "Images queued" },
       { section: "adsense", key: "earnings", label: "Ad earnings" },
     ],
     // The Content Queue sheet's id lives in n8n (NST_SHEET_ID), so every item brings its own editUrl.
