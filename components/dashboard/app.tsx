@@ -4,9 +4,9 @@
 // comparison, per-platform filters, and the active report.
 
 import { useEffect, useMemo, useRef, useState } from "react"
-import { BadgeIndianRupee, CalendarRange, Check, ChevronDown, ChevronsUpDown, KeyRound, LogOut, Menu, RefreshCw, Users, X } from "lucide-react"
+import { CalendarRange, Check, ChevronDown, ChevronsUpDown, RefreshCw, X } from "lucide-react"
 import type { BlogData, QueueData, SectionData, ToolSummary } from "@/lib/dashboard/types"
-import { ACCOUNT_VIEWS, ADMIN_VIEWS, BUSINESSES, TOOL_VIEW, type BusinessKey } from "@/lib/dashboard/businesses"
+import { ACCOUNT_VIEWS, ADMIN_VIEWS, BUSINESSES, TOOL_VIEW, hubOf, type BusinessKey } from "@/lib/dashboard/businesses"
 import { AnnouncementBanner, BillingView, BrandSwitcher, ChatWidget, HelpView, SettingsView, VerifyBanner, ViewAsBanner } from "@/components/autopilot/account-views"
 import { BusinessWorkspace } from "./business-workspace"
 import { isWorkspace } from "@/lib/dashboard/business-workspace"
@@ -16,7 +16,8 @@ import { AdminAnnounce, AdminCoupons, AdminCustomers, AdminHealth, AdminLeads, A
 import { LinkedInAutopilot } from "@/components/autopilot/customer-app"
 import { ToolApp } from "@/components/autopilot/tool-app"
 import { CSS as TOOL_CSS } from "@/components/autopilot/ui"
-import { signOut } from "@/app/dashboard/actions"
+import { AvatarMenu, HubSidebar, HubSubnav, MobileHubBar } from "./hub-navigation"
+import "./shell.css"
 import { addDays, dateTime, daysBetween, rangeLabel, todayIST } from "./format"
 import { COMPARE, loadKey, PRESETS, presetDates, readUrl, sectionKey, useSection, writeUrl, type Cmp, type DashState, type Filters, type Preset, type View } from "./state"
 import { PLATFORM } from "./brand"
@@ -44,7 +45,6 @@ const CSS = `
 export function DashboardApp({ allowed, me }: { allowed: BusinessKey[]; me: Me }) {
   const [state, setState] = useState<DashState | null>(null)
   const [panel, setPanel] = useState<"accounts" | "customers" | "password" | null>(null)
-  const [menu, setMenu] = useState(false)
   const [tick, setTick] = useState(0)
   const [flash, setFlash] = useState<{ tone: "good" | "bad" | "info"; text: string } | null>(null)
   // Back from connecting LinkedIn / Facebook: say how it went (read before the URL is rewritten).
@@ -84,117 +84,42 @@ export function DashboardApp({ allowed, me }: { allowed: BusinessKey[]; me: Me }
   const set = (patch: Partial<DashState>) => setState((s) => (s ? { ...s, ...patch } : s))
   const go = (v: View) => {
     set({ view: v })
-    setMenu(false)
     window.scrollTo({ top: 0 })
   }
   const switchTo = (b: BusinessKey) => {
     set({ biz: b, view: "overview", filters: {} })
-    setMenu(false)
     window.scrollTo({ top: 0 })
   }
   const setFilters = (f: Filters) => setState((s) => (s ? { ...s, filters: { ...s.filters, [s.view]: Object.fromEntries(Object.entries(f).filter(([, v]) => v)) } } : s))
   const doRefresh = () => (view === "overview" || page ? setTick((t) => t + 1) : refresh())
+  const activeHub = hubOf(biz, view)
+  const accountPage = (v: View) => set({ biz: "autopilot", view: v, filters: {} })
+  const avatar = <AvatarMenu me={me} allowed={allowed} onAccounts={() => setPanel("accounts")} onCustomers={() => allowed.includes("autopilot") ? accountPage("admin-customers") : setPanel("customers")} onPassword={() => setPanel("password")} onPage={accountPage} />
+  const brand = biz === "autopilot" && allowed.length === 1 ? <BrandSwitcher /> : <BusinessSwitcher current={biz} allowed={allowed} onPick={switchTo} />
   const meta = { ...PLATFORM[view], label: business.labels?.[view] || PLATFORM[view]?.label }
   const sectionData = data && data.ok && "kpis" in data ? (data as SectionData) : null
   const updated = data && data.ok ? (data as SectionData | QueueData).generatedAt : null
 
   return (
-    <div className="dash-root min-h-[100dvh] font-[family-name:var(--font-dash),system-ui,sans-serif] antialiased">
+    <div data-business={biz} className="dash-root min-h-[100dvh] antialiased">
       <style>{CSS}</style>
       {biz === "autopilot" && me.role === "customer" ? <ChatWidget /> : null}
       {panel === "accounts" ? <AccountsPanel me={me} onClose={() => setPanel(null)} /> : null}
       {panel === "password" ? <PasswordPanel onClose={() => setPanel(null)} /> : null}
       {panel === "customers" ? <CustomersPanel onClose={() => setPanel(null)} /> : null}
-      <div className="lg:grid lg:grid-cols-[244px_minmax(0,1fr)]">
-        {/* Sidebar */}
-        <aside
-          className={`fixed inset-y-0 left-0 z-40 w-[264px] transform bg-[var(--nav)] pb-[env(safe-area-inset-bottom)] pt-[env(safe-area-inset-top)] text-white transition-transform lg:sticky lg:top-0 lg:z-auto lg:h-[100dvh] lg:w-auto lg:translate-x-0 ${menu ? "translate-x-0" : "-translate-x-full"}`}
-          aria-label="Dashboard sections"
-        >
-          <div className="flex h-full flex-col">
-            <div className="flex items-center gap-1 px-3 pb-5 pt-6">
-              {biz === "autopilot" && allowed.length === 1 ? <BrandSwitcher /> : <BusinessSwitcher current={biz} allowed={allowed} onPick={switchTo} />}
-              <button type="button" onClick={() => setMenu(false)} className="ml-auto shrink-0 rounded-md p-1.5 text-white/70 hover:bg-white/10 lg:hidden" aria-label="Close menu">
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-            <nav className="flex-1 space-y-5 overflow-y-auto px-3">
-              {business.nav.filter((g) => g.group !== "Admin" || me.role === "admin").map((g) => (
-                <div key={g.group || "main"}>
-                  {g.group ? <div className="px-2.5 pb-1.5 text-[10.5px] font-semibold uppercase tracking-[0.1em] text-white/40">{g.group}</div> : null}
-                  <ul className="space-y-0.5">
-                    {g.items.map((v) => {
-                      const m = { ...PLATFORM[v], label: business.labels?.[v] || PLATFORM[v].label }
-                      const on = view === v
-                      return (
-                        <li key={v}>
-                          <button
-                            type="button"
-                            onClick={() => go(v)}
-                            aria-current={on ? "page" : undefined}
-                            className={`relative flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-[13.5px] font-medium transition ${on ? "bg-white/10 text-white" : "text-white/70 hover:bg-white/5 hover:text-white"}`}
-                          >
-                            {on ? <span className="absolute inset-y-1.5 left-0 w-[3px] rounded-full bg-[var(--gold)]" aria-hidden /> : null}
-                            <span className={on ? "text-[var(--gold)]" : "text-white/55"}>{m.big}</span>
-                            {m.label}
-                          </button>
-                        </li>
-                      )
-                    })}
-                  </ul>
-                </div>
-              ))}
-            </nav>
-            <div className="border-t border-white/10 p-3">
-              <div className="flex items-center gap-2.5 px-2.5 pb-2 pt-1">
-                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white/10 text-[12px] font-semibold text-[var(--gold)]" aria-hidden>
-                  {(me.name || me.email).slice(0, 1).toUpperCase()}
-                </span>
-                <span className="min-w-0">
-                  <span className="block truncate text-[13px] font-medium text-white">{me.name || me.email}</span>
-                  <span className="block truncate text-[11px] text-white/45">{me.role === "admin" ? "Admin" : me.email}</span>
-                </span>
-              </div>
-              {me.role === "admin" ? (
-                <button type="button" onClick={() => { setPanel("accounts"); setMenu(false) }} className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-[13px] font-medium text-white/70 hover:bg-white/5 hover:text-white">
-                  <Users className="h-4 w-4" />
-                  Accounts
-                </button>
-              ) : null}
-              {me.role === "admin" ? (
-                <button type="button" onClick={() => { if (allowed.includes("autopilot")) { set({ biz: "autopilot", view: "admin-customers", filters: {} }); setMenu(false); window.scrollTo({ top: 0 }) } else { setPanel("customers"); setMenu(false) } }} className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-[13px] font-medium text-white/70 hover:bg-white/5 hover:text-white">
-                  <BadgeIndianRupee className="h-4 w-4" />
-                  Customers
-                </button>
-              ) : null}
-              <button type="button" onClick={() => { setPanel("password"); setMenu(false) }} className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-[13px] font-medium text-white/70 hover:bg-white/5 hover:text-white">
-                <KeyRound className="h-4 w-4" />
-                My password
-              </button>
-              <form action={signOut}>
-                <button type="submit" className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-[13px] font-medium text-white/60 hover:bg-white/5 hover:text-white">
-                  <LogOut className="h-4 w-4" />
-                  Sign out
-                </button>
-              </form>
-            </div>
-          </div>
-        </aside>
-        {menu ? <button type="button" aria-label="Close menu" onClick={() => setMenu(false)} className="fixed inset-0 z-30 bg-black/40 lg:hidden" /> : null}
-
+      <div className="dash-shell-grid">
+        <HubSidebar biz={biz} view={view} admin={me.role === "admin"} go={go} />
         {/* Main */}
         <div className="min-w-0">
-          <header className="sticky top-0 z-20 border-b border-[var(--line)] bg-[color-mix(in_srgb,var(--bg)_97%,transparent)] pt-[env(safe-area-inset-top)] backdrop-blur-md">
-            <div className="mx-auto max-w-[1280px] px-4 py-3 sm:px-6 lg:px-8">
-              <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-                <button type="button" onClick={() => setMenu(true)} className="-ml-1 rounded-md p-1.5 text-[var(--muted)] hover:bg-[var(--chip)] lg:hidden" aria-label="Open menu">
-                  <Menu className="h-5 w-5" />
-                </button>
-                <h1 className="!m-0 flex min-w-0 items-center gap-2 !font-sans !text-[1.15rem] font-semibold tracking-[-0.015em] text-[var(--ink)]">
-                  <span style={{ color: meta.color === "#10203f" ? "var(--brand)" : meta.color }}>{meta.big}</span>
-                  <span className="truncate">{meta.label}</span>
-                </h1>
-                <div className="ml-auto flex items-center gap-2">
+          <header className="dash-shell-header">
+            <div className="dash-mobile-brand">{brand}{avatar}</div>
+            <div className="mx-auto max-w-[1280px] px-4 sm:px-6 lg:px-8">
+              <div className="dash-shell-heading">
+                <div className="min-w-0">
+                  <div className="dash-hub-eyebrow">{business.name} <span aria-hidden> / </span> {activeHub.label}</div>
+                  <h1 className="dash-page-title">{view === "overview" ? "Home" : meta.label}</h1>
+                </div>
+                <div className="dash-shell-tools">
                   {state && view !== "blog" && !page ? <RangePicker state={state} onChange={(p) => set(p)} /> : null}
                   {state && view !== "schedule" && view !== "blog" && !page ? (
                     <label className="relative hidden sm:block">
@@ -243,11 +168,12 @@ export function DashboardApp({ allowed, me }: { allowed: BusinessKey[]; me: Me }
                 </div>
               ) : null}
             </div>
+            <HubSubnav biz={biz} view={view} go={go} />
             {loading && data ? <div className="absolute inset-x-0 bottom-0 h-0.5 animate-pulse bg-[var(--brand)]" aria-hidden /> : null}
           </header>
 
           <QueueActionsProvider biz={biz} onChanged={() => (view === "schedule" ? refresh() : window.dispatchEvent(new Event("ec-queue-changed")))} dataStamp={biz + view + (view === "schedule" ? updated || "" : "")}>
-          <main className="mx-auto max-w-[1280px] px-4 pb-[max(2.5rem,env(safe-area-inset-bottom))] pt-5 sm:px-6 lg:px-8">
+          <main className="dash-main mx-auto max-w-[1280px] px-4 pb-[max(2.5rem,env(safe-area-inset-bottom))] pt-5 sm:px-6 lg:px-8">
             <ViewBoundary key={view + (state ? sectionKey(biz, view, state.start, state.end, state.cmp, filters) : "")}>
             {biz === "autopilot" && state ? (
               <div className="mb-4 space-y-3 empty:hidden">
@@ -329,6 +255,7 @@ export function DashboardApp({ allowed, me }: { allowed: BusinessKey[]; me: Me }
           </QueueActionsProvider>
         </div>
       </div>
+      <MobileHubBar biz={biz} view={view} go={go} />
     </div>
   )
 }
@@ -355,7 +282,7 @@ function BusinessSwitcher({ current, allowed, onPick }: { current: BusinessKey; 
     <>
       <img src={b.icon} alt="" width={36} height={36} className="h-9 w-9 shrink-0 rounded-lg" />
       <span className="min-w-0 text-left">
-        <span className="block truncate text-[15px] font-semibold leading-tight tracking-[-0.01em]">{b.name}</span>
+        <span className="dash-brand-name block truncate text-[15px] font-semibold leading-tight tracking-[-0.01em]">{b.name}</span>
         <span className="block truncate text-[11.5px] text-white/55">{b.subtitle}</span>
       </span>
     </>

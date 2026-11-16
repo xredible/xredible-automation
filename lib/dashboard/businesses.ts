@@ -119,7 +119,7 @@ export const BUSINESSES: Record<BusinessKey, Business> = {
     name: "Nestoodle",
     subtitle: "Parenting website",
     labels: { email: "Newsletter / Email" },
-    icon: "/dashboard/nestoodle.svg",
+    icon: "/dashboard/nestoodle-brand.png",
     nav: [
       { group: "", items: ["overview", "schedule", "ap-ideas", "ap-brand", "blog", "printables"] },
       { group: "Social", items: ["instagram", "facebook", "pinterest"] },
@@ -235,3 +235,22 @@ export const viewsOf = (b: BusinessKey): ViewName[] => BUSINESSES[b].nav.flatMap
 
 /** The API section behind a view ("schedule" is the "queue" section). */
 export const sectionOf = (v: ViewName) => (v === "schedule" ? "queue" : v)
+
+// The five hubs regroup existing pages; nav remains the page allowlist so old links
+// and account permissions keep exactly the same destinations.
+export type HubKey = "home" | "content" | "results" | "automations" | "brand"
+export type DashboardHub = { key: HubKey; label: string; phoneLabel: string; items: ViewName[] }
+const HUB_PAGES: DashboardHub[] = [
+  { key: "home", label: "Home", phoneLabel: "Home", items: ["overview"] },
+  { key: "content", label: "Content", phoneLabel: "Content", items: ["schedule", "ap-ideas", "blog", "printables"] },
+  { key: "results", label: "Results", phoneLabel: "Results", items: ["results", "instagram", "facebook", "linkedin", "youtube", "pinterest", "articles", "ga4", "sessions", "gsc", "email", "newsletter", "newsletters", "ads", "adsense"] },
+  { key: "automations", label: "Automations", phoneLabel: "Automate", items: ["automation-writer", "automation-social", "automation-publisher", "automation-shorts", "automation-emails", "automation-pinterest", "automation-images", "automation-youtube-pack", "automation-whatsapp", "automation-live", "ap-linkedin", "ap-meta", "ap-blog", "ap-newsletter"] },
+  { key: "brand", label: "Brand & settings", phoneLabel: "More", items: ["ap-brand", "settings", "help", "billing"] },
+]
+export function hubsOf(business: BusinessKey): DashboardHub[] {
+  const allowed = viewsOf(business)
+  return HUB_PAGES.map(h => ({ ...h, items: h.items.filter(v => allowed.includes(v)) }))
+}
+export function hubOf(business: BusinessKey, view: ViewName): DashboardHub {
+  return hubsOf(business).find(h => h.items.includes(view)) || hubsOf(business).find(h => h.key === (ADMIN_VIEWS.includes(view) ? "brand" : "home"))!
+}
