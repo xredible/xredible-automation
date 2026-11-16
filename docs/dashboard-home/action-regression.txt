@@ -1,0 +1,34 @@
+nestoodle/ap-ideas/390: pass
+nestoodle/automation-publisher/390: pass
+nestoodle/automation-images/390: pass
+nestoodle/email/390: pass
+nestoodle/ap-brand/390: pass
+nestoodle/settings/390: pass
+nestoodle/help/390: pass
+nestoodle/ap-ideas/1366: pass
+nestoodle/automation-publisher/1366: pass
+nestoodle/automation-images/1366: pass
+nestoodle/email/1366: pass
+nestoodle/ap-brand/1366: pass
+nestoodle/settings/1366: pass
+nestoodle/help/1366: pass
+elevating-christ/ap-ideas/390: pass
+elevating-christ/automation-publisher/390: pass
+elevating-christ/email/390: pass
+elevating-christ/ap-brand/390: pass
+elevating-christ/settings/390: pass
+elevating-christ/help/390: pass
+elevating-christ/ap-ideas/1366: pass
+elevating-christ/automation-publisher/1366: pass
+elevating-christ/email/1366: pass
+elevating-christ/ap-brand/1366: pass
+elevating-christ/settings/1366: pass
+elevating-christ/help/1366: pass
+Add idea: confirmation → API → fixture Topics → rendered result: pass
+Business settings persist after reload: pass
+Brand kit confirmation and persistence: pass
+EC idea persists; Nestoodle data stays isolated: pass
+Image request confirmation; queued result; duplicate request rejected: pass
+Write Now uses existing action; already drafted topic cannot be rewritten: pass
+Unauthorized:401; other business:403; non-owner write:403; cross-origin:403; unsupported hold:400
+No browser page errors

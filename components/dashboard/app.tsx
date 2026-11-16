@@ -143,6 +143,7 @@ export function DashboardApp({ allowed, me }: { allowed: BusinessKey[]; me: Me }
                     type="button"
                     onClick={doRefresh}
                     className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-[var(--line)] bg-[var(--panel)] px-2.5 text-xs font-medium text-[var(--ink-2)] hover:border-[var(--line-strong)]"
+                    aria-label="Refresh"
                     title="Get the latest numbers now"
                   >
                     <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
@@ -151,7 +152,7 @@ export function DashboardApp({ allowed, me }: { allowed: BusinessKey[]; me: Me }
                 </div>
               </div>
               {state && (sectionData || PLATFORM[view]) && view !== "overview" && view !== "schedule" && view !== "blog" && !page ? (
-                <div className="mt-2.5 flex flex-wrap items-center gap-2">
+                <div className="dash-shell-filters mt-2.5 flex flex-wrap items-center gap-2">
                   <label className="relative sm:hidden">
                     <span className="sr-only">Compare with</span>
                     <select id="cmp-m" value={state.cmp} onChange={(e) => set({ cmp: e.target.value as Cmp })} className="h-8 appearance-none rounded-lg border border-[var(--line)] bg-[var(--panel)] pl-2.5 pr-7 text-xs font-medium text-[var(--ink-2)]">
@@ -168,9 +169,10 @@ export function DashboardApp({ allowed, me }: { allowed: BusinessKey[]; me: Me }
                 </div>
               ) : null}
             </div>
-            <HubSubnav biz={biz} view={view} go={go} />
             {loading && data ? <div className="absolute inset-x-0 bottom-0 h-0.5 animate-pulse bg-[var(--brand)]" aria-hidden /> : null}
           </header>
+          {/* Phones: the header scrolls away with the page; only this slim row of page chips stays on top. */}
+          <HubSubnav biz={biz} view={view} go={go} />
 
           <QueueActionsProvider biz={biz} onChanged={() => (view === "schedule" ? refresh() : window.dispatchEvent(new Event("ec-queue-changed")))} dataStamp={biz + view + (view === "schedule" ? updated || "" : "")}>
           <main className="dash-main mx-auto max-w-[1280px] px-4 pb-[max(2.5rem,env(safe-area-inset-bottom))] pt-5 sm:px-6 lg:px-8">
@@ -228,7 +230,7 @@ export function DashboardApp({ allowed, me }: { allowed: BusinessKey[]; me: Me }
             ) : view === "printables" ? (
               biz === "nestoodle" ? <PrintablesView key={`${biz}-${tick}`} /> : <GenericPrintables key={`${biz}-${tick}`} biz={biz} />
             ) : view === "overview" ? (
-              <Overview key={biz} biz={biz} start={state.start} end={state.end} cmp={state.cmp} compareLabel={compareLabel} go={go} refreshTick={tick} />
+              <Overview key={`${me.email}-${biz}`} account={me.email} biz={biz} start={state.start} end={state.end} cmp={state.cmp} compareLabel={compareLabel} go={go} refreshTick={tick} />
             ) : !data ? (
               <SectionSkeleton />
             ) : !data.ok ? (
@@ -282,7 +284,7 @@ function BusinessSwitcher({ current, allowed, onPick }: { current: BusinessKey; 
     <>
       <img src={b.icon} alt="" width={36} height={36} className="h-9 w-9 shrink-0 rounded-lg" />
       <span className="min-w-0 text-left">
-        <span className="dash-brand-name block truncate text-[15px] font-semibold leading-tight tracking-[-0.01em]">{b.name}</span>
+        <span className="dash-brand-name block truncate lg:whitespace-normal lg:overflow-visible lg:text-clip text-[15px] font-semibold leading-tight tracking-[-0.01em]">{b.name}</span>
         <span className="block truncate text-[11.5px] text-white/55">{b.subtitle}</span>
       </span>
     </>

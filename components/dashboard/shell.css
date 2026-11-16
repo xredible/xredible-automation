@@ -485,6 +485,35 @@
   .dash-root .dash-main {
     padding-bottom: calc(94px + env(safe-area-inset-bottom));
   }
+  /* Phones: the brand bar, title and date controls scroll away with the page, so the
+     content keeps the screen. Only the slim page-chip row stays pinned (the bottom tabs
+     already give the way back). */
+  .dash-shell-header {
+    position: relative;
+    z-index: 21; /* Open menus must clear the later sticky page chips. */
+  }
+  .dash-shell-header:has(+ .dash-mobile-subnav) {
+    border-bottom: 0;
+  }
+  .dash-shell-heading {
+    padding: 14px 0 12px;
+  }
+  .dash-shell-filters {
+    margin-top: 0;
+    padding-bottom: 12px;
+  }
+  .dash-mobile-subnav {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    padding: max(8px, env(safe-area-inset-top)) 16px 8px;
+    background: var(--bg);
+    border-bottom: 1px solid var(--line);
+    scrollbar-width: none;
+  }
+  .dash-mobile-subnav::-webkit-scrollbar {
+    display: none;
+  }
 }
 @media (prefers-color-scheme: dark) {
   .dash-root {
@@ -558,3 +587,9 @@
     --faint: #a5afbe;
   }
 }
+
+/* Home reuses the calendar actions with phone-sized hit areas. */
+.dash-home button, .dash-home a { min-height: 44px; min-width: 44px; }
+.dash-home button:focus-visible, .dash-home a:focus-visible { outline: 2px solid var(--brand); outline-offset: 3px; }
+/* Channel names remain readable in both themes; the adjacent glyph keeps its identity. */
+.dash-home li .font-semibold[style] { color: var(--ink-2) !important; }

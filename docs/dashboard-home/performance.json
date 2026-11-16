@@ -1,0 +1,125 @@
+{
+  "method": "Chromium,390x844,150ms RTT,1.6Mbps down,750Kbps up,4x CPU;three runs per business/version. Same local read-only fixture reports and self-hosted font files;not live n8n performance. Cold ready = first fixture queue item visible. Cached Home = in-session return from Calendar using the module cache (before) or kept Home data plus module cache (after);not persistent storage or a warm HTTP reload. Hub = visible nav control to Calendar heading. HTTP reload cache timings omitted because interception suppresses browser asset caching.",
+  "results": [
+    {
+      "version": "before",
+      "biz": "nestoodle",
+      "run": 0,
+      "coldReadyMs": 4383,
+      "lcpMs": 748,
+      "cachedHomeReturnMs": 256,
+      "hubSwitchMs": 270,
+      "jsGzipBytes": 260762
+    },
+    {
+      "version": "before",
+      "biz": "nestoodle",
+      "run": 1,
+      "coldReadyMs": 4498,
+      "lcpMs": 876,
+      "cachedHomeReturnMs": 255,
+      "hubSwitchMs": 275,
+      "jsGzipBytes": 260762
+    },
+    {
+      "version": "before",
+      "biz": "nestoodle",
+      "run": 2,
+      "coldReadyMs": 4818,
+      "lcpMs": 816,
+      "cachedHomeReturnMs": 230,
+      "hubSwitchMs": 234,
+      "jsGzipBytes": 260762
+    },
+    {
+      "version": "before",
+      "biz": "elevating-christ",
+      "run": 0,
+      "coldReadyMs": 4558,
+      "lcpMs": 800,
+      "cachedHomeReturnMs": 243,
+      "hubSwitchMs": 198,
+      "jsGzipBytes": 260762
+    },
+    {
+      "version": "before",
+      "biz": "elevating-christ",
+      "run": 1,
+      "coldReadyMs": 4438,
+      "lcpMs": 840,
+      "cachedHomeReturnMs": 324,
+      "hubSwitchMs": 293,
+      "jsGzipBytes": 260762
+    },
+    {
+      "version": "before",
+      "biz": "elevating-christ",
+      "run": 2,
+      "coldReadyMs": 4921,
+      "lcpMs": 820,
+      "cachedHomeReturnMs": 276,
+      "hubSwitchMs": 235,
+      "jsGzipBytes": 260762
+    },
+    {
+      "version": "after",
+      "biz": "nestoodle",
+      "run": 0,
+      "coldReadyMs": 4301,
+      "lcpMs": 700,
+      "cachedHomeReturnMs": 225,
+      "hubSwitchMs": 235,
+      "jsGzipBytes": 262689
+    },
+    {
+      "version": "after",
+      "biz": "nestoodle",
+      "run": 1,
+      "coldReadyMs": 4986,
+      "lcpMs": 884,
+      "cachedHomeReturnMs": 273,
+      "hubSwitchMs": 240,
+      "jsGzipBytes": 262689
+    },
+    {
+      "version": "after",
+      "biz": "nestoodle",
+      "run": 2,
+      "coldReadyMs": 4983,
+      "lcpMs": 772,
+      "cachedHomeReturnMs": 334,
+      "hubSwitchMs": 225,
+      "jsGzipBytes": 262689
+    },
+    {
+      "version": "after",
+      "biz": "elevating-christ",
+      "run": 0,
+      "coldReadyMs": 4903,
+      "lcpMs": 840,
+      "cachedHomeReturnMs": 276,
+      "hubSwitchMs": 200,
+      "jsGzipBytes": 262689
+    },
+    {
+      "version": "after",
+      "biz": "elevating-christ",
+      "run": 1,
+      "coldReadyMs": 4473,
+      "lcpMs": 828,
+      "cachedHomeReturnMs": 247,
+      "hubSwitchMs": 205,
+      "jsGzipBytes": 262689
+    },
+    {
+      "version": "after",
+      "biz": "elevating-christ",
+      "run": 2,
+      "coldReadyMs": 4848,
+      "lcpMs": 796,
+      "cachedHomeReturnMs": 313,
+      "hubSwitchMs": 277,
+      "jsGzipBytes": 262689
+    }
+  ]
+}
