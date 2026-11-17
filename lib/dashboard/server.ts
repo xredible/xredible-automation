@@ -61,6 +61,8 @@ export type QueueAction =
   | { action: "reschedule"; when: string; rows: { row: number; expect: string }[] }
   | { action: "pause_all" }
   | { action: "resume_all" }
+  /** Elevating CHRIST only: render carousel slides from the row's Slide Text (n8n workflow 17 → 24). */
+  | { action: "make_images"; rows: { row: number; expect: string }[] }
 
 /** Checks the browser's request strictly; returns null when it is not a valid action. */
 export function parseAction(input: unknown): QueueAction | null {
@@ -86,6 +88,10 @@ export function parseAction(input: unknown): QueueAction | null {
     return r ? { action: "reschedule", when: String(b.when), rows: r } : null
   }
   if (b.action === "pause_all" || b.action === "resume_all") return { action: b.action }
+  if (b.action === "make_images") {
+    const r = rows()
+    return r && r.length === 1 ? { action: "make_images", rows: r } : null
+  }
   return null
 }
 
