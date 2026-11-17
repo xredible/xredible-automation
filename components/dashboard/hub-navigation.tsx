@@ -36,7 +36,7 @@ const HUB_ICON = {
   brand: Palette,
 };
 const labelOf = (biz: BusinessKey, view: ViewName) =>
-  view === "overview"
+  view === "automations" ? "All automations" : view === "overview"
     ? "Home"
     : BUSINESSES[biz].labels?.[view] || PLATFORM[view]?.label || view;
 function HubIcon({ hub }: { hub: HubKey }) {
@@ -147,7 +147,7 @@ export function HubSubnav({
   if (active.items.length < 2) return null;
   return (
     <nav
-      className="dash-mobile-subnav lg:hidden"
+      className={`dash-mobile-subnav ${active.key === "content" ? "dash-content-tabs" : "lg:hidden"}`}
       aria-label={`${active.label} pages`}
     >
       {active.items.map((v) => (
@@ -157,7 +157,7 @@ export function HubSubnav({
           aria-current={v === view ? "page" : undefined}
           onClick={() => go(v)}
         >
-          {labelOf(biz, v)}
+          {active.key === "content" && v === "schedule" ? "Calendar" : active.key === "content" && v === "blog" ? "Blog posts" : labelOf(biz, v)}
         </button>
       ))}
     </nav>

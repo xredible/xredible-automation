@@ -1,6 +1,7 @@
 "use client";
 import { useCallback, useEffect, useState } from "react";
-import { ArrowRight, Clock, ImageIcon, ShieldCheck } from "lucide-react";
+import { ArrowRight, ShieldCheck } from "lucide-react";
+import { AutomationHub } from "./automation-hub";
 import { Card, Notice, Skeleton } from "./ui";
 import { SectionView } from "./section-view";
 import {
@@ -20,14 +21,6 @@ import {
   IdeaComposer,
   WorkspaceField,
 } from "@/components/autopilot/workspace-parts";
-const at = (s?: string) =>
-  s
-    ? new Date(s).toLocaleString("en-IN", {
-        timeZone: "Asia/Kolkata",
-        dateStyle: "medium",
-        timeStyle: "short",
-      })
-    : "Not reported";
 type Change = { title: string; detail: string; body: Record<string, unknown> };
 export function BusinessWorkspace({
   biz,
@@ -49,14 +42,16 @@ export function BusinessWorkspace({
     [msg, setMsg] = useState(""),
     [busy, setBusy] = useState(false),
     [change, setChange] = useState<Change | null>(null);
-  const [postId, setPostId] = useState("");
   const load = useCallback(
     async (signal?: AbortSignal) => {
       try {
-        const r = await fetch(`/dashboard/workspace?biz=${biz}&view=${view}`, {
-          cache: "no-store",
-          signal,
-        });
+        const r = await fetch(
+          `/dashboard/workspace?biz=${biz}&view=${view === "automations" ? "automation-images" : view}`,
+          {
+            cache: "no-store",
+            signal,
+          },
+        );
         const j = await r.json();
         if (j.ok) {
           setData(j);
@@ -80,19 +75,38 @@ export function BusinessWorkspace({
     if (!change) return;
     setBusy(true);
     setError("");
+    setMsg("");
+    let completed = 0;
+    const ids = Array.isArray(change.body.postIds)
+      ? (change.body.postIds as number[])
+      : null;
     try {
-      const r = await fetch("/dashboard/workspace", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ biz, ...change.body, confirmed: true }),
-      });
-      const j = await r.json();
-      if (!j.ok) throw new Error(j.error || "Change failed.");
-      setMsg(j.done);
+      const requests = ids
+        ? ids.map((postId) => ({ op: "make_images", postId }))
+        : [change.body];
+      for (const body of requests) {
+        const r = await fetch("/dashboard/workspace", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ biz, ...body, confirmed: true }),
+        });
+        const j = await r.json();
+        if (!j.ok) throw new Error(j.error || "Change failed.");
+        completed++;
+        setMsg(
+          ids ? `${completed} of ${ids.length} image requests queued.` : j.done,
+        );
+      }
       setChange(null);
       await load();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Change failed.");
+      if (ids) {
+        setChange(null);
+        await load();
+      }
+      setError(
+        `${ids ? `${completed} of ${ids.length} requests completed. ` : ""}${e instanceof Error ? e.message : "Change failed."}`,
+      );
     } finally {
       setBusy(false);
     }
@@ -108,11 +122,8 @@ export function BusinessWorkspace({
     ) : (
       <Skeleton className="h-80" />
     );
-  const automation = data.automations.find(
-    (a) => view === `automation-${a.key}`,
-  );
   return (
-    <div className="space-y-5">
+    <div className="dash-workspace space-y-5">
       {change ? (
         <ConfirmChange
           title={change.title}
@@ -121,6 +132,11 @@ export function BusinessWorkspace({
           onConfirm={run}
         >
           {change.detail}
+          {busy && Array.isArray(change.body.postIds) ? (
+            <p role="status" className="mt-3 font-medium">
+              {msg || "Checking the first draft…"}
+            </p>
+          ) : null}
         </ConfirmChange>
       ) : null}
       {error ? <Notice tone="error">{error}</Notice> : null}
@@ -224,196 +240,16 @@ export function BusinessWorkspace({
           <Rules biz={biz} />
         </>
       ) : null}
-      {automation ? (
-        <>
-          <Card title={automation.name} sub={automation.description}>
-            <div className="flex flex-wrap items-center gap-2">
-              <span
-                className={`rounded-full px-3 py-1 text-xs font-semibold ${automation.held ? "bg-[var(--chip)]" : "bg-[var(--good-bg)] text-[var(--good)]"}`}
-              >
-                {automation.held
-                  ? "Held"
-                  : automation.observedAt
-                    ? automation.active
-                      ? "On at last check"
-                      : "Inactive at last check"
-                    : "State not reported"}
-              </span>
-              {automation.observedAt ? (
-                <span className="text-xs text-[var(--faint)]">
-                  Snapshot {at(automation.observedAt)}
-                </span>
-              ) : null}
-            </div>
-            <dl className="mt-4 grid gap-4 text-sm sm:grid-cols-3">
-              <div>
-                <dt className="text-xs text-[var(--muted)]">Schedule</dt>
-                <dd className="mt-1 flex gap-2">
-                  <Clock className="h-4 w-4 shrink-0" />
-                  {automation.schedule}
-                </dd>
-              </div>
-              <div>
-                <dt className="text-xs text-[var(--muted)]">Last run</dt>
-                <dd className="mt-1">
-                  {automation.lastRun
-                    ? `${automation.lastRun.status} · ${at(automation.lastRun.at)}`
-                    : "Not reported"}
-                </dd>
-              </div>
-              <div>
-                <dt className="text-xs text-[var(--muted)]">Next run</dt>
-                <dd className="mt-1">
-                  {automation.held
-                    ? "Held"
-                    : automation.nextRun
-                      ? at(automation.nextRun)
-                      : "See schedule"}
-                </dd>
-              </div>
-            </dl>
-            <div className="mt-4 flex flex-wrap gap-2">
-              {automation.key === "writer" ? (
-                <button className={primary} onClick={() => go("ap-ideas")}>
-                  Choose a topic to write
-                </button>
-              ) : null}
-              <button
-                className={ghost}
-                disabled={
-                  !owner ||
-                  busy ||
-                  !automation.canHold ||
-                  !!automation.lockedHold
-                }
-                onClick={() =>
-                  ask(
-                    automation.held
-                      ? "Resume this automation?"
-                      : "Hold this automation?",
-                    { op: "hold", key: automation.key, held: !automation.held },
-                    "Change the workflow's verified hold flag. The workflow stays active; existing approval rules remain in effect.",
-                  )
-                }
-              >
-                {automation.held ? "Resume" : "Pause"}
-              </button>
-              <button className={ghost} onClick={() => go("schedule")}>
-                Content calendar
-              </button>
-            </div>
-            {automation.lockedHold ? (
-              <p className="mt-3 text-xs text-[var(--muted)]">
-                Scheduled writing is held for owner review. Write Now can still
-                request an individual draft.
-              </p>
-            ) : !automation.canHold ? (
-              <p className="mt-3 text-xs text-[var(--muted)]">
-                Dashboard pause is unavailable until this workflow has a
-                verified hold flag.
-              </p>
-            ) : null}
-          </Card>
-          <Card title="Recent errors">
-            {automation.errors.length ? (
-              <ul className="space-y-2">
-                {automation.errors.map((e, i) => (
-                  <li key={i} className="text-sm">
-                    <span className="text-[var(--muted)]">{at(e.at)} · </span>
-                    {e.message}
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="text-sm text-[var(--muted)]">
-                No errors reported by monitoring.
-              </p>
-            )}
-          </Card>
-          {automation.key === "images" ? (
-            <>
-              <Card
-                title="Make images"
-                sub="Same guarded image task as the Nestoodle ready command. A post is read fresh before it is queued."
-              >
-                <form
-                  className="flex flex-wrap items-end gap-3"
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    ask(
-                      "Queue images for this post?",
-                      { op: "make_images", postId: Number(postId) },
-                      "The worker will process an image-only request using the existing quality checks. Article text and publishing approval stay with the owner.",
-                    );
-                  }}
-                >
-                  <WorkspaceField
-                    label="WordPress post number"
-                    value={postId}
-                    onChange={setPostId}
-                    type="number"
-                    disabled={!owner}
-                  />
-                  <button
-                    className={primary}
-                    disabled={!owner || busy || !/^\d+$/.test(postId)}
-                  >
-                    <ImageIcon className="h-4 w-4" />
-                    Make images
-                  </button>
-                </form>
-              </Card>
-              <Card title="Image queue">
-                <div className="mb-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
-                  {["queued", "in_progress", "done", "blocked"].map((s) => (
-                    <div key={s} className="rounded-lg bg-[var(--chip)] p-3">
-                      <div className="text-xl font-semibold">
-                        {data.images.filter((i) => i.status === s).length}
-                      </div>
-                      <div className="text-xs text-[var(--muted)]">
-                        {s.replace("_", " ")}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <ul className="divide-y divide-[var(--line-soft)]">
-                  {data.images.map((i) => (
-                    <li key={i.id} className="py-3">
-                      <div className="flex flex-wrap justify-between gap-2 text-sm font-medium">
-                        <span>
-                          {i.title} · #{i.postId}
-                        </span>
-                        <span>{i.status.replace("_", " ")}</span>
-                      </div>
-                      <p className="mt-1 break-words text-xs text-[var(--muted)]">
-                        {i.notes || "No notes yet"} · {at(i.requestedAt)}
-                      </p>
-                    </li>
-                  ))}
-                </ul>
-                {!data.images.length ? (
-                  <p className="text-sm text-[var(--muted)]">
-                    No image requests yet.
-                  </p>
-                ) : null}
-              </Card>
-            </>
-          ) : null}
-          <Card title="Recent dashboard actions">
-            <ul className="space-y-2 text-xs text-[var(--muted)]">
-              {data.audit.map((a, i) => (
-                <li key={i}>
-                  {at(a.at)} · {a.actor} · {a.action} · {a.result}
-                </li>
-              ))}
-            </ul>
-            {!data.audit.length ? (
-              <p className="text-sm text-[var(--muted)]">
-                No dashboard actions recorded.
-              </p>
-            ) : null}
-          </Card>
-        </>
+      {view === "automations" || view.startsWith("automation-") ? (
+        <AutomationHub
+          biz={biz}
+          view={view}
+          data={data}
+          owner={owner}
+          busy={busy}
+          go={go}
+          ask={ask}
+        />
       ) : null}
       {view === "email" ? (
         <>

@@ -1,0 +1,37 @@
+{
+  "passed": [
+    "six cards per business; held writer and explicit source snapshots; per-card History",
+    "Image queue title lookup; request rows; exclude queued/done/illustrated/published from Queue all",
+    "single and bulk confirmation; no request on Cancel",
+    "same per-post action bodies; serial bulk stop/partial-failure/retry",
+    "Content tabs phone/desktop and legacy page URLs",
+    "EC has no Nestoodle Image panel; member read-only and server 403",
+    "no page errors"
+  ],
+  "writes": [
+    {
+      "biz": "nestoodle",
+      "op": "make_images",
+      "postId": 501,
+      "confirmed": true
+    },
+    {
+      "biz": "nestoodle",
+      "op": "make_images",
+      "postId": 502,
+      "confirmed": true
+    },
+    {
+      "biz": "nestoodle",
+      "op": "make_images",
+      "postId": 503,
+      "confirmed": true
+    },
+    {
+      "biz": "nestoodle",
+      "op": "make_images",
+      "postId": 503,
+      "confirmed": true
+    }
+  ]
+}
