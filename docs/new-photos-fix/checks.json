@@ -1,0 +1,31 @@
+{
+  "passed": [
+    "390/1366 button label and no overflow",
+    "cancel sends nothing",
+    "confirmed exact make_images body through workspace API",
+    "one queue row and repeat rejected",
+    "new_photos rejected by blog API",
+    "member403",
+    "no legacy Blog POST or page errors"
+  ],
+  "requests": [
+    {
+      "url": "/dashboard/workspace",
+      "body": {
+        "op": "make_images",
+        "postId": 501,
+        "confirmed": true,
+        "biz": "nestoodle"
+      }
+    },
+    {
+      "url": "/dashboard/workspace",
+      "body": {
+        "op": "make_images",
+        "postId": 501,
+        "confirmed": true,
+        "biz": "nestoodle"
+      }
+    }
+  ]
+}

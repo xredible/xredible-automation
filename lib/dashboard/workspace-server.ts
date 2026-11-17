@@ -302,7 +302,7 @@ export async function workspaceAction(
     await audit(b, actor, op, "completed");
     return {
       ok: true,
-      done: "Saved. Existing publishing approvals still apply.",
+      done: op === "make_images" ? "Queued, Codex starts within about 10 minutes." : "Saved. Existing publishing approvals still apply.",
     };
   } catch (e) {
     await audit(b, actor, op, "failed");
