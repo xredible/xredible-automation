@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import {mixAudio} from './audio.mjs';
 import {brandCover} from './brand-cover.mjs';
 import path from 'node:path';
+import {createHash} from 'node:crypto';
 import { createRequire } from 'node:module';
 import { spawn, execFileSync } from 'node:child_process';
 const require=createRequire(import.meta.url);
@@ -15,6 +16,9 @@ const local=p=>{const result=path.resolve(dir,p);if(!result.startsWith(dir+path.
 const probe=file=>Number(execFileSync('ffprobe',['-v','error','-show_entries','format=duration','-of','csv=p=0',file],{encoding:'utf8'}).trim());
 let total=0;for(const s of spec.scenes){if(s.vo)s.dur=probe(local(s.vo))+.5;else if(!s.dur)throw new Error('Missing voice clip');if(!(s.dur>0&&s.dur<40))throw new Error('Invalid scene duration');total+=s.dur;}
 if(!(total>0&&total<=180))throw new Error('Invalid total duration');
+// One photo, one scene: refuse a reel that shows the same picture twice (byte-identical files).
+{const seen=new Map();for(const [i,s] of spec.scenes.entries()){if(s.kind==='cta'){delete s.image;continue}if(!s.image){if(s.kind==='item')throw new Error('Step scene without photo');continue}
+const h=createHash('sha256').update(fs.readFileSync(local(s.image))).digest('hex');if(seen.has(h))throw new Error(`Photo repeated in scenes ${seen.get(h)} and ${i}`);seen.set(h,i);}}
 const silent=outPath.replace(/\.mp4$/,'.silent.mp4');let browser;
 try{browser=await chromium.launch({headless:true, ...(process.env.CHROMIUM_EXECUTABLE_PATH ? {executablePath:process.env.CHROMIUM_EXECUTABLE_PATH,args:['--no-sandbox','--disable-dev-shm-usage']} : {})});const page=await browser.newPage({viewport:{width:1080,height:1920},deviceScaleFactor:1});
 // Embed bounded local assets; the browser never navigates file URLs or fetches a network asset.

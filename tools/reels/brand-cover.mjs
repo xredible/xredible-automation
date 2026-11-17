@@ -5,7 +5,7 @@ import {render} from '../brand-images/render.mjs';
 export async function brandCover(spec,dir){
  const cover=spec.brandCover,review=cover?.review;
  if(review?.approved!==true||review.score!==10||review.faceFree!==true||!Array.isArray(review.problems)||review.problems.length||!review.reviewer)throw new Error('Checked brand cover photo pending (Codex)');
- const scene=spec.scenes.find(s=>s.kind!=='cta');if(!scene?.image)throw new Error('No checked cover photo');
+ const scene=spec.scenes.find(s=>s.kind!=='cta'&&s.image);if(!scene?.image)throw new Error('No checked cover photo');
  const slug='reel-cover-'+String(spec.jobId||spec.postId||'fixture');
  const job={slug,articleUrl:spec.link,title:cover.title,benefit:cover.benefit||'Read the guide at nestoodle.com',keyword:spec.keyword||'GUIDE',coverPhoto:0,photos:[{src:scene.image,alt:cover.alt||spec.title,review}],steps:[]};
  const file=path.join(dir,'brand-cover-job.json'),out=path.join(dir,'brand-cover-output');
