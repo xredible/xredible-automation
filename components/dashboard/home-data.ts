@@ -10,8 +10,15 @@ const PREFIX = "xd-home-v1:";
 const DAY = 86400_000;
 const rangeKey = (start: string, end: string, cmp: string) =>
   `${start} – ${end} (${cmp})`;
-const storageKey = (account: string, biz: BusinessKey) =>
-  PREFIX + encodeURIComponent(account) + ":" + biz;
+const storageKey = (
+  account: string,
+  biz: BusinessKey,
+  scope: "home" | "results",
+) =>
+  (scope === "home" ? PREFIX : "xd-results-v1:") +
+  encodeURIComponent(account) +
+  ":" +
+  biz;
 
 // Only Home's queue and aggregate report data are retained. Subscriber/contact
 // tables and content reports never enter persistent storage. Storage is optional.
@@ -84,6 +91,7 @@ export function useHomeData(
   end: string,
   cmp: string,
   refreshTick: number,
+  scope: "home" | "results" = "home",
 ) {
   const [entries, setEntries] = useState<Record<string, HomeEntry>>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -93,7 +101,7 @@ export function useHomeData(
   const range = rangeKey(start, end, cmp);
   useEffect(() => {
     let alive = true;
-    const key = storageKey(account, biz);
+    const key = storageKey(account, biz, scope);
     const fresh = refreshTick !== lastTick.current;
     lastTick.current = refreshTick;
     // Restore browser data after hydration; the server never reads browser storage.
@@ -141,15 +149,18 @@ export function useHomeData(
         accept("queue", d),
       );
     };
-    window.addEventListener("ec-queue-changed", reloadQueue);
+    if (scope === "home")
+      window.addEventListener("ec-queue-changed", reloadQueue);
     return () => {
       alive = false;
-      window.removeEventListener("ec-queue-changed", reloadQueue);
+      if (scope === "home")
+        window.removeEventListener("ec-queue-changed", reloadQueue);
     };
-  }, [account, biz, sections, start, end, cmp, range, refreshTick]);
+  }, [account, biz, sections, start, end, cmp, range, refreshTick, scope]);
   useEffect(() => {
-    if (Object.keys(entries).length) save(storageKey(account, biz), entries);
-  }, [entries, account, biz]);
+    if (Object.keys(entries).length)
+      save(storageKey(account, biz, scope), entries);
+  }, [entries, account, biz, scope]);
   useEffect(() => {
     const timer = window.setInterval(() => setClock(Date.now()), 30_000);
     return () => window.clearInterval(timer);
@@ -160,7 +171,9 @@ export function useHomeData(
     oldest === null ? 0 : Math.max(0, Math.floor((clock - oldest) / 60_000));
   const updated =
     oldest === null
-      ? "Loading Home…"
+      ? scope === "results"
+        ? "Loading results…"
+        : "Loading Home…"
       : `Updated ${mins < 1 ? "just now" : mins < 60 ? `${mins} min ago` : `${Math.floor(mins / 60)} hr ago`}`;
   return { entries, errors, loading, range, updated, now: clock };
 }

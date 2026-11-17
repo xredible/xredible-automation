@@ -3,11 +3,13 @@
 // The dashboard app shell: business switcher, sidebar navigation, date range +
 // comparison, per-platform filters, and the active report.
 
-import { useEffect, useMemo, useRef, useState } from "react"
-import { CalendarRange, Check, ChevronDown, ChevronsUpDown, RefreshCw, X } from "lucide-react"
+import { useEffect, useRef, useState } from "react"
+import { Check, ChevronDown, ChevronsUpDown, RefreshCw, X } from "lucide-react"
 import type { BlogData, QueueData, SectionData, ToolSummary } from "@/lib/dashboard/types"
-import { ACCOUNT_VIEWS, ADMIN_VIEWS, BUSINESSES, TOOL_VIEW, hubOf, type BusinessKey } from "@/lib/dashboard/businesses"
+import { ACCOUNT_VIEWS, ADMIN_VIEWS, BUSINESSES, TOOL_VIEW, hubOf, viewsOf, type BusinessKey } from "@/lib/dashboard/businesses"
 import { AnnouncementBanner, BillingView, BrandSwitcher, ChatWidget, HelpView, SettingsView, VerifyBanner, ViewAsBanner } from "@/components/autopilot/account-views"
+import { SearchJump } from "./search-jump"
+import type { JumpEntry, JumpTarget } from "@/lib/dashboard/search-jump"
 import { BusinessWorkspace } from "./business-workspace"
 import { isWorkspace } from "@/lib/dashboard/business-workspace"
 import { IdeasView } from "@/components/autopilot/ideas-view"
@@ -18,14 +20,16 @@ import { ToolApp } from "@/components/autopilot/tool-app"
 import { CSS as TOOL_CSS } from "@/components/autopilot/ui"
 import { AvatarMenu, HubSidebar, HubSubnav, MobileHubBar } from "./hub-navigation"
 import "./shell.css"
-import { addDays, dateTime, daysBetween, rangeLabel, todayIST } from "./format"
-import { COMPARE, loadKey, PRESETS, presetDates, readUrl, sectionKey, useSection, writeUrl, type Cmp, type DashState, type Filters, type Preset, type View } from "./state"
+import { dateTime } from "./format"
+import { COMPARE, loadKey, readUrl, sectionKey, useSection, writeUrl, type Cmp, type DashState, type Filters, type View } from "./state"
 import { PLATFORM } from "./brand"
 import { FilterBar, SectionView } from "./section-view"
 import { ScheduleView } from "./schedule-view"
 import { BlogView } from "./blog-view"
 import { PrintablesView } from "./printables-view"
 import { GenericPrintables } from "./printables-generic"
+import { RangePicker, ResultsDateControls } from "./date-controls"
+import { ResultsSummary } from "./results-hub"
 import { Overview } from "./overview"
 import { Notice, SectionSkeleton, ViewBoundary } from "./ui"
 import { QueueActionsProvider } from "./actions"
@@ -46,6 +50,8 @@ export function DashboardApp({ allowed, me }: { allowed: BusinessKey[]; me: Me }
   const [state, setState] = useState<DashState | null>(null)
   const [panel, setPanel] = useState<"accounts" | "customers" | "password" | null>(null)
   const [tick, setTick] = useState(0)
+  const [jump, setJump] = useState<{biz:BusinessKey;view:View;target:JumpTarget;token:number}|null>(null)
+  const jumpToken = useRef(0)
   const [flash, setFlash] = useState<{ tone: "good" | "bad" | "info"; text: string } | null>(null)
   // Back from connecting LinkedIn / Facebook: say how it went (read before the URL is rewritten).
   useEffect(() => {
@@ -71,33 +77,56 @@ export function DashboardApp({ allowed, me }: { allowed: BusinessKey[]; me: Me }
   const asked = state?.view ?? "overview"
   // Admin pages only for admins (the API refuses everyone else too).
   const view = ADMIN_VIEWS.includes(asked) && me.role !== "admin" ? "overview" : asked
+  const activeHub = hubOf(biz, view)
+  const isResults = activeHub.key === "results"
   const filters = state?.filters[view] || {}
   const tool = TOOL_VIEW[view]
   const workspacePage = isWorkspace(biz) && (view === "automations" || view.startsWith("automation-") || ["ap-ideas", "ap-brand", "settings", "help", "email"].includes(view))
   const account = ACCOUNT_VIEWS.includes(view) || ADMIN_VIEWS.includes(view)
   // Pages that load their own data (no date range).
   const page = !!tool || account || view === "printables" || (workspacePage && view !== "email")
-  const key = state && view !== "overview" && !page ? (view === "schedule" ? sectionKey(biz, "queue", state.start, state.end, state.cmp) : sectionKey(biz, view, state.start, state.end, state.cmp, filters)) : null
+  const key = state && view !== "overview" && view !== "all-results" && !page ? (view === "schedule" ? sectionKey(biz, "queue", state.start, state.end, state.cmp) : sectionKey(biz, view, state.start, state.end, state.cmp, filters)) : null
   const { data, loading, refresh } = useSection(key)
   const compareLabel = state?.cmp === "prev" ? "previous period" : state?.cmp === "yoy" ? "last year" : null
 
   const set = (patch: Partial<DashState>) => setState((s) => (s ? { ...s, ...patch } : s))
   const go = (v: View) => {
+    setJump(null)
     set({ view: v })
     window.scrollTo({ top: 0 })
   }
   const switchTo = (b: BusinessKey) => {
+    setJump(null)
     set({ biz: b, view: "overview", filters: {} })
     window.scrollTo({ top: 0 })
   }
   const setFilters = (f: Filters) => setState((s) => (s ? { ...s, filters: { ...s.filters, [s.view]: Object.fromEntries(Object.entries(f).filter(([, v]) => v)) } } : s))
-  const doRefresh = () => (view === "overview" || page ? setTick((t) => t + 1) : refresh())
-  const activeHub = hubOf(biz, view)
+  const doRefresh = () => (view === "overview" || view === "all-results" || page ? setTick((t) => t + 1) : refresh())
   const accountPage = (v: View) => set({ biz: "autopilot", view: v, filters: {} })
+  const pickJump = (entry: JumpEntry) => {
+    if (entry.panel) {
+      if (entry.panel !== "password" && me.role !== "admin") return
+      setJump(null)
+      setPanel(entry.panel)
+      requestAnimationFrame(() => {
+        const modal = document.querySelector<HTMLElement>('[aria-modal="true"]')
+        const target = modal?.querySelector<HTMLElement>('input:not(:disabled), textarea:not(:disabled)') || modal?.querySelector<HTMLElement>('h2')
+        if (target) { if (target.tagName === "H2") target.tabIndex = -1; target.focus({preventScroll:true}) }
+      })
+      return
+    }
+    const destination = entry.biz || biz
+    if (!entry.view || !allowed.includes(destination) || !viewsOf(destination).includes(entry.view) || (ADMIN_VIEWS.includes(entry.view) && me.role !== "admin")) return
+    document.getElementById("dashboard-main")?.focus({preventScroll:true})
+    if (destination === biz) go(entry.view)
+    else { setJump(null); set({biz:destination,view:entry.view,filters:{}}); window.scrollTo({top:0}) }
+    if (entry.target && me.role === "admin") setJump({biz:destination,view:entry.view,target:entry.target,token:++jumpToken.current})
+  }
   const avatar = <AvatarMenu me={me} allowed={allowed} onAccounts={() => setPanel("accounts")} onCustomers={() => allowed.includes("autopilot") ? accountPage("admin-customers") : setPanel("customers")} onPassword={() => setPanel("password")} onPage={accountPage} />
   const brand = biz === "autopilot" && allowed.length === 1 ? <BrandSwitcher /> : <BusinessSwitcher current={biz} allowed={allowed} onPick={switchTo} />
   const meta = { ...PLATFORM[view], label: business.labels?.[view] || PLATFORM[view]?.label }
   const sectionData = data && data.ok && "kpis" in data ? (data as SectionData) : null
+  const reportCompareLabel = sectionData?.range.cmp === "prev" ? "previous period" : sectionData?.range.cmp === "yoy" ? "last year" : null
   const updated = data && data.ok ? (data as SectionData | QueueData).generatedAt : null
 
   return (
@@ -117,11 +146,12 @@ export function DashboardApp({ allowed, me }: { allowed: BusinessKey[]; me: Me }
               <div className="dash-shell-heading">
                 <div className="min-w-0">
                   <div className="dash-hub-eyebrow">{business.name} <span aria-hidden> / </span> {activeHub.label}</div>
-                  <h1 className="dash-page-title">{view === "overview" ? "Home" : meta.label}</h1>
+                  <h1 className="dash-page-title">{view === "overview" ? "Home" : isResults ? "Results" : meta.label}</h1>
                 </div>
                 <div className="dash-shell-tools">
-                  {state && view !== "blog" && !page ? <RangePicker state={state} onChange={(p) => set(p)} /> : null}
-                  {state && view !== "schedule" && view !== "blog" && !page ? (
+                  <SearchJump biz={biz} view={view} admin={me.role === "admin"} hasAutopilot={allowed.includes("autopilot")} enabled={!!state} onPick={pickJump} />
+                  {state && view !== "blog" && !page ? isResults ? <ResultsDateControls state={state} onChange={set} /> : <RangePicker state={state} onChange={set} /> : null}
+                  {state && !isResults && view !== "schedule" && view !== "blog" && !page ? (
                     <label className="relative hidden sm:block">
                       <span className="sr-only">Compare with</span>
                       <select
@@ -151,9 +181,9 @@ export function DashboardApp({ allowed, me }: { allowed: BusinessKey[]; me: Me }
                   </button>
                 </div>
               </div>
-              {state && (sectionData || PLATFORM[view]) && view !== "overview" && view !== "schedule" && view !== "blog" && !page ? (
+              {state && (sectionData || PLATFORM[view]) && view !== "overview" && view !== "all-results" && view !== "schedule" && view !== "blog" && !page ? (
                 <div className="dash-shell-filters mt-2.5 flex flex-wrap items-center gap-2">
-                  <label className="relative sm:hidden">
+                  {!isResults ? <label className="relative sm:hidden">
                     <span className="sr-only">Compare with</span>
                     <select id="cmp-m" value={state.cmp} onChange={(e) => set({ cmp: e.target.value as Cmp })} className="h-8 appearance-none rounded-lg border border-[var(--line)] bg-[var(--panel)] pl-2.5 pr-7 text-xs font-medium text-[var(--ink-2)]">
                       {COMPARE.map((c) => (
@@ -163,7 +193,7 @@ export function DashboardApp({ allowed, me }: { allowed: BusinessKey[]; me: Me }
                       ))}
                     </select>
                     <ChevronDown className="pointer-events-none absolute right-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[var(--faint)]" />
-                  </label>
+                  </label> : null}
                   <FilterBar section={view} data={sectionData} filters={filters} onChange={setFilters} />
                   {updated ? <span className="ml-auto hidden text-[11.5px] text-[var(--faint)] md:inline">Updated {dateTime(updated)}</span> : null}
                 </div>
@@ -175,7 +205,8 @@ export function DashboardApp({ allowed, me }: { allowed: BusinessKey[]; me: Me }
           <HubSubnav biz={biz} view={view} go={go} />
 
           <QueueActionsProvider biz={biz} onChanged={() => (view === "schedule" ? refresh() : window.dispatchEvent(new Event("ec-queue-changed")))} dataStamp={biz + view + (view === "schedule" ? updated || "" : "")}>
-          <main className="dash-main mx-auto max-w-[1280px] px-4 pb-[max(2.5rem,env(safe-area-inset-bottom))] pt-5 sm:px-6 lg:px-8">
+          <main id="dashboard-main" tabIndex={-1} className="dash-main mx-auto max-w-[1280px] px-4 pb-[max(2.5rem,env(safe-area-inset-bottom))] pt-5 sm:px-6 lg:px-8">
+            {isResults ? <h2 className="sr-only">{meta.label}</h2> : null}
             <ViewBoundary key={view + (state ? sectionKey(biz, view, state.start, state.end, state.cmp, filters) : "")}>
             {biz === "autopilot" && state ? (
               <div className="mb-4 space-y-3 empty:hidden">
@@ -187,7 +218,7 @@ export function DashboardApp({ allowed, me }: { allowed: BusinessKey[]; me: Me }
             {!state ? (
               <SectionSkeleton />
             ) : workspacePage && isWorkspace(biz) ? (
-              <BusinessWorkspace key={`${biz}-${view}-${tick}`} biz={biz} view={view} owner={me.role === "admin"} go={go} emailData={sectionData} emailError={data && !data.ok ? data.error : undefined} />
+              <BusinessWorkspace key={`${biz}-${view}-${tick}`} biz={biz} view={view} owner={me.role === "admin"} go={go} jump={jump?.biz === biz && jump.view === view ? jump : null} onJumpHandled={() => setJump(null)} emailData={sectionData} compareLabel={isResults ? reportCompareLabel : compareLabel} emailError={data && !data.ok ? data.error : undefined} />
             ) : view === "ap-brand" ? (
               <BrandKitView key={tick} />
             ) : view === "ap-ideas" ? (
@@ -231,6 +262,8 @@ export function DashboardApp({ allowed, me }: { allowed: BusinessKey[]; me: Me }
               biz === "nestoodle" ? <PrintablesView key={`${biz}-${tick}`} /> : <GenericPrintables key={`${biz}-${tick}`} biz={biz} />
             ) : view === "overview" ? (
               <Overview key={`${me.email}-${biz}`} account={me.email} biz={biz} start={state.start} end={state.end} cmp={state.cmp} compareLabel={compareLabel} go={go} refreshTick={tick} />
+            ) : view === "all-results" && isWorkspace(biz) ? (
+              <ResultsSummary key={`${me.email}-${biz}`} account={me.email} biz={biz} start={state.start} end={state.end} cmp={state.cmp} refreshTick={tick} go={go} />
             ) : !data ? (
               <SectionSkeleton />
             ) : !data.ok ? (
@@ -246,7 +279,7 @@ export function DashboardApp({ allowed, me }: { allowed: BusinessKey[]; me: Me }
                 <SectionView
                   data={data as SectionData}
                   color={meta.color}
-                  compareLabel={compareLabel}
+                  compareLabel={isResults ? reportCompareLabel : compareLabel}
                   onFilter={(k, v) => setFilters({ ...filters, [k]: v })}
                   intro={INTRO[view] ? <p className="!m-0 !text-xs text-[var(--faint)]">{INTRO[view]}</p> : null}
                 />
@@ -318,96 +351,6 @@ function BusinessSwitcher({ current, allowed, onPick }: { current: BusinessKey; 
             )
           })}
         </ul>
-      ) : null}
-    </div>
-  )
-}
-
-function RangePicker({ state, onChange }: { state: DashState; onChange: (p: Partial<DashState>) => void }) {
-  const [open, setOpen] = useState(false)
-  const [from, setFrom] = useState(state.start)
-  const [to, setTo] = useState(state.end)
-  const box = useRef<HTMLDivElement>(null)
-  useEffect(() => {
-    setFrom(state.start)
-    setTo(state.end)
-  }, [state.start, state.end])
-  useEffect(() => {
-    if (!open) return
-    const close = (e: MouseEvent) => {
-      if (box.current && !box.current.contains(e.target as Node)) setOpen(false)
-    }
-    const esc = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false)
-    document.addEventListener("mousedown", close)
-    document.addEventListener("keydown", esc)
-    return () => {
-      document.removeEventListener("mousedown", close)
-      document.removeEventListener("keydown", esc)
-    }
-  }, [open])
-  const today = todayIST()
-  const pick = (p: Preset) => {
-    if (p === "custom") return
-    onChange({ preset: p, ...presetDates(p) })
-    setOpen(false)
-  }
-  const valid = from && to && from <= to && to <= today && daysBetween(from, to) <= 729
-  const label = useMemo(() => PRESETS.find((p) => p.id === state.preset)?.label, [state.preset])
-  return (
-    <div className="relative" ref={box}>
-      <button
-        type="button"
-        onClick={() => setOpen((o) => !o)}
-        aria-expanded={open}
-        className="inline-flex h-9 items-center gap-2 rounded-lg border border-[var(--line)] bg-[var(--panel)] px-3 text-xs font-medium text-[var(--ink)] hover:border-[var(--line-strong)]"
-      >
-        <CalendarRange className="h-3.5 w-3.5 text-[var(--muted)]" />
-        <span className="hidden sm:inline">{state.preset === "custom" ? "Custom" : label}</span>
-        <span className="text-[var(--muted)] sm:border-l sm:border-[var(--line)] sm:pl-2">{rangeLabel(state.start, state.end)}</span>
-        <ChevronDown className="h-3.5 w-3.5 text-[var(--faint)]" />
-      </button>
-      {open ? (
-        <div className="absolute right-0 top-11 z-40 w-[min(92vw,320px)] rounded-xl border border-[var(--line)] bg-[var(--panel)] p-2 shadow-xl">
-          <ul className="grid grid-cols-2 gap-1">
-            {PRESETS.filter((p) => p.id !== "custom").map((p) => (
-              <li key={p.id}>
-                <button
-                  type="button"
-                  onClick={() => pick(p.id)}
-                  className={`flex w-full items-center justify-between rounded-lg px-2.5 py-2 text-left text-xs font-medium ${state.preset === p.id ? "bg-[var(--brand-soft)] text-[var(--brand)]" : "text-[var(--ink-2)] hover:bg-[var(--chip)]"}`}
-                >
-                  {p.label}
-                  {state.preset === p.id ? <Check className="h-3.5 w-3.5" /> : null}
-                </button>
-              </li>
-            ))}
-          </ul>
-          <div className="mt-2 border-t border-[var(--line)] px-1 pt-3">
-            <div className="text-[11px] font-semibold uppercase tracking-[0.06em] text-[var(--faint)]">Custom dates</div>
-            <div className="mt-2 grid grid-cols-2 gap-2">
-              <label className="text-[11px] text-[var(--muted)]">
-                From
-                <input id="range-from" type="date" value={from} max={to || today} min={addDays(today, -729)} onChange={(e) => setFrom(e.target.value)} className="mt-1 w-full rounded-md border border-[var(--line)] bg-[var(--panel)] px-2 py-1.5 text-xs text-[var(--ink)]" />
-              </label>
-              <label className="text-[11px] text-[var(--muted)]">
-                To
-                <input id="range-to" type="date" value={to} max={today} min={from} onChange={(e) => setTo(e.target.value)} className="mt-1 w-full rounded-md border border-[var(--line)] bg-[var(--panel)] px-2 py-1.5 text-xs text-[var(--ink)]" />
-              </label>
-            </div>
-            <button
-              type="button"
-              disabled={!valid}
-              onClick={() => {
-                onChange({ preset: "custom", start: from, end: to })
-                setOpen(false)
-              }}
-              className="mt-2 w-full rounded-lg bg-[var(--brand)] py-2 text-xs font-semibold text-white disabled:opacity-40 dark:text-[var(--nav)]"
-            >
-              Apply {valid ? `· ${daysBetween(from, to) + 1} days` : ""}
-            </button>
-            <p className="!m-0 mt-2 !text-[11px] leading-snug text-[var(--faint)]">Up to 2 years. Pinterest only keeps the last 90 days.</p>
-          </div>
-        </div>
       ) : null}
     </div>
   )

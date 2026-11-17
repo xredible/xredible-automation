@@ -1,0 +1,1 @@
+All four businesses: assigned pages, role/account gates, safe action allowlist, unique IDs, case/token matching: pass

@@ -23,6 +23,7 @@ export type PlatformMeta = { label: string; short: string; color: string; icon: 
 const i = (C: (p: IconProps) => ReactNode) => ({ icon: <C className="h-3.5 w-3.5" aria-hidden />, big: <C className="h-[18px] w-[18px]" aria-hidden /> })
 
 export const PLATFORM: Record<string, PlatformMeta> = {
+  "all-results": { label: "All channels", short: "All channels", color: "#24438a", ...i(TrendingUp) },
   automations: { label: "Automations", short: "Automations", color: "#24438a", ...i(CalendarCheck) },
   ...Object.fromEntries(Object.entries({ "automation-writer": "Blog Writer", "automation-social": "Social from articles", "automation-publisher": "Auto Publisher", "automation-emails": "Subscriber emails", "automation-pinterest": "Pinterest CSV", "automation-images": "Image queue", "automation-shorts": "YouTube Shorts", "automation-youtube-pack": "YouTube Posts Pack", "automation-whatsapp": "WhatsApp Channel Pack", "automation-live": "LIVE NOW" }).map(([key, label]) => [key, { label, short: label, color: "#24438a", ...i(CalendarCheck) }])),
   overview: { label: "Overview", short: "Overview", color: "#10203f", ...i(LayoutDashboard) },

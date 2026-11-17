@@ -1,0 +1,13 @@
+{
+  "passed": [
+    "Needs you: failed + overdue auto + draft due in 3 days, existing Reschedule controls",
+    "four headline results after action cards",
+    "persistent reload while reports are blocked",
+    "subscriber table excluded from localStorage",
+    "range change retains results with older-date labels",
+    "refresh failure retains results with warning",
+    "account and business cache isolation; member permission preserved",
+    "expired / corrupt cache ignored; blocked storage falls back to live data"
+  ],
+  "pageErrors": []
+}

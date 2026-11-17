@@ -144,11 +144,26 @@ export function HubSubnav({
   go: (v: ViewName) => void;
 }) {
   const active = hubOf(biz, view);
+  const strip = useRef<HTMLElement>(null);
+  useEffect(() => {
+    if (active.key !== "results") return;
+    const reveal = () => {
+      const nav = strip.current;
+      const selected = nav?.querySelector<HTMLElement>('[aria-current="page"]');
+      if (!nav || !selected || nav.scrollWidth <= nav.clientWidth) return;
+      const bar = nav.getBoundingClientRect(), chip = selected.getBoundingClientRect();
+      if (chip.left < bar.left || chip.right > bar.right) nav.scrollLeft += chip.left - bar.left - (bar.width - chip.width) / 2;
+    };
+    reveal();
+    window.addEventListener("resize", reveal);
+    return () => window.removeEventListener("resize", reveal);
+  }, [biz, view, active.key]);
   if (active.items.length < 2) return null;
   return (
     <nav
-      className={`dash-mobile-subnav ${active.key === "content" ? "dash-content-tabs" : "lg:hidden"}`}
-      aria-label={`${active.label} pages`}
+      ref={strip}
+      className={`dash-mobile-subnav ${active.key === "content" ? "dash-content-tabs" : active.key === "results" ? "dash-results-chips" : "lg:hidden"}`}
+      aria-label={active.key === "results" ? "Results channels" : `${active.label} pages`}
     >
       {active.items.map((v) => (
         <button
@@ -157,7 +172,7 @@ export function HubSubnav({
           aria-current={v === view ? "page" : undefined}
           onClick={() => go(v)}
         >
-          {active.key === "content" && v === "schedule" ? "Calendar" : active.key === "content" && v === "blog" ? "Blog posts" : labelOf(biz, v)}
+          {active.key === "results" ? ({ga4:"Website",sessions:"Traffic",gsc:"Search",email:"Email",adsense:"Ad earnings",ads:"Ads"} as Partial<Record<ViewName,string>>)[v] || labelOf(biz,v) : active.key === "content" && v === "schedule" ? "Calendar" : active.key === "content" && v === "blog" ? "Blog posts" : labelOf(biz, v)}
         </button>
       ))}
     </nav>

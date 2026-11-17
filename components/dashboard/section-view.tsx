@@ -64,6 +64,7 @@ export function FilterBar({ section, data, filters, onChange }: { section: strin
           <label key={def.key} className="relative">
             <span className="sr-only">{def.label}</span>
             <select
+              aria-label={def.label}
               id={`f-${section}-${def.key}`}
               value={cur}
               onChange={(e) => onChange({ ...filters, [def.key]: e.target.value })}

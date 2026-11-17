@@ -366,7 +366,7 @@ function ImageQueuePanel({
         >
           <label className="min-w-0 flex-1 text-sm font-medium">
             Post title or number
-            <input
+            <input data-dashboard-jump="image-post"
               className={field}
               list={listId}
               value={query}

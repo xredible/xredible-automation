@@ -1,5 +1,5 @@
 "use client";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { ArrowRight, ShieldCheck } from "lucide-react";
 import { AutomationHub } from "./automation-hub";
 import { Card, Notice, Skeleton } from "./ui";
@@ -12,6 +12,7 @@ import {
   type BusinessSettings,
 } from "@/lib/dashboard/business-workspace";
 import type { SectionData } from "@/lib/dashboard/types";
+import type { JumpTarget } from "@/lib/dashboard/search-jump";
 import type { View } from "./state";
 import { ghost, primary } from "@/components/autopilot/ui";
 import {
@@ -29,6 +30,9 @@ export function BusinessWorkspace({
   go,
   emailData,
   emailError,
+  compareLabel = null,
+  jump,
+  onJumpHandled,
 }: {
   biz: WorkspaceBusiness;
   view: View;
@@ -36,12 +40,37 @@ export function BusinessWorkspace({
   go: (v: View) => void;
   emailData?: SectionData | null;
   emailError?: string;
+  compareLabel?: string | null;
+  jump?: { target: JumpTarget; token: number } | null;
+  onJumpHandled?: () => void;
 }) {
   const [data, setData] = useState<Workspace | null>(null),
     [error, setError] = useState(""),
     [msg, setMsg] = useState(""),
     [busy, setBusy] = useState(false),
     [change, setChange] = useState<Change | null>(null);
+  const root = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!jump || !data || !root.current) return;
+    const active = document.activeElement;
+    if (
+      active === document.body ||
+      active === document.getElementById("dashboard-main") ||
+      !active?.isConnected
+    ) {
+      const block = root.current.querySelector<HTMLElement>(
+        `[data-dashboard-jump="${jump.target}"]`,
+      );
+      const target = block?.matches("input, textarea")
+        ? block
+        : block?.querySelector<HTMLElement>(
+            "input:not(:disabled), textarea:not(:disabled)",
+          ) || block;
+      target?.scrollIntoView({ block: jump.target === "write-topics" ? "start" : "center", behavior: "instant" });
+      target?.focus({ preventScroll: true });
+    }
+    onJumpHandled?.();
+  }, [jump, data, onJumpHandled]);
   const load = useCallback(
     async (signal?: AbortSignal) => {
       try {
@@ -123,7 +152,7 @@ export function BusinessWorkspace({
       <Skeleton className="h-80" />
     );
   return (
-    <div className="dash-workspace space-y-5">
+    <div ref={root} className="dash-workspace space-y-5">
       {change ? (
         <ConfirmChange
           title={change.title}
@@ -170,7 +199,12 @@ export function BusinessWorkspace({
           <Card
             title={`${data.ideas.filter((i) => !/skipped|drafted|posted/i.test(i.status)).length} ideas waiting`}
           >
-            <ul className="divide-y divide-[var(--line-soft)]">
+            <ul
+              data-dashboard-jump="write-topics"
+              tabIndex={-1}
+              aria-label="Ideas waiting"
+              className="divide-y divide-[var(--line-soft)]"
+            >
               {data.ideas.map((i) => (
                 <li
                   key={i.id}
@@ -256,7 +290,11 @@ export function BusinessWorkspace({
           {emailError ? (
             <Notice tone="error">{emailError}</Notice>
           ) : emailData ? (
-            <SectionView data={emailData} color="#7c6bc4" compareLabel={null} />
+            <SectionView
+              data={emailData}
+              color="#7c6bc4"
+              compareLabel={compareLabel}
+            />
           ) : (
             <Skeleton className="h-64" />
           )}
