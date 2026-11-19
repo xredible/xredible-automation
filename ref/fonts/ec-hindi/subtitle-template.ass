@@ -1,0 +1,14 @@
+[Script Info]
+ScriptType: v4.00+
+PlayResX: 1080
+PlayResY: 1920
+
+[V4+ Styles]
+Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
+Style: Hi,Baloo 2 ExtraBold,66,&H00FFFFFF,&H00FFFFFF,&H00261A0F,&H80000000,0,0,0,0,100,100,0,0,1,5,0,2,60,60,520,1
+Style: En,Baloo 2 SemiBold,48,&H0047C5F2,&H0047C5F2,&H00261A0F,&H80000000,0,0,0,0,100,100,0,0,1,4,0,2,60,60,450,1
+
+[Events]
+Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
+Dialogue: 0,0:00:00.00,0:00:05.00,Hi,,0,0,0,,परमेश्वर ने मेरी ज़िंदगी बदल दी
+Dialogue: 0,0:00:00.00,0:00:05.00,En,,0,0,0,,God changed my life
