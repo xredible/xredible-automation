@@ -1,0 +1,51 @@
+{
+  "slug": "manners-activities-for-preschoolers",
+  "articleUrl": "https://nestoodle.com/manners-activities-for-preschoolers/",
+  "title": "10 Fun Manners Activities for Preschoolers",
+  "highlight": "Manners",
+  "eyebrow": "Ages 3\u20135 \u00b7 10\u201315 min",
+  "benefit": "Simple habits that stick. Low prep.",
+  "keyword": "MANNERS",
+  "photos": [
+    {
+      "src": "scavenger-hunt.webp",
+      "alt": "A small child's wooden treasure box and blank cream clue cards on a light oak coffee table in warm morning window light.",
+      "review": {
+        "approved": true,
+        "faceFree": true,
+        "reviewer": "Codex visual + native review 2026-11-20"
+      }
+    },
+    {
+      "src": "kindness-jar.webp",
+      "alt": "A clear glass jar half-filled with pastel wool pom-poms on a light oak breakfast table in soft morning light.",
+      "review": {
+        "approved": true,
+        "faceFree": true,
+        "reviewer": "Codex visual + native review 2026-11-20"
+      }
+    },
+    {
+      "src": "table-manners.webp",
+      "alt": "A child's place setting on a wooden table with ceramic plate, rolled sage linen napkin, and green and red circle markers.",
+      "review": {
+        "approved": true,
+        "faceFree": true,
+        "reviewer": "Codex visual + native review 2026-11-20"
+      }
+    }
+  ],
+  "steps": [
+    {
+      "title": "Kindness Pom-Pom Jar",
+      "body": "Drop a pastel pom-pom in the jar for every kind word.",
+      "photo": 1
+    },
+    {
+      "title": "Table Manners Red Light",
+      "body": "Use colorful card discs to practice polite mealtime habits.",
+      "photo": 2
+    }
+  ],
+  "coverPhoto": 0
+}
