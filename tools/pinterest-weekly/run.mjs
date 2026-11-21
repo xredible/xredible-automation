@@ -2,11 +2,12 @@ import {readFile,writeFile,mkdir,copyFile} from 'node:fs/promises';
 import path from 'node:path';
 import {createHash} from 'node:crypto';
 import {chromium} from '../brand-images/node_modules/playwright/index.mjs';
-import {render,verifyPrintable} from '../brand-images/render.mjs';
+import {render} from '../brand-images/render.mjs';
 import {eligible,boardFor,pinCopy,schedule,csv,activeReservation} from './plan.mjs';
 import {decodePreviewImages,excludeUndecodable,previewThumbnail} from './images.mjs';
-import {editorialPhotos} from './editorial.mjs';
+import {editorialPhotos,benefitLine} from './editorial.mjs';
 import {importIssues} from './import-check.mjs';
+import {verifyPostPrintable} from './printable.mjs';
 import {approvedFor,exportBatch,fillCoverage,promisesFreePrintable} from './coverage.mjs';
 const out=path.resolve(process.env.PINTEREST_OUTPUT||'pinterest-output');
 const secret=process.env.N8N_REELS_SECRET;
@@ -33,10 +34,8 @@ const limit=7; //21 new pins per weekly run; global slots are reserved by the sc
 const skippedImages=[];
 const {groups,skipped,deferred}=await fillCoverage(posts,limit,async p=>{
   const board=boardFor(p,data.boards);let printableUrl;
-  for(const match of String(p.html||'').matchAll(/href=["'](https:\/\/nestoodle\.com\/[^"']+\.pdf)["']/gi)){
-   try{await verifyPrintable({printableUrl:match[1]});printableUrl=match[1];break;}catch{}
-  }
-  if(!printableUrl&&promisesFreePrintable([p.keyword,p.meta?._yoast_wpseo_focuskw,p.title?.raw||p.title?.rendered||p.title].filter(Boolean).join(' ')))throw new Error('Free printable promise needs a linked, verified PDF');
+  const advertised=[p.keyword,p.meta?._yoast_wpseo_focuskw,p.title?.raw||p.title?.rendered||p.title,benefitLine(p)].filter(Boolean).join(' ');
+  if(promisesFreePrintable(advertised)){const offer=await verifyPostPrintable(p);if(offer.kind==='direct-pdf')printableUrl=offer.url;}
   const pins=[],hashes=new Set(ledger.filter(r=>activeReservation(r)&&r.postId===p.id).map(r=>r.photoHash));
   const approved=editorialPhotos(p,approvedFor(p,data.approvedPhotos||[]));
   if(approved.length<3)throw new Error(`Only ${approved.length} current approved table photos; need at least 3`);

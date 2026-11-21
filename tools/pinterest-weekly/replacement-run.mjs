@@ -3,7 +3,8 @@ import {readFile,writeFile,mkdir} from 'node:fs/promises';
 import path from 'node:path';
 import {createHash} from 'node:crypto';
 import {chromium} from '../brand-images/node_modules/playwright/index.mjs';
-import {render,verifyPrintable} from '../brand-images/render.mjs';
+import {render} from '../brand-images/render.mjs';
+import {verifyPostPrintable} from './printable.mjs';
 import {promisesFreePrintable} from './coverage.mjs';
 import {replacementPlan,replacementSeeds} from './replacement.mjs';
 import {previewThumbnail,decodePreviewImages} from './images.mjs';
@@ -22,7 +23,7 @@ const plan=replacementPlan(old,inputs,ledger,{batch,start:batch.slice(7,17)});
 if(plan.rows.some(row=>!pending.some(p=>p.link===row.Link&&p.publishDate===row['Publish date']&&p.title===row.Title&&p.sourceMediaId===plan.ledger.find(n=>n.batch===batch&&n.link===row.Link).sourceMediaId&&p.editorialDigest===plan.ledger.find(n=>n.batch===batch&&n.link===row.Link).editorialDigest)))throw new Error('Sample-plan dates/links changed; show new samples before exporting');
 for(const group of plan.groups){
  const post=inputs.posts.find(p=>p.id===group.id);
- if(promisesFreePrintable([group.title,...group.pins.map(p=>p.benefit)].join(' '))){let verified=false;for(const m of post.html.matchAll(/href=["'](https:\/\/nestoodle\.com\/[^"']+\.pdf(?:\?[^"']*)?)["']/gi)){try{await verifyPrintable({printableUrl:m[1].replace(/&amp;/g,'&')});verified=true;break;}catch{}}if(!verified)throw new Error(`Post ${group.id}: free printable promise needs a verified linked PDF`);}
+ if(promisesFreePrintable([group.title,...group.pins.map(p=>p.benefit)].join(' ')))await verifyPostPrintable(post);
  const hashes=new Set();
  for(const pin of group.pins){
   const result=await fetch(pin.photo.src,{redirect:'error',signal:AbortSignal.timeout(30000)});
