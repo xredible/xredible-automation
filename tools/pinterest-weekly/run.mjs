@@ -5,6 +5,7 @@ import {chromium} from '../brand-images/node_modules/playwright/index.mjs';
 import {render,verifyPrintable} from '../brand-images/render.mjs';
 import {eligible,boardFor,variations,schedule,csv} from './plan.mjs';
 import {decodePreviewImages,excludeUndecodable} from './images.mjs';
+import {approvedFor,exportBatch,fillCoverage} from './coverage.mjs';
 const out=path.resolve(process.env.PINTEREST_OUTPUT||'pinterest-output');
 const secret=process.env.N8N_REELS_SECRET;
 if(!secret)throw new Error('Missing renderer authentication');
@@ -20,8 +21,7 @@ if(!Array.isArray(data.posts)||!Array.isArray(data.pins)||!Array.isArray(data.bo
 let ledger=[];try{ledger=JSON.parse(await readFile('media-input/nestoodle/pinterest/ledger.json','utf8'));}catch(e){if(e.code!=='ENOENT')throw e;}
 const today=new Date(Date.now()+19800000).toISOString().slice(0,10);
 const start=new Date(Date.parse(today+'T00:00:00Z')+86400000).toISOString().slice(0,10);
-const batch=`weekly-${start}`;
-if(ledger.some(r=>r.batch===batch))throw new Error('This planning week was already exported; reuse its CSV');
+const batch=exportBatch(start,ledger,process.env.PINTEREST_SUPPLEMENT==='true',process.env.GITHUB_RUN_ID);
 let posts=eligible(data.posts,data.pins,ledger);
 if(process.env.PINTEREST_SCOPE==='this-week'){
  const d=new Date(today+'T00:00:00Z'),day=d.getUTCDay();d.setUTCDate(d.getUTCDate()-((day+6)%7));
@@ -29,17 +29,18 @@ if(process.env.PINTEREST_SCOPE==='this-week'){
 }
 const reserved=ledger.filter(r=>r.publishDate&&new Date(r.publishDate+'Z').getTime()>=Date.parse(start+'T00:00:00+05:30')&&new Date(r.publishDate+'Z').getTime()<Date.parse(start+'T00:00:00+05:30')+7*86400000).length;
 const limit=Math.max(0,Math.min(18,Math.floor((56-reserved)/3)));
-const deferred=posts.slice(limit).map(p=>p.id),skipped=[],skippedImages=[],groups=[];
-for(const p of posts.slice(0,limit)){
- try{
+const skippedImages=[];
+const {groups,skipped,deferred}=await fillCoverage(posts,limit,async p=>{
   const board=boardFor(p,data.boards);let printableUrl;
   for(const match of String(p.html||'').matchAll(/href=["'](https:\/\/nestoodle\.com\/[^"']+\.pdf)["']/gi)){
    try{await verifyPrintable({printableUrl:match[1]});printableUrl=match[1];break;}catch{}
   }
   if(!printableUrl&&/\bfree\b/i.test(p.keyword||p.meta?._yoast_wpseo_focuskw||''))throw new Error('Free printable promise needs a linked, verified PDF');
-  const vs=variations(p),pins=[],hashes=new Set();
+  const vs=variations(p),pins=[],hashes=new Set(ledger.filter(r=>r.postId===p.id).map(r=>r.photoHash));
+  const approved=approvedFor(p,data.approvedPhotos||[]);
   const candidates=[...String(p.html||p.content?.raw||'').matchAll(/<img[^>]+src=["']([^"']+)["'][^>]*>/gi)].map(m=>m[1]);
-  for(const src of [...new Set(candidates)].slice(0,18)){
+  for(const src of [...new Set([...approved.map(p=>p.src),...candidates])].slice(0,18)){
+   try{
    if(pins.length===5)break;
    const u=new URL(src);
    if(u.hostname!=='nestoodle.com'||!u.pathname.startsWith('/wp-content/uploads/')||u.protocol!=='https:'||u.search||u.hash)continue;
@@ -48,14 +49,15 @@ for(const p of posts.slice(0,limit)){
    if(Number(res.headers.get('content-length'))>8*1024*1024)continue;
    const buf=Buffer.from(await res.arrayBuffer());if(buf.length>8*1024*1024)continue;
    const hash=createHash('sha256').update(buf).digest('hex');if(hashes.has(hash))continue;
-   const verdict=await request('nst-pinterest-photo-check',{image:buf.toString('base64'),mime,topic:p.title});
-   let v;try{v=JSON.parse(verdict.content.map(c=>c.text||'').join(''));}catch{continue;}
+   const trusted=approved.find(p=>p.src===src);let v=trusted?.review;
+   if(!v){const verdict=await request('nst-pinterest-photo-check',{image:buf.toString('base64'),mime,topic:p.title});
+    try{v=JSON.parse(verdict.content.map(c=>c.text||'').join(''));}catch{continue;}}
    if(v.pass!==true||v.score!==10||v.faceFree!==true||!Array.isArray(v.problems)||v.problems.length)continue;
    hashes.add(hash);
    const n=pins.length,folder=path.join(out,`post-${p.id}-${n+1}`);await mkdir(folder,{recursive:true});
    const ext={'image/jpeg':'.jpg','image/png':'.png','image/webp':'.webp'}[mime];
    await writeFile(path.join(folder,'photo'+ext),buf);
-   const job={slug:p.slug,title:vs[n].title,benefit:vs[n].benefit,keyword:'READ',photos:[{src:'photo'+ext,alt:p.title,review:{approved:true,reviewer:'NST clean-photo checker',faceFree:true,score:v.score}}],steps:[]};
+   const job={slug:p.slug,title:vs[n].title,benefit:vs[n].benefit,keyword:'READ',photos:[{src:'photo'+ext,alt:trusted?.alt||p.title,review:{approved:true,reviewer:v.reviewer||'NST clean-photo checker',faceFree:true,score:v.score}}],steps:[]};
    if(printableUrl){job.printableUrl=printableUrl;job.printableVerified=true;} // Badge requires this article's linked PDF and a verified PDF signature.
    await writeFile(path.join(folder,'job.json'),JSON.stringify(job));
    try{await render(path.join(folder,'job.json'),folder,{pinOnly:true});}
@@ -63,11 +65,11 @@ for(const p of posts.slice(0,limit)){
     const failure={id:p.id,image:src,reason:'Source image cannot be decoded'};skippedImages.push(failure);console.warn(JSON.stringify(failure));continue;}
    const file=`${p.id}-${n+1}.jpg`;await copyFile(path.join(folder,'pin.jpg'),path.join(out,file));
    pins.push({...vs[n],file,localFile:path.join(out,file),photoHash:hash,sourceImage:src,review:v});
+   }catch(e){skippedImages.push({id:p.id,image:src,reason:String(e.message).slice(0,250)});}
   }
-  if(pins.length<3){skipped.push({id:p.id,reason:`Only ${pins.length} distinct photos passed strict review; need at least 3`});continue;}
-  groups.push({id:p.id,link:p.link,board,pins,actual:p.actual,exported:p.exported});
- }catch(e){skipped.push({id:p.id,reason:String(e.message).slice(0,250)});}
-}
+  if(pins.length<3)throw new Error(`Only ${pins.length} distinct usable photos; need at least 3`);
+  return {id:p.id,title:p.title,link:p.link,board,pins,actual:p.actual,exported:p.exported};
+});
 const base=`https://raw.githubusercontent.com/xredible/xredible-automation/media/nestoodle/pinterest/${batch}`;
 let safeGroups=groups,rows;
 const escape=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -90,7 +92,8 @@ try{
  await writeFile(path.join(out,'pinterest.csv'),csv(rows));
  await page.screenshot({path:path.join(out,'preview.jpg'),fullPage:true,type:'jpeg',quality:78});
 }finally{await browser.close();}
-const manifest={batch,start,count:rows.length,groups:safeGroups.map(g=>({id:g.id,actual:g.actual,previouslyExported:g.exported})),skipped,skippedImages,deferred,files:['pinterest.csv','preview.jpg',...rows.map(r=>r['Media URL'].split('/').pop())],rows:rows.map(({localFile,...r})=>r)};
+const manifest={batch,start,count:rows.length,groups:safeGroups.map(g=>({id:g.id,title:g.title,actual:g.actual,previouslyExported:g.exported})),skipped,skippedImages,deferred,files:['pinterest.csv','preview.jpg',...rows.map(r=>r['Media URL'].split('/').pop())],rows:rows.map(({localFile,...r})=>r)};
 await writeFile(path.join(out,'manifest.json'),JSON.stringify(manifest,null,2));
 await writeFile(path.join(out,'ledger.json'),JSON.stringify([...ledger,...rows.map(r=>({batch,postId:r.postId,link:r.Link,media:r['Media URL'],photoHash:r.photoHash,publishDate:r['Publish date'],title:r.Title,status:'exported-not-confirmed-published'}))],null,2));
+console.log('COVERAGE_REPORT '+JSON.stringify({groups:manifest.groups,skipped,deferred:deferred.map(id=>({id,title:posts.find(p=>p.id===id)?.title,reason:'Weekly capacity reserved for earlier exports and newly eligible articles'})),skippedImages}));
 console.log(`Prepared ${rows.length} manual-upload pins; ${skipped.length} posts skipped, ${deferred.length} deferred`);

@@ -48,3 +48,21 @@ Undecodable source or preview images are listed by article ID, source URL and pi
 
 Run `node --test tools/pinterest-weekly/*.test.mjs` after installing `tools/brand-images` dependencies and Playwright Chromium (or set CHROMIUM_PATH). Brand renderer tests use
 `npm test --prefix tools/brand-images` with Playwright Chromium installed.
+
+Approved photos: the protected inputs endpoint includes NST Approved Photos rows.
+The exporter reuses score10/faceFree/zero-problem approvals only when the current
+article still contains that exact media ID and source URL; it verifies bytes/MIME
+and the renderer still checks decoding. Unregistered candidates retain live review.
+Failed articles no longer consume the input quota: later usable posts fill the
+remaining weekly slots. The existing 56/week, eight/day and minimum-three gates stay.
+
+For owner-approved catch-up, `supplement: true` creates a separate
+`weekly-YYYY-MM-DD-supplement-RUNID` asset namespace. Existing ledger entries and
+future slot reservations remain; already-covered articles and source hashes are
+not regenerated. Import this additional CSV alongside the earlier CSV only after
+review. Default runs still reject an already-exported planning week.
+
+`report_run` reads an earlier Actions artifact and prints every skipped/deferred
+article with its original reason and current published title; it performs no render,
+media push, reservation write or delivery. New exports print COVERAGE_REPORT and
+include titles/reasons in the manifest to make failures independently auditable.
