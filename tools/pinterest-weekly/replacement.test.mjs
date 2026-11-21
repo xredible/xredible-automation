@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {replacementPlan} from './replacement.mjs';
+import {replacementPlan,replacementSeeds} from './replacement.mjs';
 import {csv,eligible,schedule} from './plan.mjs';
 const html='<h2>Turn everyday moments into small acts of kindness.</h2>'+['Happy Mail Station','Kindness Rocks','Toy Wash'].map((name,i)=>`<h2>${i+1}. ${name}</h2><p>Write a kind note with your child and place it in envelope number ${i+1}.</p><img class="wp-image-${10+i}" src="https://nestoodle.com/wp-content/uploads/${10+i}.webp">`).join('');
 const post={id:1,slug:'kindness',title:'3 Kindness Activities for Kids',link:'https://nestoodle.com/kindness/',date:'2030-01-01',html,meta:{_yoast_wpseo_focuskw:'kindness activities for kids'}};
@@ -18,4 +18,11 @@ test('fresh replacement supersedes only exact old rows and reserves pending date
 });
 test('replacement refuses an unknown old export rather than reset reservations',()=>{
  assert.throws(()=>replacementPlan(csv(rows),{posts:[post],approvedPhotos,boards:[],pins:[]},[],{start:'2030-01-01',batch:'weekly-2030-01-01-replacement-123',now:0}),/does not match/);
+});
+
+
+test('replaying source exports restores combined CSV chronology before allocating slots',()=>{
+ const source=[{media:'later.jpg',link:'https://nestoodle.com/b/',publishDate:'2030-01-02T02:00:00',supersededBy:'batch'},{media:'earliest.jpg',link:'https://nestoodle.com/a/',publishDate:'2030-01-01T01:00:00',supersededBy:'batch'},{media:'middle.jpg',link:'https://nestoodle.com/b/',publishDate:'2030-01-01T02:00:00',supersededBy:'batch'},{media:'unrelated.jpg',link:'https://nestoodle.com/c/',publishDate:'2029-01-01T01:00:00'}];
+ assert.deepEqual(replacementSeeds(source,'batch').map(r=>r['Media URL']),['earliest.jpg','middle.jpg','later.jpg']);
+ assert.equal(source[0].media,'later.jpg');
 });

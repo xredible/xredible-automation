@@ -5,7 +5,7 @@ import {createHash} from 'node:crypto';
 import {chromium} from '../brand-images/node_modules/playwright/index.mjs';
 import {render,verifyPrintable} from '../brand-images/render.mjs';
 import {promisesFreePrintable} from './coverage.mjs';
-import {replacementPlan} from './replacement.mjs';
+import {replacementPlan,replacementSeeds} from './replacement.mjs';
 import {previewThumbnail,decodePreviewImages} from './images.mjs';
 import {csv} from './plan.mjs';
 const batch=process.env.PINTEREST_REPLACEMENT_BATCH;
@@ -14,7 +14,7 @@ const out=path.resolve(process.env.PINTEREST_OUTPUT||'pinterest-output');await m
 const ledger=JSON.parse(await readFile('media-input/nestoodle/pinterest/ledger.json','utf8'));
 const pending=ledger.filter(r=>r.batch===batch&&r.status==='pending-review');
 if(!pending.length||ledger.some(r=>r.batch===batch&&r.status!=='pending-review'))throw new Error('Replacement is not pending review; do not rerun an exported batch');
-const old=ledger.filter(r=>r.supersededBy===batch).map(r=>({'Media URL':r.media,Link:r.link}));
+const old=replacementSeeds(ledger,batch);
 if(!old.length)throw new Error('Replacement source reservations missing');
 const response=await fetch('https://n8n.xredible.in/webhook/nst-pinterest-inputs',{headers:{'X-Reel-Secret':process.env.N8N_REELS_SECRET},redirect:'error',signal:AbortSignal.timeout(120000)});
 if(!response.ok)throw new Error('Cannot read protected current inputs');const inputs=await response.json();
