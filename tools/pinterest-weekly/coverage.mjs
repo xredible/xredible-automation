@@ -31,3 +31,5 @@ export async function fillCoverage(posts,limit,build){
  }
  return {groups,skipped,deferred};
 }
+
+export const promisesFreePrintable=keyword=>/\bfree\b/i.test(String(keyword||'').replace(/\bscreen[-\s]+free\b/gi,''));

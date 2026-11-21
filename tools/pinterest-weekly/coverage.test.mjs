@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {approvedFor,exportBatch,fillCoverage,priorReport} from './coverage.mjs';
+import {approvedFor,exportBatch,fillCoverage,priorReport,promisesFreePrintable} from './coverage.mjs';
 const photo={postId:42,mediaId:9,src:'https://nestoodle.com/wp-content/uploads/craft.webp',alt:'Paper craft',approved:true,score:10,faceFree:true,problems:'[]',reviewer:'Native review'};
 const post={id:42,title:'Craft',html:'<img class="wp-image-9" src="https://nestoodle.com/wp-content/uploads/craft-1200x800.webp">'};
 test('reuse only strict table approvals matching current article media ID and URL',()=>{
@@ -24,4 +24,11 @@ test('supplement has a separate asset namespace and preserves default duplicate-
 test('historical report lists every skipped and deferred article with its reason',()=>{
  const report=priorReport({skipped:[{id:42,reason:'Only 1 photo'}],deferred:[43]},[post,{id:43,title:'Other'}]);
  assert.equal(report.length,2);assert.equal(report[0].title,'Craft');assert.equal(report[0].reason,'Only 1 photo');assert.match(report[1].reason,/18 input/);
+});
+
+test('screen-free activities are not a free-download promise',()=>{
+ assert.equal(promisesFreePrintable('screen-free activities for kids'),false);
+ assert.equal(promisesFreePrintable('screen free activities'),false);
+ assert.equal(promisesFreePrintable('screen-free activities with free printables'),true);
+ assert.equal(promisesFreePrintable('free chore chart'),true);
 });

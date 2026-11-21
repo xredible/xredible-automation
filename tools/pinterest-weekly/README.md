@@ -52,7 +52,7 @@ Run `node --test tools/pinterest-weekly/*.test.mjs` after installing `tools/bran
 Approved photos: the protected inputs endpoint includes NST Approved Photos rows.
 The exporter reuses score10/faceFree/zero-problem approvals only when the current
 article still contains that exact media ID and source URL; it verifies bytes/MIME
-and the renderer still checks decoding. Unregistered candidates retain live review.
+and the renderer still checks decoding. Unregistered/changed candidates stay pending; this exporter does not grant new approvals.
 Failed articles no longer consume the input quota: later usable posts fill the
 remaining weekly slots. The existing 56/week, eight/day and minimum-three gates stay.
 
