@@ -84,6 +84,7 @@ jobs:
         with:
           ref: media
           path: media-input
+          sparse-checkout: nestoodle/pinterest
       - uses: actions/setup-node@v4
         with:
           node-version: '22'

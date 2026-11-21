@@ -28,3 +28,6 @@ export function replacementPlan(csvInput,inputs,ledger,{start='2026-11-23',batch
  const pending=rows.map(r=>({batch,postId:r.postId,link:r.Link,media:r['Media URL'],publishDate:r['Publish date'],title:r.Title,status:'pending-review',sourceMediaId:groups.find(g=>g.id===r.postId).pins.find(p=>p.file===r['Media URL'].split('/').pop()).mediaId,editorialDigest:createHash('sha256').update(JSON.stringify([r.Title,r.Description,r.Keywords,groups.find(g=>g.id===r.postId).pins.find(p=>p.file===r['Media URL'].split('/').pop()).benefit])).digest('hex'),note:'Five image samples shown first; full CSV follows at owner request. Owner removes17 old scheduled pins before upload.'}));
  return {batch,start,end:rows.at(-1)?.['Publish date'].slice(0,10),groups,rows,ledger:[...preserved,...pending],issues};
 }
+export function replacementSeeds(ledger,batch){
+ return ledger.filter(r=>r.supersededBy===batch).sort((a,b)=>a.publishDate.localeCompare(b.publishDate)).map(r=>({'Media URL':r.media,Link:r.link,'Publish date':r.publishDate}));
+}
