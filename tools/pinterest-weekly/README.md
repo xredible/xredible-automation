@@ -33,9 +33,9 @@ A weekly run generates at most21 new pins for7 articles; the scheduler can use l
 
 `replacementPlan` rebuilds all rows from current articles/approved photos. It supersedes only exact old media reservations and creates a separate `weekly-YYYY-MM-DD-replacement-ID` namespace. The owner removes old scheduled pins on Pinterest; the tool never does that.
 
-Reserve the plan as pending-review before the next weekly run. Show five real rendered sample images with their titles/times before exporting the replacement CSV. No CSV or full-batch Telegram delivery at the sample checkpoint.
+Reserve the plan as pending-review before the next weekly run. Show five real rendered sample images with their titles/times before exporting the replacement CSV. Show the samples before CSV or full-batch Telegram delivery.
 
-After explicit review approval, dispatch the Action with `replacement_batch` set to that exact pending batch. `replacement-run.mjs` checks frozen dates, links, source media IDs and copy digests; re-renders every full-size image; verifies all free offers; then writes the CSV/preview/manifest/ledger. Artifacts are saved before GitHub media publication and Telegram file delivery. The ledger changes to exported-not-confirmed-published. A completed replacement cannot be rerun accidentally.
+After showing five samples, dispatch the Action with `replacement_batch` set to that exact pending batch. `replacement-run.mjs` checks frozen dates, links, source media IDs and copy digests; re-renders every full-size image; verifies all free offers; then writes the CSV/preview/manifest/ledger. Artifacts are saved before GitHub media publication and Telegram file delivery. The ledger changes to exported-not-confirmed-published. A completed replacement cannot be rerun accidentally.
 
 `report_run` is read-only artifact diagnosis. `deliver_only` can re-deliver a saved valid artifact; it cannot bypass CSV preflight. Default duplicate-week protection and serialized export concurrency remain. Four protected n8n routes/triggers and existing credentials stay intact; no secrets in files or logs.
 

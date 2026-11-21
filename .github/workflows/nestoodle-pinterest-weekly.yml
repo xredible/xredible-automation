@@ -8,7 +8,7 @@ on:
         options: [all, this-week]
         default: all
       replacement_batch:
-        description: Exact pending replacement batch, only after owner reviews five samples
+        description: Exact pending replacement batch, after showing five samples first
         type: string
         required: false
       report_run:
