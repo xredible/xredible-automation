@@ -7,6 +7,14 @@ on:
         type: choice
         options: [all, this-week]
         default: all
+      report_run:
+        description: Read-only article reasons from an earlier export run
+        type: string
+        required: false
+      supplement:
+        description: Export only missing coverage, preserving all existing reservations
+        type: boolean
+        default: false
       deliver_only:
         description: Re-deliver files from an earlier successful render run ID (blank for new export)
         type: string
@@ -34,8 +42,29 @@ jobs:
       - run: npm ci --prefix tools/brand-images
       - run: npx --prefix tools/brand-images playwright install --with-deps chromium
       - run: node --test tools/pinterest-weekly/*.test.mjs
+  report:
+    if: github.event_name == 'workflow_dispatch' && inputs.report_run != ''
+    needs: test
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      actions: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/download-artifact@v4
+        with:
+          name: nestoodle-pinterest-weekly
+          path: previous-report
+          run-id: ${{ inputs.report_run }}
+          github-token: ${{ github.token }}
+      - run: node tools/pinterest-weekly/report.mjs previous-report/manifest.json
+        env:
+          N8N_REELS_SECRET: ${{ secrets.N8N_REELS_SECRET }}
   export:
-    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && inputs.report_run == ''
     needs: test
     runs-on: ubuntu-24.04
     timeout-minutes: 55
@@ -63,6 +92,7 @@ jobs:
         env:
           N8N_REELS_SECRET: ${{ secrets.N8N_REELS_SECRET }}
           PINTEREST_SCOPE: ${{ inputs.scope }}
+          PINTEREST_SUPPLEMENT: ${{ inputs.supplement }}
       - uses: actions/upload-artifact@v4
         if: inputs.deliver_only == ''
         with:
