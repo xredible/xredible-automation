@@ -4,6 +4,7 @@ import {createHash} from 'node:crypto';
 import {chromium} from '../brand-images/node_modules/playwright/index.mjs';
 import {render,verifyPrintable} from '../brand-images/render.mjs';
 import {eligible,boardFor,variations,schedule,csv} from './plan.mjs';
+import {decodePreviewImages,excludeUndecodable} from './images.mjs';
 const out=path.resolve(process.env.PINTEREST_OUTPUT||'pinterest-output');
 const secret=process.env.N8N_REELS_SECRET;
 if(!secret)throw new Error('Missing renderer authentication');
@@ -28,7 +29,7 @@ if(process.env.PINTEREST_SCOPE==='this-week'){
 }
 const reserved=ledger.filter(r=>r.publishDate&&new Date(r.publishDate+'Z').getTime()>=Date.parse(start+'T00:00:00+05:30')&&new Date(r.publishDate+'Z').getTime()<Date.parse(start+'T00:00:00+05:30')+7*86400000).length;
 const limit=Math.max(0,Math.min(18,Math.floor((56-reserved)/3)));
-const deferred=posts.slice(limit).map(p=>p.id),skipped=[],groups=[];
+const deferred=posts.slice(limit).map(p=>p.id),skipped=[],skippedImages=[],groups=[];
 for(const p of posts.slice(0,limit)){
  try{
   const board=boardFor(p,data.boards);let printableUrl;
@@ -57,31 +58,39 @@ for(const p of posts.slice(0,limit)){
    const job={slug:p.slug,title:vs[n].title,benefit:vs[n].benefit,keyword:'READ',photos:[{src:'photo'+ext,alt:p.title,review:{approved:true,reviewer:'NST clean-photo checker',faceFree:true,score:v.score}}],steps:[]};
    if(printableUrl){job.printableUrl=printableUrl;job.printableVerified=true;} // Badge requires this article's linked PDF and a verified PDF signature.
    await writeFile(path.join(folder,'job.json'),JSON.stringify(job));
-   await render(path.join(folder,'job.json'),folder,{pinOnly:true});
+   try{await render(path.join(folder,'job.json'),folder,{pinOnly:true});}
+   catch(e){if(!/EncodingError|cannot be decoded/.test(String(e.message)))throw e;
+    const failure={id:p.id,image:src,reason:'Source image cannot be decoded'};skippedImages.push(failure);console.warn(JSON.stringify(failure));continue;}
    const file=`${p.id}-${n+1}.jpg`;await copyFile(path.join(folder,'pin.jpg'),path.join(out,file));
-   pins.push({...vs[n],file,localFile:path.join(out,file),photoHash:hash,review:v});
+   pins.push({...vs[n],file,localFile:path.join(out,file),photoHash:hash,sourceImage:src,review:v});
   }
   if(pins.length<3){skipped.push({id:p.id,reason:`Only ${pins.length} distinct photos passed strict review; need at least 3`});continue;}
   groups.push({id:p.id,link:p.link,board,pins,actual:p.actual,exported:p.exported});
  }catch(e){skipped.push({id:p.id,reason:String(e.message).slice(0,250)});}
 }
 const base=`https://raw.githubusercontent.com/xredible/xredible-automation/media/nestoodle/pinterest/${batch}`;
-const rows=schedule(groups,start,base,Date.now(),ledger);
-await writeFile(path.join(out,'pinterest.csv'),csv(rows));
+let safeGroups=groups,rows;
 const escape=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const browser=await chromium.launch({headless:true,...(process.env.CHROMIUM_PATH?{executablePath:process.env.CHROMIUM_PATH}:{})});
 try{
  const page=await browser.newPage({viewport:{width:1200,height:900}});await page.route('**/*',r=>r.abort());
+ for(;;){
+ rows=schedule(safeGroups,start,base,Date.now(),ledger);
  const cards=[];
  for(const [i,r] of rows.entries()){
   const image=(await readFile(r.localFile)).toString('base64');
-  cards.push(`<article><a href="${escape(r['Media URL'])}"><img src="data:image/jpeg;base64,${image}"></a><strong>${i+1}. ${escape(r.Title)}</strong><p>${escape(r['Pinterest board'])}</p><p>UTC: ${escape(r['Publish date'])}<br>IST: ${escape(new Date(r['Publish date']+'Z').toLocaleString('en-IN',{timeZone:'Asia/Kolkata'}))}</p><a href="${escape(r.Link)}">Open article</a><p>${escape(r.Description)}</p></article>`);
+  cards.push(`<article><a href="${escape(r['Media URL'])}"><img data-file="${escape(path.basename(r.localFile))}" src="data:image/jpeg;base64,${image}"></a><strong>${i+1}. ${escape(r.Title)}</strong><p>${escape(r['Pinterest board'])}</p><p>UTC: ${escape(r['Publish date'])}<br>IST: ${escape(new Date(r['Publish date']+'Z').toLocaleString('en-IN',{timeZone:'Asia/Kolkata'}))}</p><a href="${escape(r.Link)}">Open article</a><p>${escape(r.Description)}</p></article>`);
  }
- await page.setContent(`<html><head><style>@page{size:A4;margin:12mm}body{font:11px Arial;color:#304f43}h1{font-size:23px}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}article{break-inside:avoid}img{width:100%;height:220px;object-fit:contain}strong{display:block;font-size:12px}p{margin:6px 0}a{color:#af512d}</style></head><body><h1>Nestoodle · Pinterest weekly</h1><p>${escape(start)} · ${rows.length} pins · Manual upload only · CSV times are UTC · Review before importing</p><div class="grid">${cards.join('')}</div><p>Skipped: ${escape(JSON.stringify(skipped))}. Deferred: ${escape(deferred.join(', '))}.</p></body></html>`);
- await page.evaluate(()=>Promise.all([...document.images].map(i=>i.decode())));
+ await page.setContent(`<html><head><style>@page{size:A4;margin:12mm}body{font:11px Arial;color:#304f43}h1{font-size:23px}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}article{break-inside:avoid}img{width:100%;height:220px;object-fit:contain}strong{display:block;font-size:12px}p{margin:6px 0}a{color:#af512d}</style></head><body><h1>Nestoodle · Pinterest weekly</h1><p>${escape(start)} · ${rows.length} pins · Manual upload only · CSV times are UTC · Review before importing</p><div class="grid">${cards.join('')}</div><p>Skipped: ${escape(JSON.stringify([...skipped,...skippedImages]))}. Deferred: ${escape(deferred.join(', '))}.</p></body></html>`);
+ const failures=await decodePreviewImages(page);
+ if(!failures.length)break;
+ safeGroups=excludeUndecodable(safeGroups,failures,skippedImages,skipped);
+ for(const failure of failures)console.warn('Undecodable preview image: '+JSON.stringify(failure));
+ }
+ await writeFile(path.join(out,'pinterest.csv'),csv(rows));
  await page.screenshot({path:path.join(out,'preview.jpg'),fullPage:true,type:'jpeg',quality:78});
 }finally{await browser.close();}
-const manifest={batch,start,count:rows.length,groups:groups.map(g=>({id:g.id,actual:g.actual,previouslyExported:g.exported})),skipped,deferred,files:['pinterest.csv','preview.jpg',...rows.map(r=>r['Media URL'].split('/').pop())],rows:rows.map(({localFile,...r})=>r)};
+const manifest={batch,start,count:rows.length,groups:safeGroups.map(g=>({id:g.id,actual:g.actual,previouslyExported:g.exported})),skipped,skippedImages,deferred,files:['pinterest.csv','preview.jpg',...rows.map(r=>r['Media URL'].split('/').pop())],rows:rows.map(({localFile,...r})=>r)};
 await writeFile(path.join(out,'manifest.json'),JSON.stringify(manifest,null,2));
 await writeFile(path.join(out,'ledger.json'),JSON.stringify([...ledger,...rows.map(r=>({batch,postId:r.postId,link:r.Link,media:r['Media URL'],photoHash:r.photoHash,publishDate:r['Publish date'],title:r.Title,status:'exported-not-confirmed-published'}))],null,2));
 console.log(`Prepared ${rows.length} manual-upload pins; ${skipped.length} posts skipped, ${deferred.length} deferred`);
