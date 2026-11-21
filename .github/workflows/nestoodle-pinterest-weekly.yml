@@ -7,6 +7,10 @@ on:
         type: choice
         options: [all, this-week]
         default: all
+      replacement_batch:
+        description: Exact pending replacement batch, after showing five samples first
+        type: string
+        required: false
       report_run:
         description: Read-only article reasons from an earlier export run
         type: string
@@ -41,7 +45,7 @@ jobs:
           node-version: '22'
       - run: npm ci --prefix tools/brand-images
       - run: npx --prefix tools/brand-images playwright install --with-deps chromium
-      - run: node --test tools/pinterest-weekly/*.test.mjs
+      - run: node --test tools/pinterest-weekly/*.test.mjs tools/brand-images/render.test.mjs
   report:
     if: github.event_name == 'workflow_dispatch' && inputs.report_run != ''
     needs: test
@@ -89,12 +93,18 @@ jobs:
         if: inputs.deliver_only == ''
       - run: npx --prefix tools/brand-images playwright install --with-deps chromium
         if: inputs.deliver_only == ''
-      - run: node tools/pinterest-weekly/run.mjs
+      - run: |
+          if [ -n "$PINTEREST_REPLACEMENT_BATCH" ]; then
+            node tools/pinterest-weekly/replacement-run.mjs
+          else
+            node tools/pinterest-weekly/run.mjs
+          fi
         if: inputs.deliver_only == ''
         env:
           N8N_REELS_SECRET: ${{ secrets.N8N_REELS_SECRET }}
           PINTEREST_SCOPE: ${{ inputs.scope }}
           PINTEREST_SUPPLEMENT: ${{ inputs.supplement }}
+          PINTEREST_REPLACEMENT_BATCH: ${{ inputs.replacement_batch }}
       - uses: actions/upload-artifact@v4
         if: inputs.deliver_only == ''
         with:

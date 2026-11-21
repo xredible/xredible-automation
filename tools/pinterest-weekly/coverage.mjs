@@ -10,7 +10,7 @@ export function approvedFor(post,rows){
   const tag=tags.find(t=>new RegExp('\\bwp-image-'+r.mediaId+'\\b').test(t));
   if(norm(tag?.match(/\bsrc=["']([^"']+)["']/i)?.[1])!==norm(r.src))return [];
   if(seen.has(norm(r.src)))return [];seen.add(norm(r.src));
-  return [{src:r.src,alt:r.alt||post.title,review:{approved:true,pass:true,score:10,faceFree:true,problems:[],reviewer:r.reviewer},mediaId:r.mediaId}];
+  return [{src:r.src,alt:r.alt||post.title,activityTitle:r.activityTitle,review:{approved:true,pass:true,score:10,faceFree:true,problems:[],reviewer:r.reviewer},mediaId:r.mediaId}];
  });
 }
 export function exportBatch(start,ledger,supplement,runId){

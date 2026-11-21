@@ -77,6 +77,7 @@ export async function render(jobPath,outDir,options={}) {
   const [width,height]=sizes[template],page=await browser.newPage({viewport:{width,height},deviceScaleFactor:1});
   await page.route('**/*',route=>route.abort()); // All assets embedded; no external page requests.
   await page.setContent((await readFile(path.join(here,'templates',`${template}.html`),'utf8')).replace('{{CSS}}',css));
+  if(template==='pin'&&options.pinEditorial){await page.evaluate(()=>{document.querySelector('.hero').style.height='820px';document.querySelector('.panel').style.top='850px';const title=document.querySelector('h1');title.style.fontSize='84px';title.style.maxHeight='300px';const benefit=document.querySelector('[data-field=benefit]');benefit.dataset.fit='';benefit.dataset.lines='3';benefit.dataset.max='36';});}
   const step=template==='ig-step'?job.steps[index]:undefined;
   await page.evaluate(async ({job,photos,logo,step,index,template,name})=>{
    const fields={...job,title:step?.title??job.title,body:step?.body,number:String((index??0)+1).padStart(2,'0'),navigation:name==='facebook'?'Read the guide at nestoodle.com':'Swipe →',cta:job.printableUrl?'for the full guide + free printable':'for the full guide'};
