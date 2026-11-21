@@ -4,7 +4,7 @@ import {createHash} from 'node:crypto';
 import {chromium} from '../brand-images/node_modules/playwright/index.mjs';
 import {render,verifyPrintable} from '../brand-images/render.mjs';
 import {eligible,boardFor,variations,schedule,csv} from './plan.mjs';
-import {decodePreviewImages,excludeUndecodable} from './images.mjs';
+import {decodePreviewImages,excludeUndecodable,previewThumbnail} from './images.mjs';
 import {approvedFor,exportBatch,fillCoverage,promisesFreePrintable} from './coverage.mjs';
 const out=path.resolve(process.env.PINTEREST_OUTPUT||'pinterest-output');
 const secret=process.env.N8N_REELS_SECRET;
@@ -73,14 +73,18 @@ let safeGroups=groups,rows;
 const escape=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const browser=await chromium.launch({headless:true,...(process.env.CHROMIUM_PATH?{executablePath:process.env.CHROMIUM_PATH}:{})});
 try{
+ const thumbnails=new Map();
  const page=await browser.newPage({viewport:{width:1200,height:900}});await page.route('**/*',r=>r.abort());
  for(;;){
  rows=schedule(safeGroups,start,base,Date.now(),ledger);
- const cards=[];
+ const cards=[],thumbnailFailures=[];
  for(const [i,r] of rows.entries()){
-  const image=(await readFile(r.localFile)).toString('base64');
+  const file=path.basename(r.localFile);let image=thumbnails.get(file);
+  if(!image){try{image=await previewThumbnail(browser,await readFile(r.localFile));thumbnails.set(file,image);}
+   catch(e){if(!/EncodingError|cannot be decoded/.test(String(e.message)))throw e;thumbnailFailures.push({file,reason:'Pin image cannot be decoded independently'});continue;}}
   cards.push(`<article><a href="${escape(r['Media URL'])}"><img data-file="${escape(path.basename(r.localFile))}" src="data:image/jpeg;base64,${image}"></a><strong>${i+1}. ${escape(r.Title)}</strong><p>${escape(r['Pinterest board'])}</p><p>UTC: ${escape(r['Publish date'])}<br>IST: ${escape(new Date(r['Publish date']+'Z').toLocaleString('en-IN',{timeZone:'Asia/Kolkata'}))}</p><a href="${escape(r.Link)}">Open article</a><p>${escape(r.Description)}</p></article>`);
  }
+ if(thumbnailFailures.length){safeGroups=excludeUndecodable(safeGroups,thumbnailFailures,skippedImages,skipped);continue;}
  await page.setContent(`<html><head><style>@page{size:A4;margin:12mm}body{font:11px Arial;color:#304f43}h1{font-size:23px}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}article{break-inside:avoid}img{width:100%;height:220px;object-fit:contain}strong{display:block;font-size:12px}p{margin:6px 0}a{color:#af512d}</style></head><body><h1>Nestoodle · Pinterest weekly</h1><p>${escape(start)} · ${rows.length} pins · Manual upload only · CSV times are UTC · Review before importing</p><div class="grid">${cards.join('')}</div><p>Skipped: ${escape(JSON.stringify([...skipped,...skippedImages]))}. Deferred: ${escape(deferred.join(', '))}.</p></body></html>`);
  const failures=await decodePreviewImages(page);
  if(!failures.length)break;

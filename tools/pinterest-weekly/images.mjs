@@ -25,3 +25,18 @@ export function excludeUndecodable(groups,failures,skippedImages,skipped){
  if(!removed)throw new Error('Decode failure does not match an export pin');
  return kept;
 }
+
+// Contact sheets need thumbnails, not dozens of simultaneous full-resolution decodes.
+// Use a short-lived page per source so the preview cannot retain every decoded pin.
+export async function previewThumbnail(browser,bytes){
+ const page=await browser.newPage({viewport:{width:300,height:450}});
+ try{
+  await page.route('**/*',route=>route.abort());
+  return await page.evaluate(async base64=>{
+   const image=new Image();image.src='data:image/jpeg;base64,'+base64;await image.decode();
+   const canvas=document.createElement('canvas');canvas.width=300;canvas.height=450;
+   canvas.getContext('2d').drawImage(image,0,0,300,450);
+   return canvas.toDataURL('image/jpeg',.78).split(',')[1];
+  },bytes.toString('base64'));
+ }finally{await page.close();}
+}
