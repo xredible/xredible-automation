@@ -5,7 +5,7 @@ import {chromium} from '../brand-images/node_modules/playwright/index.mjs';
 import {render,verifyPrintable} from '../brand-images/render.mjs';
 import {eligible,boardFor,variations,schedule,csv} from './plan.mjs';
 import {decodePreviewImages,excludeUndecodable} from './images.mjs';
-import {approvedFor,exportBatch,fillCoverage} from './coverage.mjs';
+import {approvedFor,exportBatch,fillCoverage,promisesFreePrintable} from './coverage.mjs';
 const out=path.resolve(process.env.PINTEREST_OUTPUT||'pinterest-output');
 const secret=process.env.N8N_REELS_SECRET;
 if(!secret)throw new Error('Missing renderer authentication');
@@ -35,11 +35,11 @@ const {groups,skipped,deferred}=await fillCoverage(posts,limit,async p=>{
   for(const match of String(p.html||'').matchAll(/href=["'](https:\/\/nestoodle\.com\/[^"']+\.pdf)["']/gi)){
    try{await verifyPrintable({printableUrl:match[1]});printableUrl=match[1];break;}catch{}
   }
-  if(!printableUrl&&/\bfree\b/i.test(p.keyword||p.meta?._yoast_wpseo_focuskw||''))throw new Error('Free printable promise needs a linked, verified PDF');
+  if(!printableUrl&&promisesFreePrintable(p.keyword||p.meta?._yoast_wpseo_focuskw||''))throw new Error('Free printable promise needs a linked, verified PDF');
   const vs=variations(p),pins=[],hashes=new Set(ledger.filter(r=>r.postId===p.id).map(r=>r.photoHash));
   const approved=approvedFor(p,data.approvedPhotos||[]);
-  const candidates=[...String(p.html||p.content?.raw||'').matchAll(/<img[^>]+src=["']([^"']+)["'][^>]*>/gi)].map(m=>m[1]);
-  for(const src of [...new Set([...approved.map(p=>p.src),...candidates])].slice(0,18)){
+  if(approved.length<3)throw new Error(`Only ${approved.length} current approved table photos; need at least 3`);
+  for(const src of approved.map(p=>p.src).slice(0,18)){
    try{
    if(pins.length===5)break;
    const u=new URL(src);
@@ -49,9 +49,7 @@ const {groups,skipped,deferred}=await fillCoverage(posts,limit,async p=>{
    if(Number(res.headers.get('content-length'))>8*1024*1024)continue;
    const buf=Buffer.from(await res.arrayBuffer());if(buf.length>8*1024*1024)continue;
    const hash=createHash('sha256').update(buf).digest('hex');if(hashes.has(hash))continue;
-   const trusted=approved.find(p=>p.src===src);let v=trusted?.review;
-   if(!v){const verdict=await request('nst-pinterest-photo-check',{image:buf.toString('base64'),mime,topic:p.title});
-    try{v=JSON.parse(verdict.content.map(c=>c.text||'').join(''));}catch{continue;}}
+   const trusted=approved.find(p=>p.src===src),v=trusted.review;
    if(v.pass!==true||v.score!==10||v.faceFree!==true||!Array.isArray(v.problems)||v.problems.length)continue;
    hashes.add(hash);
    const n=pins.length,folder=path.join(out,`post-${p.id}-${n+1}`);await mkdir(folder,{recursive:true});
