@@ -60,6 +60,8 @@ jobs:
           path: previous-report
           run-id: ${{ inputs.report_run }}
           github-token: ${{ github.token }}
+      - run: npm ci --prefix tools/brand-images
+      - run: npx --prefix tools/brand-images playwright install --with-deps chromium
       - run: node tools/pinterest-weekly/report.mjs previous-report/manifest.json
         env:
           N8N_REELS_SECRET: ${{ secrets.N8N_REELS_SECRET }}

@@ -66,3 +66,9 @@ review. Default runs still reject an already-exported planning week.
 article with its original reason and current published title; it performs no render,
 media push, reservation write or delivery. New exports print COVERAGE_REPORT and
 include titles/reasons in the manifest to make failures independently auditable.
+
+Contact-sheet previews decode each full pin in a short-lived page and embed only
+300×450 JPEG thumbnails. Full-resolution CSV assets remain unchanged. This avoids
+simultaneous full-resolution preview decoding; truly undecodable files still get
+identified and excluded. Report mode independently checks any previously rejected
+preview JPEGs from its artifact.
