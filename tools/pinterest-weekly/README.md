@@ -1,74 +1,48 @@
 # Nestoodle weekly Pinterest CSV
 
-Manual upload only. There is no Pinterest write/publish operation in this tool.
-A Sunday n8n schedule dispatches `nestoodle-pinterest-weekly.yml`; the owner receives
-CSV and JPEG thumbnail contact sheet as Telegram documents and imports the CSV.
+Manual import only: these tools never create or schedule Pins through Pinterest.
+The owner reviews the images, then uploads the CSV in Pinterest's bulk importer.
 
-The renderer reuses the approved 1000×1500 brand pin HTML, fonts, logo, fit checks
-and face protection. Each variant has a different keyword-led title and distinct
-photo bytes. Existing article photos must pass strict visual review; no unchecked
-images, text banners, human faces or distorted/off-topic photos are accepted.
-Posts with fewer than three usable photos are skipped and reported. The Free printable
-badge appears only for an article-linked PDF verified by signature; free promises
-without a verified PDF cause a skip. Article text is never changed.
+## Copy and images
 
-Coverage policy: fewer than three confirmed owned article-link pins plus prior
-export reservations qualifies a post. Export reservations are explicitly separate
-from live Pinterest publication. Draft/Scheduled Queue rows are never counted.
-Exports are reserved once, even if the owner has not imported them yet: reuse the
-existing CSV rather than produce duplicates. Newest published posts come first;
-maximum 18 articles get three variants before optional fourth/fifth variants.
-Capacity is 56 pins/week (8/day), below Pinterest's 200-row import maximum.
-One article never appears twice on the same IST planning day. All dates are future:
-next day through next seven days, 09:00–23:00 IST slots, encoded as UTC in the CSV.
-Sunday exports therefore cover Monday–Sunday. Test scope selects current IST-week
-published posts only; drafts never enter the published-post endpoint.
+- Use the published article's real title, shortened at a word boundary to100 characters and put in Title Case. No generic suffixes or invented craft claims.
+- The image subtitle is a sourced excerpt from the article's own opening benefit line. Missing or unsupported source copy fails closed.
+- Each photo has its own two-sentence description: the actual activity plus an instruction or sentence from that article section. The focus keyword appears once. The tracked destination link follows those sentences.
+- Keywords are3–5 concrete article/activity terms. No generic creative-play filler.
+- Photos must match current post/media IDs and URLs in NST Approved Photos, with approved/score10/faceFree/no problems/reviewer. No generation or new approvals. Owner-rejected mug/frame photos1979/1982 are excluded; obstacle photos2110/2111/2112 are replaced with approved2113/2114/2115.
+- Re-render every replacement JPEG with the corrected on-image title and subtitle, using the shared brand renderer's opt-in editorial pin layout. Other brand layouts stay unchanged. Full images are1000×1500 JPEGs; contact sheets use isolated300×450 thumbnails.
+- Genuine free-printable claims require an article-linked PDF verified by signature. Screen-free does not mean free-download.
 
-Columns follow Pinterest's bulk-upload guide:
-https://help.pinterest.com/en/business/article/bulk-upload-video-pins
+## Links and import preflight
+
+Pinterest's import email confirmed37 Duplicate Pin link rejections in the original54-row file. It contained17 different Link values, one per article. All54 image URLs decoded correctly and all board names matched observed public boards; CSV quoting/headers were valid.
+
+Give every new pin `utm_content=<postId>-<pin number>`, preserving existing utm_source/medium/campaign. Numbering checks all earlier/superseded export links and known Pinterest links. No Link repeats within a batch or against that history. Preflight rejects duplicates, malformed headers/field counts/dates, wrong board names, and excessive title/description lengths. Delivery also re-parses the CSV and rejects duplicate-link artifacts.
+
+Exact headers:
 `Title,Media URL,Pinterest board,Thumbnail,Description,Link,Publish date,Keywords`
-Image Thumbnail cells are blank. Board names must match observed public boards.
-Descriptions contain two sentences and the keyword. Links use utm_source=pinterest.
-CSV is quoted UTF-8 with BOM and CRLF, titles ≤100 and descriptions ≤500 characters.
+Use UTF-8BOM, quoted cells and CRLF. Thumbnail is blank for images. Boards must exactly match current public board names. Public media URLs point directly to JPEG files. Publish date is an explicit future UTC timestamp; never leave it blank.
 
-Full pin JPGs and a reservation ledger go to `media/nestoodle/pinterest/weekly-YYYY-MM-DD/`
-and `media/nestoodle/pinterest/ledger.json`. CSV/preview/manifest are saved as Actions
-artifacts before media push and Telegram delivery. The `deliver_only` input accepts
-an earlier run ID to retry delivery from its artifact without generating more pins.
-Do not rerender a week with an existing reservation. GitHub concurrency serializes
-exports; media pushes retry after unrelated branch updates.
+## US evening schedule and reservations
 
-Credentials remain in n8n/GitHub secrets. Only the existing renderer header authenticates
-the three n8n endpoints. Execution data for these endpoints is not retained in n8n.
-The four-trigger graph is kept intact: Sunday schedule, inputs GET, photo check POST,
-and document delivery POST. The shared image checker uses the existing Nestoodle
-credential; this tool never exports its key. No Drive connection is required.
+Use01:00,02:00,03:00UTC only, within the owner's00:30–03:30UTC window. These are8–10PM Eastern in winter and9–11PM in summer. Max3 pins per UTC/US-evening day, max1/article/day, and at least3 calendar days between an article's pins, including prior reservations. Priority: Advent, Christmas, Hanukkah, winter break, other winter, then other articles.
 
-Undecodable source or preview images are listed by article ID, source URL and pin filename in the preview/manifest and logs. Failed preview pins are removed before CSV/ledger writes; articles falling below three usable variants are skipped. Remaining articles still export.
+A weekly run generates at most21 new pins for7 articles; the scheduler can use later open dates when earlier ones are occupied. It considers all active ledger dates, not just the current week. Pending-review rows reserve slots and suppress repeat coverage; superseded/cancelled rows remain historical but do not double-book capacity. Export status is never called Pinterest publication. Source hashes and all historical links remain available for dedupe.
 
-Run `node --test tools/pinterest-weekly/*.test.mjs` after installing `tools/brand-images` dependencies and Playwright Chromium (or set CHROMIUM_PATH). Brand renderer tests use
-`npm test --prefix tools/brand-images` with Playwright Chromium installed.
+## Fresh replacement after sample review
 
-Approved photos: the protected inputs endpoint includes NST Approved Photos rows.
-The exporter reuses score10/faceFree/zero-problem approvals only when the current
-article still contains that exact media ID and source URL; it verifies bytes/MIME
-and the renderer still checks decoding. Unregistered/changed candidates stay pending; this exporter does not grant new approvals.
-Failed articles no longer consume the input quota: later usable posts fill the
-remaining weekly slots. The existing 56/week, eight/day and minimum-three gates stay.
+`replacementPlan` rebuilds all rows from current articles/approved photos. It supersedes only exact old media reservations and creates a separate `weekly-YYYY-MM-DD-replacement-ID` namespace. The owner removes old scheduled pins on Pinterest; the tool never does that.
 
-For owner-approved catch-up, `supplement: true` creates a separate
-`weekly-YYYY-MM-DD-supplement-RUNID` asset namespace. Existing ledger entries and
-future slot reservations remain; already-covered articles and source hashes are
-not regenerated. Import this additional CSV alongside the earlier CSV only after
-review. Default runs still reject an already-exported planning week.
+Reserve the plan as pending-review before the next weekly run. Show five real rendered sample images with their titles/times before exporting the replacement CSV. No CSV or full-batch Telegram delivery at the sample checkpoint.
 
-`report_run` reads an earlier Actions artifact and prints every skipped/deferred
-article with its original reason and current published title; it performs no render,
-media push, reservation write or delivery. New exports print COVERAGE_REPORT and
-include titles/reasons in the manifest to make failures independently auditable.
+After explicit review approval, dispatch the Action with `replacement_batch` set to that exact pending batch. `replacement-run.mjs` checks frozen dates, links, source media IDs and copy digests; re-renders every full-size image; verifies all free offers; then writes the CSV/preview/manifest/ledger. Artifacts are saved before GitHub media publication and Telegram file delivery. The ledger changes to exported-not-confirmed-published. A completed replacement cannot be rerun accidentally.
 
-Contact-sheet previews decode each full pin in a short-lived page and embed only
-300×450 JPEG thumbnails. Full-resolution CSV assets remain unchanged. This avoids
-simultaneous full-resolution preview decoding; truly undecodable files still get
-identified and excluded. Report mode independently checks any previously rejected
-preview JPEGs from its artifact.
+`report_run` is read-only artifact diagnosis. `deliver_only` can re-deliver a saved valid artifact; it cannot bypass CSV preflight. Default duplicate-week protection and serialized export concurrency remain. Four protected n8n routes/triggers and existing credentials stay intact; no secrets in files or logs.
+
+## Tests
+
+Install tools/brand-images dependencies and Playwright Chromium (or set CHROMIUM_PATH).
+
+    node --test tools/pinterest-weekly/*.test.mjs tools/brand-images/render.test.mjs
+
+Coverage includes full54-row scheduling, three-day spacing, history-aware unique links, pending/superseded reservations, sourced copy, banned photo choices, CSV round trips and a full56-pin thumbnail contact sheet.

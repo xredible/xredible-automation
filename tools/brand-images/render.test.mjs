@@ -49,3 +49,9 @@ test('story-only mode accepts one reviewed cover and creates only its platform J
  const job=structuredClone(fixture);job.photos=job.photos.slice(0,1);job.steps=[];
  await withJob(job,async(file,out)=>{const reports=await render(file,out,{storyOnly:true});assert.equal(reports.length,1);assert.equal(reports[0].file,'story.jpg');assert.deepEqual(reports[0].size,[1080,1920]);});
 });
+
+
+test('weekly editorial pin layout fits a real long title and sourced multiline benefit',async()=>{
+ const job=structuredClone(fixture);job.title='12 Meaningful Advent Activities for Kids to Build Low-Stress Family Traditions';job.benefit='Try these 12 simple Advent activities filled with fun, kindness, and family moments.';job.photos=job.photos.slice(0,1);job.steps=[];delete job.highlight;delete job.eyebrow;
+ await withJob(job,async(file,out)=>{const reports=await render(file,out,{pinOnly:true,pinEditorial:true});assert.equal(reports.length,1);assert.deepEqual(reports[0].size,[1000,1500]);assert.ok(reports[0].text.find(t=>t.field==='title').lines<=3);assert.ok(reports[0].text.find(t=>t.field==='benefit').lines<=3);});
+});
