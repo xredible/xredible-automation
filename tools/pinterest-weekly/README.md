@@ -11,7 +11,7 @@ The owner reviews the images, then uploads the CSV in Pinterest's bulk importer.
 - Keywords are3–5 concrete article/activity terms. No generic creative-play filler.
 - Photos must match current post/media IDs and URLs in NST Approved Photos, with approved/score10/faceFree/no problems/reviewer. No generation or new approvals. Owner-rejected mug/frame photos1979/1982 are excluded; obstacle photos2110/2111/2112 are replaced with approved2113/2114/2115.
 - Re-render every replacement JPEG with the corrected on-image title and subtitle, using the shared brand renderer's opt-in editorial pin layout. Other brand layouts stay unchanged. Full images are1000×1500 JPEGs; contact sheets use isolated300×450 thumbnails.
-- Genuine free-printable claims require an article-linked PDF verified by signature. Screen-free does not mean free-download.
+- Genuine free-printable claims require an article-linked PDF verified by signature, or its live email gate: the redirect must land on this article’s printable section and its server form must bind the exact file and article ID. Verification uses GET only, never submits an email or bypasses the gate. Only directly verified PDFs enable a download badge. Screen-free does not mean free-download.
 
 ## Links and import preflight
 
