@@ -31,7 +31,9 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - run: node --test tools/pinterest-weekly/plan.test.mjs
+      - run: npm ci --prefix tools/brand-images
+      - run: npx --prefix tools/brand-images playwright install --with-deps chromium
+      - run: node --test tools/pinterest-weekly/*.test.mjs
   export:
     if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
     needs: test

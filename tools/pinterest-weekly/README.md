@@ -44,5 +44,7 @@ The four-trigger graph is kept intact: Sunday schedule, inputs GET, photo check 
 and document delivery POST. The shared image checker uses the existing Nestoodle
 credential; this tool never exports its key. No Drive connection is required.
 
-Run `node --test tools/pinterest-weekly/plan.test.mjs`. Brand renderer tests use
+Undecodable source or preview images are listed by article ID, source URL and pin filename in the preview/manifest and logs. Failed preview pins are removed before CSV/ledger writes; articles falling below three usable variants are skipped. Remaining articles still export.
+
+Run `node --test tools/pinterest-weekly/*.test.mjs` after installing `tools/brand-images` dependencies and Playwright Chromium (or set CHROMIUM_PATH). Brand renderer tests use
 `npm test --prefix tools/brand-images` with Playwright Chromium installed.
