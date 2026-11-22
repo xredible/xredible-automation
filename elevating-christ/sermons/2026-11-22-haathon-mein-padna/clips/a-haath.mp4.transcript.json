@@ -1,0 +1,651 @@
+{
+ "language": "hi",
+ "segments": [
+  {
+   "start": 0.0,
+   "end": 2.8,
+   "text": " यक दोगा स्वएं को थी।",
+   "words": [
+    {
+     "start": 0.0,
+     "end": 0.26,
+     "word": " यक"
+    },
+    {
+     "start": 0.26,
+     "end": 0.42,
+     "word": " दोगा"
+    },
+    {
+     "start": 0.42,
+     "end": 0.74,
+     "word": " स्वएं"
+    },
+    {
+     "start": 2.56,
+     "end": 2.56,
+     "word": " को"
+    },
+    {
+     "start": 2.56,
+     "end": 2.8,
+     "word": " थी।"
+    }
+   ]
+  },
+  {
+   "start": 2.8,
+   "end": 4.92,
+   "text": " दे धी तजीजिन � prosecut privileged है",
+   "words": [
+    {
+     "start": 2.8,
+     "end": 3.36,
+     "word": " दे"
+    },
+    {
+     "start": 3.36,
+     "end": 3.7,
+     "word": " धी"
+    },
+    {
+     "start": 3.7,
+     "end": 4.06,
+     "word": " तजीजिन"
+    },
+    {
+     "start": 4.06,
+     "end": 4.24,
+     "word": " �"
+    },
+    {
+     "start": 4.24,
+     "end": 4.44,
+     "word": " prosecut"
+    },
+    {
+     "start": 4.44,
+     "end": 4.58,
+     "word": " privileged"
+    },
+    {
+     "start": 4.58,
+     "end": 4.92,
+     "word": " है"
+    }
+   ]
+  },
+  {
+   "start": 4.92,
+   "end": 8.5,
+   "text": " घब तब आप धें वई for that आप लवां इंगपागत को ख़ि 상मballिषिक के रहना",
+   "words": [
+    {
+     "start": 4.92,
+     "end": 5.02,
+     "word": " घब"
+    },
+    {
+     "start": 5.02,
+     "end": 5.02,
+     "word": " तब"
+    },
+    {
+     "start": 5.02,
+     "end": 5.02,
+     "word": " आप"
+    },
+    {
+     "start": 5.02,
+     "end": 5.04,
+     "word": " धें"
+    },
+    {
+     "start": 5.04,
+     "end": 5.72,
+     "word": " वई"
+    },
+    {
+     "start": 5.72,
+     "end": 5.72,
+     "word": " for"
+    },
+    {
+     "start": 5.72,
+     "end": 5.72,
+     "word": " that"
+    },
+    {
+     "start": 5.72,
+     "end": 6.48,
+     "word": " आप"
+    },
+    {
+     "start": 6.48,
+     "end": 6.48,
+     "word": " लवां"
+    },
+    {
+     "start": 6.48,
+     "end": 6.88,
+     "word": " इंगपागत"
+    },
+    {
+     "start": 6.88,
+     "end": 6.94,
+     "word": " को"
+    },
+    {
+     "start": 6.94,
+     "end": 7.08,
+     "word": " ख़ि"
+    },
+    {
+     "start": 7.08,
+     "end": 8.42,
+     "word": " 상मballिषिक"
+    },
+    {
+     "start": 8.42,
+     "end": 8.42,
+     "word": " के"
+    },
+    {
+     "start": 8.42,
+     "end": 8.5,
+     "word": " रहना"
+    }
+   ]
+  },
+  {
+   "start": 8.5,
+   "end": 10.66,
+   "text": " तो �いる जिसु को दो ऊूए",
+   "words": [
+    {
+     "start": 8.5,
+     "end": 8.58,
+     "word": " तो"
+    },
+    {
+     "start": 8.58,
+     "end": 9.32,
+     "word": " �いる"
+    },
+    {
+     "start": 9.32,
+     "end": 10.66,
+     "word": " जिसु"
+    },
+    {
+     "start": 10.66,
+     "end": 10.66,
+     "word": " को"
+    },
+    {
+     "start": 10.66,
+     "end": 10.66,
+     "word": " दो"
+    },
+    {
+     "start": 10.66,
+     "end": 10.66,
+     "word": " ऊूए"
+    }
+   ]
+  },
+  {
+   "start": 10.66,
+   "end": 12.3,
+   "text": " लवाऋगक के ढात रहना",
+   "words": [
+    {
+     "start": 10.66,
+     "end": 10.86,
+     "word": " लवाऋगक"
+    },
+    {
+     "start": 10.86,
+     "end": 10.86,
+     "word": " के"
+    },
+    {
+     "start": 10.86,
+     "end": 11.78,
+     "word": " ढात"
+    },
+    {
+     "start": 11.78,
+     "end": 12.3,
+     "word": " रहना"
+    }
+   ]
+  },
+  {
+   "start": 15.06,
+   "end": 16.06,
+   "text": " तülmeनगर के साद says",
+   "words": [
+    {
+     "start": 15.06,
+     "end": 15.74,
+     "word": " तülmeनगर"
+    },
+    {
+     "start": 15.74,
+     "end": 15.74,
+     "word": " के"
+    },
+    {
+     "start": 15.74,
+     "end": 16.06,
+     "word": " साद"
+    },
+    {
+     "start": 16.06,
+     "end": 16.06,
+     "word": " says"
+    }
+   ]
+  },
+  {
+   "start": 16.06,
+   "end": 22.18,
+   "text": " परमेषिक लब if you want to be in the hands of these two subjects",
+   "words": [
+    {
+     "start": 16.06,
+     "end": 16.8,
+     "word": " परमेषिक"
+    },
+    {
+     "start": 16.8,
+     "end": 19.62,
+     "word": " लब"
+    },
+    {
+     "start": 19.62,
+     "end": 19.72,
+     "word": " if"
+    },
+    {
+     "start": 19.72,
+     "end": 19.72,
+     "word": " you"
+    },
+    {
+     "start": 19.72,
+     "end": 19.72,
+     "word": " want"
+    },
+    {
+     "start": 19.72,
+     "end": 19.72,
+     "word": " to"
+    },
+    {
+     "start": 19.72,
+     "end": 19.72,
+     "word": " be"
+    },
+    {
+     "start": 19.72,
+     "end": 19.72,
+     "word": " in"
+    },
+    {
+     "start": 19.72,
+     "end": 19.72,
+     "word": " the"
+    },
+    {
+     "start": 19.72,
+     "end": 19.72,
+     "word": " hands"
+    },
+    {
+     "start": 19.72,
+     "end": 20.12,
+     "word": " of"
+    },
+    {
+     "start": 20.12,
+     "end": 20.12,
+     "word": " these"
+    },
+    {
+     "start": 20.12,
+     "end": 20.48,
+     "word": " two"
+    },
+    {
+     "start": 20.48,
+     "end": 22.18,
+     "word": " subjects"
+    }
+   ]
+  },
+  {
+   "start": 22.18,
+   "end": 23.74,
+   "text": " उcloud ताब आप पर्रमेशिन कफशवावी है याखbaum storiespol otc",
+   "words": [
+    {
+     "start": 22.18,
+     "end": 22.6,
+     "word": " उcloud"
+    },
+    {
+     "start": 22.6,
+     "end": 22.6,
+     "word": " ताब"
+    },
+    {
+     "start": 22.6,
+     "end": 22.7,
+     "word": " आप"
+    },
+    {
+     "start": 22.7,
+     "end": 23.22,
+     "word": " पर्रमेशिन"
+    },
+    {
+     "start": 23.22,
+     "end": 23.42,
+     "word": " कफशवावी"
+    },
+    {
+     "start": 23.42,
+     "end": 23.5,
+     "word": " है"
+    },
+    {
+     "start": 23.5,
+     "end": 23.74,
+     "word": " याखbaum"
+    },
+    {
+     "start": 23.74,
+     "end": 23.74,
+     "word": " storiespol"
+    },
+    {
+     "start": 23.74,
+     "end": 23.74,
+     "word": " otc"
+    }
+   ]
+  },
+  {
+   "start": 23.74,
+   "end": 25.08,
+   "text": " परमेशित के खजनC。。。",
+   "words": [
+    {
+     "start": 23.74,
+     "end": 24.22,
+     "word": " परमेशित"
+    },
+    {
+     "start": 24.22,
+     "end": 24.32,
+     "word": " के"
+    },
+    {
+     "start": 24.32,
+     "end": 25.08,
+     "word": " खजनC。。。"
+    }
+   ]
+  },
+  {
+   "start": 25.08,
+   "end": 26.5,
+   "text": " थब आप सुप्ािखष्थ हो ....",
+   "words": [
+    {
+     "start": 25.08,
+     "end": 25.38,
+     "word": " थब"
+    },
+    {
+     "start": 25.38,
+     "end": 25.7,
+     "word": " आप"
+    },
+    {
+     "start": 25.7,
+     "end": 26.24,
+     "word": " सुप्ािखष्थ"
+    },
+    {
+     "start": 26.24,
+     "end": 26.38,
+     "word": " हो"
+    },
+    {
+     "start": 26.38,
+     "end": 26.5,
+     "word": " ...."
+    }
+   ]
+  },
+  {
+   "start": 26.5,
+   "end": 27.64,
+   "text": " तब आप naaf use ho",
+   "words": [
+    {
+     "start": 26.5,
+     "end": 26.74,
+     "word": " तब"
+    },
+    {
+     "start": 26.74,
+     "end": 26.94,
+     "word": " आप"
+    },
+    {
+     "start": 26.94,
+     "end": 27.26,
+     "word": " naaf"
+    },
+    {
+     "start": 27.26,
+     "end": 27.34,
+     "word": " use"
+    },
+    {
+     "start": 27.34,
+     "end": 27.64,
+     "word": " ho"
+    }
+   ]
+  },
+  {
+   "start": 27.64,
+   "end": 29.98,
+   "text": " तब आप camaँ परभو के भल के नी Kashisha",
+   "words": [
+    {
+     "start": 27.64,
+     "end": 28.04,
+     "word": " तब"
+    },
+    {
+     "start": 28.04,
+     "end": 28.32,
+     "word": " आप"
+    },
+    {
+     "start": 28.32,
+     "end": 28.94,
+     "word": " camaँ"
+    },
+    {
+     "start": 28.94,
+     "end": 29.08,
+     "word": " परभو"
+    },
+    {
+     "start": 29.08,
+     "end": 29.24,
+     "word": " के"
+    },
+    {
+     "start": 29.24,
+     "end": 29.5,
+     "word": " भल"
+    },
+    {
+     "start": 29.5,
+     "end": 29.68,
+     "word": " के"
+    },
+    {
+     "start": 29.68,
+     "end": 29.86,
+     "word": " नी"
+    },
+    {
+     "start": 29.86,
+     "end": 29.98,
+     "word": " Kashisha"
+    }
+   ]
+  },
+  {
+   "start": 29.98,
+   "end": 32.7,
+   "text": " तब आप पम साज्फाव शामबस यी॔ years",
+   "words": [
+    {
+     "start": 29.98,
+     "end": 30.7,
+     "word": " तब"
+    },
+    {
+     "start": 30.7,
+     "end": 30.84,
+     "word": " आप"
+    },
+    {
+     "start": 30.84,
+     "end": 31.0,
+     "word": " पम"
+    },
+    {
+     "start": 31.0,
+     "end": 31.9,
+     "word": " साज्फाव"
+    },
+    {
+     "start": 31.9,
+     "end": 31.9,
+     "word": " शामबस"
+    },
+    {
+     "start": 31.9,
+     "end": 32.34,
+     "word": " यी॔"
+    },
+    {
+     "start": 32.34,
+     "end": 32.7,
+     "word": " years"
+    }
+   ]
+  },
+  {
+   "start": 34.84,
+   "end": 35.44,
+   "text": " ज़चक stitch",
+   "words": [
+    {
+     "start": 34.84,
+     "end": 35.44,
+     "word": " ज़चक"
+    },
+    {
+     "start": 35.44,
+     "end": 35.44,
+     "word": " stitch"
+    }
+   ]
+  },
+  {
+   "start": 35.44,
+   "end": 37.0,
+   "text": " तब आप kanash",
+   "words": [
+    {
+     "start": 35.44,
+     "end": 35.6,
+     "word": " तब"
+    },
+    {
+     "start": 35.6,
+     "end": 36.34,
+     "word": " आप"
+    },
+    {
+     "start": 36.34,
+     "end": 37.0,
+     "word": " kanash"
+    }
+   ]
+  },
+  {
+   "start": 46.22,
+   "end": 46.98,
+   "text": " ुब karaman",
+   "words": [
+    {
+     "start": 46.22,
+     "end": 46.82,
+     "word": " ुब"
+    },
+    {
+     "start": 46.82,
+     "end": 46.98,
+     "word": " karaman"
+    }
+   ]
+  },
+  {
+   "start": 46.98,
+   "end": 48.98,
+   "text": " तब app",
+   "words": [
+    {
+     "start": 46.98,
+     "end": 48.16,
+     "word": " तब"
+    },
+    {
+     "start": 48.16,
+     "end": 48.98,
+     "word": " app"
+    }
+   ]
+  },
+  {
+   "start": 48.98,
+   "end": 52.06,
+   "text": " ॐ RI",
+   "words": [
+    {
+     "start": 48.98,
+     "end": 49.76,
+     "word": " ॐ"
+    },
+    {
+     "start": 49.76,
+     "end": 52.06,
+     "word": " RI"
+    }
+   ]
+  }
+ ]
+}
