@@ -1,0 +1,50 @@
+{
+ "slug": "how-to-teach-kids-to-tie-shoes",
+ "articleUrl": "https://nestoodle.com/?p=1235",
+ "title": "How to Teach Kids to Tie Shoes",
+ "highlight": "Tie Shoes",
+ "eyebrow": "14 EASY METHODS",
+ "benefit": "Bunny ears, two-color laces and more",
+ "keyword": "SHOES",
+ "photos": [
+  {
+   "src": "src-two-color-laces.jpg",
+   "alt": "A white sneaker laced with one red and one blue lace tied together in a bow.",
+   "review": {
+    "approved": true,
+    "faceFree": true,
+    "reviewer": "Claude visual + Gemini native 10 (17 Nov)"
+   }
+  },
+  {
+   "src": "src-bunny-ears.jpg",
+   "alt": "A white kids' sneaker tied in a yellow bow with big floppy bunny-ear loops on a wooden table.",
+   "review": {
+    "approved": true,
+    "faceFree": true,
+    "reviewer": "Claude visual + Gemini native 10 (17 Nov)"
+   }
+  },
+  {
+   "src": "src-ribbon-practice.jpg",
+   "alt": "A white sneaker laced with wide yellow ribbon tied in a bow, beside a ribbon spool.",
+   "review": {
+    "approved": true,
+    "faceFree": true,
+    "reviewer": "Claude visual + Gemini native 10 (17 Nov)"
+   }
+  }
+ ],
+ "steps": [
+  {
+   "title": "Bunny Ears Method",
+   "body": "Two big loops make the bow feel like a story.",
+   "photo": 1
+  },
+  {
+   "title": "Ribbon Practice",
+   "body": "Wide ribbon is easier for tiny hands.",
+   "photo": 2
+  }
+ ]
+}
