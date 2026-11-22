@@ -1,0 +1,6 @@
+{
+ "ok": false,
+ "error": "Renderer error: ValueError: can't measure length of multiline text",
+ "slides": [],
+ "verses": []
+}
