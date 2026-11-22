@@ -3,6 +3,9 @@
 <style>
 @font-face{font-family:Cinzel;font-weight:600;src:url(cinzel-latin-600-normal.woff2)}
 @font-face{font-family:Cinzel;font-weight:700;src:url(cinzel-latin-700-normal.woff2)}
+@font-face{font-family:Raleway;font-weight:500;src:url(raleway-latin-500-normal.woff2)}
+@font-face{font-family:Raleway;font-weight:600;src:url(raleway-latin-600-normal.woff2)}
+@font-face{font-family:Raleway;font-weight:700;src:url(raleway-latin-700-normal.woff2)}
 @font-face{font-family:Baloo;font-weight:500;src:url(Baloo2_500Medium.ttf)}
 @font-face{font-family:Baloo;font-weight:600;src:url(Baloo2_600SemiBold.ttf)}
 :root{--bg:#141414;--char:#1C1C1C;--gold:#D4AF37;--gold2:#E8C860;--goldd:#8A6D1F;--cream:#F5F0E3}
@@ -20,14 +23,19 @@ html,body{width:1920px;height:1080px;overflow:hidden;background:#000}
 .logo{position:absolute;border-radius:50%;overflow:hidden;filter:drop-shadow(0 0 40px rgba(212,175,55,.35))}
 .logo img{width:100%;height:100%;display:block}
 .shine{position:absolute;inset:0;background:linear-gradient(115deg,rgba(255,255,255,0) 35%,rgba(255,255,255,.55) 50%,rgba(255,255,255,0) 65%);mix-blend-mode:screen}
-.word{position:absolute;left:0;right:0;text-align:center;font-family:Cinzel;font-weight:700;letter-spacing:.16em;color:var(--cream)}
-.word b{color:var(--gold);font-weight:700}
+.word{position:absolute;left:0;right:0;text-align:center;font-family:Raleway;font-weight:600;letter-spacing:.01em;isolation:isolate;filter:drop-shadow(0 10px 12px rgba(0,0,0,.55))}
+.m{position:relative;display:inline-block}
+.m::before{content:attr(data-t);position:absolute;left:0;top:0;z-index:-1}
+.pt{font-weight:500;background:linear-gradient(180deg,#ffffff 0%,#f6f6f6 30%,#b9b9b9 47%,#7f7f7f 52%,#cfcfcf 66%,#ffffff 88%,#dcdcdc 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
+.pt::before{color:#6e6e6e;text-shadow:0 1px 0 #8a8a8a,0 2px 0 #7a7a7a,0 3px 0 #6a6a6a,0 4px 0 #5a5a5a,0 5px 0 #4b4b4b,0 6px 0 #3d3d3d,-1px -1px 0 #ffffff}
+.gd{font-weight:700;background:linear-gradient(180deg,#fff6c8 0%,#f3d77a 28%,#c9a227 46%,#7e5f12 52%,#d9b046 66%,#fff0a8 88%,#e2bd55 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
+.gd::before{color:#7a5c12;text-shadow:0 1px 0 #9c7a1e,0 2px 0 #8a6a17,0 3px 0 #785b12,0 4px 0 #664c0e,0 5px 0 #553f0b,0 6px 0 #443208,-1px -1px 0 #fff3c0}
 .rule{position:absolute;height:3px;background:linear-gradient(90deg,rgba(212,175,55,0),var(--gold) 20%,var(--gold2) 50%,var(--gold) 80%,rgba(212,175,55,0))}
 .t{position:absolute;color:var(--cream)}
 .hi{font-family:Baloo;font-weight:600}
-.en{font-family:Cinzel;font-weight:600;letter-spacing:.08em}
+.en{font-family:Raleway;font-weight:600;letter-spacing:.12em}
 .slot{position:absolute;border:2px solid rgba(212,175,55,.45);border-radius:18px;background:rgba(255,255,255,.03)}
-.pill{position:absolute;border:2px solid var(--gold);border-radius:60px;color:var(--gold2);font-family:Cinzel;font-weight:600;letter-spacing:.06em;text-align:center}
+.pill{position:absolute;border:2px solid var(--gold);border-radius:60px;color:var(--gold2);font-family:Raleway;font-weight:600;letter-spacing:.04em;text-align:center}
 .sub{position:absolute;background:linear-gradient(180deg,#e0b93f,#b8941e);color:#1C1C1C;border-radius:14px;font-family:Baloo;font-weight:600;text-align:center}
 </style></head>
 <body><div id="stage">
@@ -35,15 +43,15 @@ html,body{width:1920px;height:1080px;overflow:hidden;background:#000}
 <div id="intro">
   <div class="logo" id="iL"><img src="logo.webp"><div class="shine" id="iS"></div></div>
   <div class="rule" id="iR"></div>
-  <div class="word" id="iW" style="font-size:86px">ELEVATING <b>CHRIST</b></div>
+  <div class="word" id="iW" style="font-size:110px"><span class="m pt" data-t="Elevating">Elevating</span> <span class="m gd" data-t="CHRIST">CHRIST</span></div>
 </div>
 <div id="outro">
   <div class="logo" id="oL"><img src="logo.webp"></div>
-  <div class="word" id="oW" style="font-size:44px;text-align:left">ELEVATING <b>CHRIST</b></div>
+  <div class="word" id="oW" style="font-size:58px;text-align:left"><span class="m pt" data-t="Elevating">Elevating</span> <span class="m gd" data-t="CHRIST">CHRIST</span></div>
   <div class="rule" id="oR"></div>
   <div class="t hi" id="o1" style="font-size:78px;line-height:1.15">देखने के लिए धन्यवाद</div>
   <div class="t en" id="o2" style="font-size:40px;color:var(--gold2)">THANK YOU FOR WATCHING</div>
-  <div class="t hi" id="o3" style="font-size:44px;opacity:.92">परमेश्वर आपको आशीष दे <span style="font-family:Cinzel;font-weight:600;font-size:34px;letter-spacing:.06em;color:var(--gold2)">&nbsp;·&nbsp; GOD BLESS YOU</span></div>
+  <div class="t hi" id="o3" style="font-size:44px;opacity:.92">परमेश्वर आपको आशीष दे <span style="font-family:Raleway;font-weight:600;font-size:32px;letter-spacing:.12em;color:var(--gold2)">&nbsp;·&nbsp; GOD BLESS YOU</span></div>
   <div class="sub" id="o4" style="font-size:36px">और संदेशों के लिए Subscribe करें</div>
   <div class="pill" id="o5" style="font-size:32px">elevatingchrist.com</div>
   <div class="t en" id="oN" style="font-size:30px;color:var(--gold2);letter-spacing:.2em">WATCH NEXT</div>
@@ -81,12 +89,12 @@ window.renderAt=function(t){
    transform:`scale(${sc})`,filter:`blur(${(1-a)*10}px) drop-shadow(0 0 ${30+25*Math.sin(t*1.6)}px rgba(212,175,55,.45))`});
   const sh=prog(t,1.7,2.9);set('iS',{transform:`translateX(${-110+220*sh}%)`,opacity:sh>0&&sh<1?1:0});
   const r=prog(t,2.3,3.3);set('iR',{width:(760*r)+'px',left:(W-760*r)/2+'px',top:(H/2+150)+'px',opacity:r});
-  const w=prog(t,2.6,3.7);set('iW',{top:(H/2+180+22*(1-w))+'px',opacity:w,letterSpacing:(0.30-0.14*w)+'em'});
+  const w=prog(t,2.6,3.7);set('iW',{top:(H/2+180+22*(1-w))+'px',opacity:w,letterSpacing:(0.10-0.09*w)+'em'});
  } else {
   const dur=20;common(t,dur);
   const L=130;
   const a=prog(t,0.4,1.6);set('oL',{width:'150px',height:'150px',left:L+'px',top:'130px',opacity:a,transform:`scale(${.85+.15*a})`});
-  set('oW',{left:(L+180)+'px',right:'auto',top:(170+10*(1-a))+'px',opacity:a});
+  set('oW',{left:(L+180)+'px',right:'auto',top:(160+10*(1-a))+'px',opacity:a});
   const r=prog(t,0.9,1.9);set('oR',{left:L+'px',width:(760*r)+'px',top:'318px',opacity:r});
   const rows=[['o1',368,1.2],['o2',468,1.6],['o3',548,2.0],['o4',668,2.5],['o5',790,2.9]];
   for(const [id,y,s] of rows){const k=prog(t,s,s+0.9);set(id,{left:L+'px',top:(y+24*(1-k))+'px',opacity:k});}
