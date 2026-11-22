@@ -116,4 +116,10 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add --sparse "$DEST"
           git commit -m "EC media fetch: $DEST" || exit 0
-          git push origin HEAD:media
+          # media can move while a long transcription runs: rebase on the newest media and retry
+          for i in 1 2 3 4 5; do
+            git push origin HEAD:media && exit 0
+            git fetch --filter=blob:none origin media && git rebase origin/media || { git rebase --abort; exit 1; }
+            sleep $((i * 5))
+          done
+          exit 1
