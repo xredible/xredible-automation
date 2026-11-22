@@ -1,0 +1,104 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<style>
+@font-face{font-family:Cinzel;font-weight:600;src:url(cinzel-latin-600-normal.woff2)}
+@font-face{font-family:Cinzel;font-weight:700;src:url(cinzel-latin-700-normal.woff2)}
+@font-face{font-family:Baloo;font-weight:500;src:url(Baloo2_500Medium.ttf)}
+@font-face{font-family:Baloo;font-weight:600;src:url(Baloo2_600SemiBold.ttf)}
+:root{--bg:#141414;--char:#1C1C1C;--gold:#D4AF37;--gold2:#E8C860;--goldd:#8A6D1F;--cream:#F5F0E3}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:1920px;height:1080px;overflow:hidden;background:#000}
+#stage{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 45%,#262219 0%,var(--char) 45%,#0e0e0e 100%);overflow:hidden}
+#glow{position:absolute;left:50%;top:44%;width:1400px;height:1400px;margin:-700px 0 0 -700px;border-radius:50%;
+ background:radial-gradient(circle,rgba(212,175,55,.30) 0%,rgba(212,175,55,.10) 30%,rgba(212,175,55,0) 62%)}
+#rays{position:absolute;left:50%;top:44%;width:2600px;height:2600px;margin:-1300px 0 0 -1300px;
+ background:repeating-conic-gradient(from 0deg,rgba(232,200,96,.07) 0deg 3deg,rgba(0,0,0,0) 3deg 14deg);
+ -webkit-mask:radial-gradient(circle,#000 0%,rgba(0,0,0,.6) 25%,transparent 55%);mask:radial-gradient(circle,#000 0%,rgba(0,0,0,.6) 25%,transparent 55%)}
+.p{position:absolute;border-radius:50%;background:radial-gradient(circle,#fff3c4 0%,rgba(232,200,96,.8) 35%,rgba(232,200,96,0) 70%)}
+#vig{position:absolute;inset:0;background:radial-gradient(ellipse at center,rgba(0,0,0,0) 55%,rgba(0,0,0,.55) 100%)}
+#fade{position:absolute;inset:0;background:#000}
+.logo{position:absolute;border-radius:50%;overflow:hidden;filter:drop-shadow(0 0 40px rgba(212,175,55,.35))}
+.logo img{width:100%;height:100%;display:block}
+.shine{position:absolute;inset:0;background:linear-gradient(115deg,rgba(255,255,255,0) 35%,rgba(255,255,255,.55) 50%,rgba(255,255,255,0) 65%);mix-blend-mode:screen}
+.word{position:absolute;left:0;right:0;text-align:center;font-family:Cinzel;font-weight:700;letter-spacing:.16em;color:var(--cream)}
+.word b{color:var(--gold);font-weight:700}
+.rule{position:absolute;height:3px;background:linear-gradient(90deg,rgba(212,175,55,0),var(--gold) 20%,var(--gold2) 50%,var(--gold) 80%,rgba(212,175,55,0))}
+.t{position:absolute;color:var(--cream)}
+.hi{font-family:Baloo;font-weight:600}
+.en{font-family:Cinzel;font-weight:600;letter-spacing:.08em}
+.slot{position:absolute;border:2px solid rgba(212,175,55,.45);border-radius:18px;background:rgba(255,255,255,.03)}
+.pill{position:absolute;border:2px solid var(--gold);border-radius:60px;color:var(--gold2);font-family:Cinzel;font-weight:600;letter-spacing:.06em;text-align:center}
+.sub{position:absolute;background:linear-gradient(180deg,#e0b93f,#b8941e);color:#1C1C1C;border-radius:14px;font-family:Baloo;font-weight:600;text-align:center}
+</style></head>
+<body><div id="stage">
+<div id="rays"></div><div id="glow"></div><div id="parts"></div>
+<div id="intro">
+  <div class="logo" id="iL"><img src="logo.webp"><div class="shine" id="iS"></div></div>
+  <div class="rule" id="iR"></div>
+  <div class="word" id="iW" style="font-size:86px">ELEVATING <b>CHRIST</b></div>
+</div>
+<div id="outro">
+  <div class="logo" id="oL"><img src="logo.webp"></div>
+  <div class="word" id="oW" style="font-size:44px;text-align:left">ELEVATING <b>CHRIST</b></div>
+  <div class="rule" id="oR"></div>
+  <div class="t hi" id="o1" style="font-size:78px;line-height:1.15">देखने के लिए धन्यवाद</div>
+  <div class="t en" id="o2" style="font-size:40px;color:var(--gold2)">THANK YOU FOR WATCHING</div>
+  <div class="t hi" id="o3" style="font-size:44px;opacity:.92">परमेश्वर आपको आशीष दे <span style="font-family:Cinzel;font-weight:600;font-size:34px;letter-spacing:.06em;color:var(--gold2)">&nbsp;·&nbsp; GOD BLESS YOU</span></div>
+  <div class="sub" id="o4" style="font-size:36px">और संदेशों के लिए Subscribe करें</div>
+  <div class="pill" id="o5" style="font-size:32px">elevatingchrist.com</div>
+  <div class="t en" id="oN" style="font-size:30px;color:var(--gold2);letter-spacing:.2em">WATCH NEXT</div>
+  <div class="slot" id="s1"></div><div class="slot" id="s2"></div>
+</div>
+<div id="vig"></div><div id="fade"></div>
+</div>
+<script>
+const W=1920,H=1080;let mode=location.hash.slice(1)||'intro';
+document.getElementById(mode==='intro'?'outro':'intro').style.display='none';
+const cl=(x,a=0,b=1)=>Math.min(b,Math.max(a,x));
+const ease=x=>{x=cl(x);return 1-Math.pow(1-x,3)};
+const prog=(t,a,b)=>ease((t-a)/(b-a));
+// deterministic particles
+let seed=7;const rnd=()=>(seed=(seed*16807)%2147483647)/2147483647;
+const parts=[];const pc=document.getElementById('parts');
+for(let i=0;i<46;i++){const d=document.createElement('div');d.className='p';const s=4+rnd()*10;
+ d.style.width=d.style.height=s+'px';pc.appendChild(d);
+ parts.push({d,x:rnd()*W,y:rnd()*H,v:14+rnd()*26,sw:20+rnd()*40,ph:rnd()*6.28,o:.25+rnd()*.55,f:.3+rnd()*.5});}
+function set(id,css){Object.assign(document.getElementById(id).style,css)}
+function common(t,dur){
+ for(const p of parts){const y=((p.y-p.v*t)%H+H)%H;const x=p.x+Math.sin(t*p.f+p.ph)*p.sw;
+  p.d.style.transform=`translate(${x}px,${y}px)`;p.d.style.opacity=p.o*(.6+.4*Math.sin(t*1.3+p.ph));}
+ document.getElementById('rays').style.transform=`rotate(${t*2.2}deg)`;document.getElementById('rays').style.opacity=mode==='outro'?.45:1;
+ const g=.85+.15*Math.sin(t*1.1);document.getElementById('glow').style.transform=`scale(${g})`;
+ const fin=1-prog(t,0,0.8), fout=prog(t,dur-0.8,dur);
+ document.getElementById('fade').style.opacity=Math.max(fin,fout);
+}
+window.renderAt=function(t){
+ if(mode==='intro'){
+  const dur=6;common(t,dur);
+  const a=prog(t,0.3,2.0), sz=420;
+  const sc=0.82+0.18*a+0.03*prog(t,2.0,6);
+  set('iL',{width:sz+'px',height:sz+'px',left:(W-sz)/2+'px',top:(H/2-330)+'px',opacity:a,
+   transform:`scale(${sc})`,filter:`blur(${(1-a)*10}px) drop-shadow(0 0 ${30+25*Math.sin(t*1.6)}px rgba(212,175,55,.45))`});
+  const sh=prog(t,1.7,2.9);set('iS',{transform:`translateX(${-110+220*sh}%)`,opacity:sh>0&&sh<1?1:0});
+  const r=prog(t,2.3,3.3);set('iR',{width:(760*r)+'px',left:(W-760*r)/2+'px',top:(H/2+150)+'px',opacity:r});
+  const w=prog(t,2.6,3.7);set('iW',{top:(H/2+180+22*(1-w))+'px',opacity:w,letterSpacing:(0.30-0.14*w)+'em'});
+ } else {
+  const dur=20;common(t,dur);
+  const L=130;
+  const a=prog(t,0.4,1.6);set('oL',{width:'150px',height:'150px',left:L+'px',top:'130px',opacity:a,transform:`scale(${.85+.15*a})`});
+  set('oW',{left:(L+180)+'px',right:'auto',top:(170+10*(1-a))+'px',opacity:a});
+  const r=prog(t,0.9,1.9);set('oR',{left:L+'px',width:(760*r)+'px',top:'318px',opacity:r});
+  const rows=[['o1',368,1.2],['o2',468,1.6],['o3',548,2.0],['o4',668,2.5],['o5',790,2.9]];
+  for(const [id,y,s] of rows){const k=prog(t,s,s+0.9);set(id,{left:L+'px',top:(y+24*(1-k))+'px',opacity:k});}
+  set('o4',{padding:'18px 34px',width:'auto'});set('o5',{padding:'14px 40px'});
+  const pulse=1+0.035*Math.max(0,Math.sin((t-3.5)*2.4))*(t>3.5?1:0);document.getElementById('o4').style.transform=`scale(${pulse})`;
+  document.getElementById('o4').style.transformOrigin='left center';
+  // end-screen safe areas (YouTube elements sit on top): two 16:9 video slots on the right
+  const k=prog(t,1.8,2.8);
+  set('oN',{left:'1110px',top:'108px',opacity:k});
+  set('s1',{left:'1110px',top:'160px',width:'680px',height:'383px',opacity:k});
+  set('s2',{left:'1110px',top:'575px',width:'680px',height:'383px',opacity:k});
+ }
+};
+window.renderAt(0);
+</script></body></html>
