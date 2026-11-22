@@ -5,7 +5,7 @@ fps=30;n=int(dur*fps)
 with sync_playwright() as p:
     b=p.chromium.launch();pg=b.new_page(viewport={'width':1920,'height':1080})
     pg.goto(f'file:///tmp/claude-0/-home-claude/97cef445-46e9-5ae7-96de-83c05c0c70e0/scratchpad/ecio/f/scene.html#{mode}')
-    pg.wait_for_timeout(800); pg.evaluate('document.fonts.ready')
+    pg.wait_for_function('window.wmReady===true',timeout=20000); pg.wait_for_timeout(300)
     if stills:
         for s in stills:
             pg.evaluate(f'renderAt({s})'); pg.screenshot(path=f'{out}-{s}.jpg',type='jpeg',quality=85)

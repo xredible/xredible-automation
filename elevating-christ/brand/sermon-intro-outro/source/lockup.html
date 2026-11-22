@@ -4,12 +4,12 @@
 html,body{margin:0;background:transparent}
 .wrap{display:inline-flex;flex-direction:column;align-items:center;padding:60px 60px 90px}
 .logo{width:1100px;height:1100px}
-.word{font-family:Raleway;font-weight:600;font-size:300px;line-height:1.15;white-space:nowrap;margin-top:40px;isolation:isolate;filter:drop-shadow(0 22px 22px rgba(0,0,0,.5))}
+.word{font-family:Raleway;font-weight:600;font-size:300px;line-height:1.15;white-space:nowrap;margin-top:40px;isolation:isolate;line-height:0}
 .m{position:relative;display:inline-block}.m::before{content:attr(data-t);position:absolute;left:0;top:0;z-index:-1}
 .pt{font-weight:500;background:linear-gradient(180deg,#ffffff 0%,#f6f6f6 30%,#b9b9b9 47%,#7f7f7f 52%,#cfcfcf 66%,#ffffff 88%,#dcdcdc 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
 .pt::before{color:#6e6e6e;text-shadow:0 3px 0 #8a8a8a,0 6px 0 #7a7a7a,0 9px 0 #6a6a6a,0 12px 0 #5a5a5a,0 15px 0 #4b4b4b,0 18px 0 #3d3d3d,-3px -3px 0 #ffffff}
 .gd{font-weight:700;background:linear-gradient(180deg,#fff6c8 0%,#f3d77a 28%,#c9a227 46%,#7e5f12 52%,#d9b046 66%,#fff0a8 88%,#e2bd55 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
 .gd::before{color:#7a5c12;text-shadow:0 3px 0 #9c7a1e,0 6px 0 #8a6a17,0 9px 0 #785b12,0 12px 0 #664c0e,0 15px 0 #553f0b,0 18px 0 #443208,-3px -3px 0 #fff3c0}
 body.wm .logo{display:none} body.wm .word{margin-top:0}
-</style></head><body><div class="wrap" id="w"><img class="logo" src="logo.webp"><div class="word"><span class="m pt" data-t="Elevating">Elevating</span> <span class="m gd" data-t="CHRIST">CHRIST</span></div></div>
-<script>if(location.hash==='#wm')document.body.className='wm'</script></body></html>
+</style></head><body><div class="wrap" id="w"><img class="logo" src="logo.webp"><div class="word" id="wmk"></div></div>
+<script src="wordmark.js"></script><script>window.wmReady=false;Promise.all([document.fonts.load('500 300px Raleway'),document.fonts.load('700 300px Raleway')]).then(()=>{makeWordmark(document.getElementById('wmk'),300);window.wmReady=true;});if(location.hash==='#wm')document.body.className='wm'</script></body></html>

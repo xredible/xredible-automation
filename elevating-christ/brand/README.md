@@ -6,4 +6,4 @@
 - **Colours:** charcoal #1C1C1C (backgrounds), gold #D4AF37 / light gold #E8C860 / deep gold #8A6D1F, platinum #E9E9E9→#7F7F7F, cream #F5F0E3.
 - **Fonts:** Raleway (wordmark + English labels), Baloo 2 (Hindi, full Devanagari: `ref/fonts/ec-hindi`).
 - **Video:** sermon intro/outro in `sermon-intro-outro/` (source + re-render steps there).
-CSS for the 3D metal text: `sermon-intro-outro/source/scene.html` (.pt / .gd classes).
+3D metal wordmark generator (bevel lighting, extrusion, animated light sweep): `sermon-intro-outro/source/wordmark.js` → `makeWordmark(el, fontSize)`; no drop shadow under the letters.

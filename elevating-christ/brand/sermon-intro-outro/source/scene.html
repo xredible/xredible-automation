@@ -23,7 +23,7 @@ html,body{width:1920px;height:1080px;overflow:hidden;background:#000}
 .logo{position:absolute;border-radius:50%;overflow:hidden;filter:drop-shadow(0 0 40px rgba(212,175,55,.35))}
 .logo img{width:100%;height:100%;display:block}
 .shine{position:absolute;inset:0;background:linear-gradient(115deg,rgba(255,255,255,0) 35%,rgba(255,255,255,.55) 50%,rgba(255,255,255,0) 65%);mix-blend-mode:screen}
-.word{position:absolute;left:0;right:0;text-align:center;font-family:Raleway;font-weight:600;letter-spacing:.01em;isolation:isolate;filter:drop-shadow(0 10px 12px rgba(0,0,0,.55))}
+.word{position:absolute;left:0;right:0;text-align:center;font-family:Raleway;font-weight:600;letter-spacing:.01em;isolation:isolate;line-height:0}
 .m{position:relative;display:inline-block}
 .m::before{content:attr(data-t);position:absolute;left:0;top:0;z-index:-1}
 .pt{font-weight:500;background:linear-gradient(180deg,#ffffff 0%,#f6f6f6 30%,#b9b9b9 47%,#7f7f7f 52%,#cfcfcf 66%,#ffffff 88%,#dcdcdc 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
@@ -43,11 +43,11 @@ html,body{width:1920px;height:1080px;overflow:hidden;background:#000}
 <div id="intro">
   <div class="logo" id="iL"><img src="logo.webp"><div class="shine" id="iS"></div></div>
   <div class="rule" id="iR"></div>
-  <div class="word" id="iW" style="font-size:110px"><span class="m pt" data-t="Elevating">Elevating</span> <span class="m gd" data-t="CHRIST">CHRIST</span></div>
+  <div class="word" id="iW"></div>
 </div>
 <div id="outro">
   <div class="logo" id="oL"><img src="logo.webp"></div>
-  <div class="word" id="oW" style="font-size:58px;text-align:left"><span class="m pt" data-t="Elevating">Elevating</span> <span class="m gd" data-t="CHRIST">CHRIST</span></div>
+  <div class="word" id="oW" style="text-align:left"></div>
   <div class="rule" id="oR"></div>
   <div class="t hi" id="o1" style="font-size:78px;line-height:1.15">देखने के लिए धन्यवाद</div>
   <div class="t en" id="o2" style="font-size:40px;color:var(--gold2)">THANK YOU FOR WATCHING</div>
@@ -59,6 +59,7 @@ html,body{width:1920px;height:1080px;overflow:hidden;background:#000}
 </div>
 <div id="vig"></div><div id="fade"></div>
 </div>
+<script src="wordmark.js"></script>
 <script>
 const W=1920,H=1080;let mode=location.hash.slice(1)||'intro';
 document.getElementById(mode==='intro'?'outro':'intro').style.display='none';
@@ -89,12 +90,12 @@ window.renderAt=function(t){
    transform:`scale(${sc})`,filter:`blur(${(1-a)*10}px) drop-shadow(0 0 ${30+25*Math.sin(t*1.6)}px rgba(212,175,55,.45))`});
   const sh=prog(t,1.7,2.9);set('iS',{transform:`translateX(${-110+220*sh}%)`,opacity:sh>0&&sh<1?1:0});
   const r=prog(t,2.3,3.3);set('iR',{width:(760*r)+'px',left:(W-760*r)/2+'px',top:(H/2+150)+'px',opacity:r});
-  const w=prog(t,2.6,3.7);set('iW',{top:(H/2+180+22*(1-w))+'px',opacity:w,letterSpacing:(0.10-0.09*w)+'em'});
+  const w=prog(t,2.6,3.7);set('iW',{top:(H/2+175+22*(1-w))+'px',opacity:w});if(window.wmI)wmI.setShine((t-3.9)/1.1);
  } else {
   const dur=20;common(t,dur);
   const L=130;
   const a=prog(t,0.4,1.6);set('oL',{width:'150px',height:'150px',left:L+'px',top:'130px',opacity:a,transform:`scale(${.85+.15*a})`});
-  set('oW',{left:(L+180)+'px',right:'auto',top:(160+10*(1-a))+'px',opacity:a});
+  set('oW',{left:(L+180)+'px',right:'auto',top:(165+10*(1-a))+'px',opacity:a});if(window.wmO){const q=t<8?(t-2.4)/1.0:(t-11)/1.0;wmO.setShine(q);}
   const r=prog(t,0.9,1.9);set('oR',{left:L+'px',width:(760*r)+'px',top:'318px',opacity:r});
   const rows=[['o1',368,1.2],['o2',468,1.6],['o3',548,2.0],['o4',668,2.5],['o5',790,2.9]];
   for(const [id,y,s] of rows){const k=prog(t,s,s+0.9);set(id,{left:L+'px',top:(y+24*(1-k))+'px',opacity:k});}
@@ -108,5 +109,9 @@ window.renderAt=function(t){
   set('s2',{left:'1110px',top:'575px',width:'680px',height:'383px',opacity:k});
  }
 };
-window.renderAt(0);
+window.wmReady=false;
+Promise.all([document.fonts.load('500 110px Raleway'),document.fonts.load('700 110px Raleway')]).then(()=>{
+ if(mode==='intro')window.wmI=makeWordmark(document.getElementById('iW'),118);
+ else window.wmO=makeWordmark(document.getElementById('oW'),60);
+ window.renderAt(0);window.wmReady=true;});
 </script></body></html>
