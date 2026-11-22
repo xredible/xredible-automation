@@ -6,7 +6,7 @@
 // still looks the way this screen showed it.
 
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from "react"
-import { CalendarClock, Check, Copy, FileSpreadsheet, Pause, Play, RotateCcw, Undo2, X } from "lucide-react"
+import { CalendarClock, Check, Copy, FileSpreadsheet, ImagePlus, Pause, Play, RotateCcw, Undo2, X } from "lucide-react"
 import type { QueueItem } from "@/lib/dashboard/types"
 import { BUSINESSES, type BusinessKey } from "@/lib/dashboard/businesses"
 import { TZ } from "./format"
@@ -18,6 +18,7 @@ type Body =
   | { action: "reschedule"; when: string; rows: { row: number; expect: string }[] }
   | { action: "pause_all" }
   | { action: "resume_all" }
+  | { action: "make_images"; rows: { row: number; expect: string }[] }
 
 type Result = {
   ok: boolean
@@ -90,7 +91,7 @@ export function QueueActionsProvider({ biz, onChanged, children, dataStamp }: { 
       const next: Record<number, Override> = {}
       for (const d of res.done || []) {
         if (body.action === "reschedule") next[d.row] = { when: istToIso(body.when), ...(d.status ? { status: d.status } : {}) }
-        else next[d.row] = { status: d.to }
+        else if (body.action !== "make_images") next[d.row] = { status: d.to }
       }
       setOverrides((cur) => ({ ...cur, ...next }))
       const skipped = res.skipped || []
@@ -148,6 +149,8 @@ export function RowActions({ item }: { item: QueueItem }) {
   const one = [{ row: item.row, expect: item.status }]
   const past = item.when ? Date.parse(item.when) < Date.now() : false
   const pin = /pinterest/i.test(item.platform)
+  // Elevating CHRIST drafts planned as slides but still without pictures: render them from the Slide Text.
+  const needsImages = ctx.biz === "elevating-christ" && s === "draft" && !item.isVideo && !(item.media && item.media.length) && !item.preview && /carousel|fb_post|post/i.test(`${item.format} ${item.postType}`)
 
   const setStatus = (to: "ready" | "paused" | "draft", msg: string) => {
     if (to === "ready" && past && s !== "failed" && !window.confirm(ctx.biz === "autopilot" ? "This post's time has already passed, so it will go out in about 15 minutes. Post it then?" : "This post's time has already passed, so it will go out at the next hourly check. Post it then?")) return
@@ -176,6 +179,17 @@ export function RowActions({ item }: { item: QueueItem }) {
       {!locked && s === "failed" ? (
         <button type="button" disabled={busy} onClick={() => setStatus("ready", "Set to try again at the next hourly check")} className={btn}>
           <RotateCcw className="h-3 w-3" /> Retry
+        </button>
+      ) : null}
+      {!locked && needsImages ? (
+        <button
+          type="button"
+          disabled={busy}
+          title="Make the slides from this row's planned Slide Text. Verses are checked against the Hindi O.V. first. Nothing is posted."
+          onClick={() => ctx.run({ action: "make_images", rows: one }, "Making the slides. They appear here in about 3 minutes, and Telegram tells you when they're ready")}
+          className={`${btn} border-[var(--brand)] text-[var(--brand)]`}
+        >
+          <ImagePlus className="h-3 w-3" /> Make images
         </button>
       ) : null}
       {!locked && !["ready", "scheduled", "paused", "failed"].includes(s) ? (

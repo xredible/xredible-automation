@@ -1,0 +1,90 @@
+name: Elevating CHRIST carousel images
+# Dashboard "Make images": n8n workflow 24 starts this with the row's planned Slide Text.
+# Checks every quoted verse against the Hindi O.V. chapter, renders 1080x1350 slides and saves them
+# (plus result.json) to the media branch under elevating-christ/carousels/<dest>/. Never posts anything.
+on:
+  workflow_dispatch:
+    inputs:
+      job_json:
+        description: '{"title","slideText","rows"} from n8n'
+        required: true
+        type: string
+      dest:
+        description: 'Folder name, e.g. 2026-11-17-row104'
+        required: true
+        type: string
+  pull_request:
+    paths:
+      - tools/ec-carousel/**
+      - .github/workflows/ec-carousel.yml
+permissions:
+  contents: read
+concurrency:
+  group: ec-carousel-media
+  cancel-in-progress: false
+jobs:
+  render:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          ref: media
+          path: media
+          filter: blob:none
+          sparse-checkout: |
+            ref/hindi-bible
+            elevating-christ/carousels
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install pillow==11.0.0
+      - name: Fonts (Baloo 2 with Devanagari)
+        run: |
+          mkdir -p "$RUNNER_TEMP/fonts" && cd "$RUNNER_TEMP/fonts"
+          npm pack @expo-google-fonts/baloo-2@0.4.2 >/dev/null && tar xzf expo-google-fonts-baloo-2-0.4.2.tgz
+      - name: Test (pull request)
+        if: github.event_name == 'pull_request'
+        run: |
+          F="$RUNNER_TEMP/fonts/package"
+          python3 tools/ec-carousel/render.py --job tools/ec-carousel/samples/plan-vs-gods-plan.json --out "$RUNNER_TEMP/ok" --fonts "$F" --ov-dir media/ref/hindi-bible --fetch
+          test -f "$RUNNER_TEMP/ok/slide-6.jpg"
+          set +e
+          python3 tools/ec-carousel/render.py --job tools/ec-carousel/samples/wrong-verse.json --out "$RUNNER_TEMP/bad" --fonts "$F" --ov-dir media/ref/hindi-bible --fetch
+          test $? -eq 2 || { echo "wrong verse was not rejected"; exit 1; }
+      - name: Render
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          JOB_JSON: ${{ inputs.job_json }}
+          DEST: ${{ inputs.dest }}
+        run: |
+          [[ "$DEST" =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}-row[0-9]+(-[0-9]+)?$ ]] || { echo "bad dest"; exit 1; }
+          printf '%s' "$JOB_JSON" > "$RUNNER_TEMP/job.json"
+          OUT="media/elevating-christ/carousels/$DEST"
+          rm -rf "$OUT" && mkdir -p "$OUT"
+          set +e
+          python3 tools/ec-carousel/render.py --job "$RUNNER_TEMP/job.json" --out "$OUT" --fonts "$RUNNER_TEMP/fonts/package" --ov-dir media/ref/hindi-bible --fetch
+          echo "code=$?" >> "$GITHUB_ENV"
+          { echo '### Result'; echo '```'; cat "$OUT/result.json"; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+      - name: Save to media branch
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          DEST: ${{ inputs.dest }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cd media
+          git config user.name "ec-carousel[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git remote set-url origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git add "elevating-christ/carousels/$DEST" ref/hindi-bible
+          git commit -q -m "EC carousel $DEST (dashboard Make images)" || true
+          for i in 1 2 3; do git pull -q --rebase origin media && git push -q origin HEAD:media && break; sleep 5; done
+          git log --oneline -1
+      - name: Fail when the renderer failed
+        if: github.event_name == 'workflow_dispatch' && env.code != '0'
+        run: exit 1
