@@ -21,3 +21,12 @@ Review the videos with audio before approval. The song caption boundaries are ap
 - [2026-12-19-christmas-service-invite](https://raw.githubusercontent.com/xredible/xredible-automation/media/elevating-christ/calendar-2026-12/2026-12-19-christmas-service-invite/contact.jpg)
 - [2026-12-22-advent-love](https://raw.githubusercontent.com/xredible/xredible-automation/media/elevating-christ/calendar-2026-12/2026-12-22-advent-love/contact.jpg)
 - [2026-12-30-year-end-faithfulness](https://raw.githubusercontent.com/xredible/xredible-automation/media/elevating-christ/calendar-2026-12/2026-12-30-year-end-faithfulness/contact.jpg)
+
+## Khushkhabri trailer Drafts
+
+| Trailer | Video | Cover | One-frame-per-second sheet |
+|---|---|---|---|
+| 1 | [Watch](https://raw.githubusercontent.com/xredible/xredible-automation/media/elevating-christ/khushkhabri/2026-12-trailers/1/reel.mp4) | [Cover](https://raw.githubusercontent.com/xredible/xredible-automation/media/elevating-christ/khushkhabri/2026-12-trailers/1/cover.jpg) | [Contact sheet](https://raw.githubusercontent.com/xredible/xredible-automation/media/elevating-christ/khushkhabri/2026-12-trailers/1/contact-sheet.jpg) |
+| 2 | [Watch](https://raw.githubusercontent.com/xredible/xredible-automation/media/elevating-christ/khushkhabri/2026-12-trailers/2/reel.mp4) | [Cover](https://raw.githubusercontent.com/xredible/xredible-automation/media/elevating-christ/khushkhabri/2026-12-trailers/2/cover.jpg) | [Contact sheet](https://raw.githubusercontent.com/xredible/xredible-automation/media/elevating-christ/khushkhabri/2026-12-trailers/2/contact-sheet.jpg) |
+| 3 | [Watch](https://raw.githubusercontent.com/xredible/xredible-automation/media/elevating-christ/khushkhabri/2026-12-trailers/3/reel.mp4) | [Cover](https://raw.githubusercontent.com/xredible/xredible-automation/media/elevating-christ/khushkhabri/2026-12-trailers/3/cover.jpg) | [Contact sheet](https://raw.githubusercontent.com/xredible/xredible-automation/media/elevating-christ/khushkhabri/2026-12-trailers/3/contact-sheet.jpg) |
+| 4 | [Watch](https://raw.githubusercontent.com/xredible/xredible-automation/media/elevating-christ/khushkhabri/2026-12-trailers/4/reel.mp4) | [Cover](https://raw.githubusercontent.com/xredible/xredible-automation/media/elevating-christ/khushkhabri/2026-12-trailers/4/cover.jpg) | [Contact sheet](https://raw.githubusercontent.com/xredible/xredible-automation/media/elevating-christ/khushkhabri/2026-12-trailers/4/contact-sheet.jpg) |
