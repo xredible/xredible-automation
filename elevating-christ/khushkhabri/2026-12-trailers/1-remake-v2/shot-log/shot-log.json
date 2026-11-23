@@ -1,0 +1,3985 @@
+{
+  "source": "t3cSAljxU3k",
+  "source_sha256": "d80fe06e2d1fa7c712fc5819054ffe4a09835ef08845f3c66d41cb28a42fb191",
+  "duration": 368.756009,
+  "source_fps": 25,
+  "reviewed_frames": 369,
+  "frame_sampling": "Original frames 0,25,50,... at 25 fps; exact integer source seconds.",
+  "review_basis": "All seven contact pages visually inspected before editing; selected shots also checked at full size.",
+  "tags": [
+    "singer-closeup",
+    "group-singing",
+    "instrument",
+    "crowd-wide",
+    "broll",
+    "text-or-credits"
+  ],
+  "shots": [
+    {
+      "id": 1,
+      "src_in": 0.0,
+      "src_out": 8.08,
+      "tag": "text-or-credits",
+      "mouth_visible_or_possible": false,
+      "notes": "Excluded from edits. Credit frames masked on shareable review sheets.",
+      "preview_seconds": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ]
+    },
+    {
+      "id": 2,
+      "src_in": 8.08,
+      "src_out": 11.32,
+      "tag": "group-singing",
+      "mouth_visible_or_possible": true,
+      "notes": "Singing/dancing ensemble; retain source-matched audio if used.",
+      "preview_seconds": [
+        9,
+        10,
+        11
+      ]
+    },
+    {
+      "id": 3,
+      "src_in": 11.32,
+      "src_out": 14.72,
+      "tag": "group-singing",
+      "mouth_visible_or_possible": true,
+      "notes": "Singing/dancing ensemble; retain source-matched audio if used.",
+      "preview_seconds": [
+        12,
+        13,
+        14
+      ]
+    },
+    {
+      "id": 4,
+      "src_in": 14.72,
+      "src_out": 21.24,
+      "tag": "singer-closeup",
+      "mouth_visible_or_possible": true,
+      "notes": "Visible singer mouth: audio must remain locked to this source time.",
+      "preview_seconds": [
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21
+      ]
+    },
+    {
+      "id": 5,
+      "src_in": 21.24,
+      "src_out": 24.6,
+      "tag": "group-singing",
+      "mouth_visible_or_possible": true,
+      "notes": "Singing/dancing ensemble; retain source-matched audio if used.",
+      "preview_seconds": [
+        22,
+        23,
+        24
+      ]
+    },
+    {
+      "id": 6,
+      "src_in": 24.6,
+      "src_out": 27.44,
+      "tag": "group-singing",
+      "mouth_visible_or_possible": true,
+      "notes": "Singing/dancing ensemble; retain source-matched audio if used.",
+      "preview_seconds": [
+        25,
+        26,
+        27
+      ]
+    },
+    {
+      "id": 7,
+      "src_in": 27.44,
+      "src_out": 34.0,
+      "tag": "singer-closeup",
+      "mouth_visible_or_possible": true,
+      "notes": "Visible singer mouth: audio must remain locked to this source time.",
+      "preview_seconds": [
+        28,
+        29,
+        30,
+        31,
+        32,
+        33
+      ]
+    },
+    {
+      "id": 8,
+      "src_in": 34.0,
+      "src_out": 38.24,
+      "tag": "instrument",
+      "mouth_visible_or_possible": false,
+      "notes": "Hands/instrument view, head cropped out in source; mouth-free b-roll candidate.",
+      "preview_seconds": [
+        34,
+        35,
+        36,
+        37,
+        38
+      ]
+    },
+    {
+      "id": 9,
+      "src_in": 38.24,
+      "src_out": 40.76,
+      "tag": "broll",
+      "mouth_visible_or_possible": true,
+      "notes": "Greeting/hug with faces: unsuitable as mouth-free b-roll without an inspected crop.",
+      "preview_seconds": [
+        39,
+        40
+      ]
+    },
+    {
+      "id": 10,
+      "src_in": 40.76,
+      "src_out": 42.96,
+      "tag": "group-singing",
+      "mouth_visible_or_possible": true,
+      "notes": "Singing/dancing ensemble; retain source-matched audio if used.",
+      "preview_seconds": [
+        41,
+        42
+      ]
+    },
+    {
+      "id": 11,
+      "src_in": 42.96,
+      "src_out": 46.04,
+      "tag": "singer-closeup",
+      "mouth_visible_or_possible": true,
+      "notes": "Visible singer mouth: audio must remain locked to this source time.",
+      "preview_seconds": [
+        43,
+        44,
+        45,
+        46
+      ]
+    },
+    {
+      "id": 12,
+      "src_in": 46.04,
+      "src_out": 48.12,
+      "tag": "group-singing",
+      "mouth_visible_or_possible": true,
+      "notes": "Singing/dancing ensemble; retain source-matched audio if used.",
+      "preview_seconds": [
+        47,
+        48
+      ]
+    },
+    {
+      "id": 13,
+      "src_in": 48.12,
+      "src_out": 49.44,
+      "tag": "group-singing",
+      "mouth_visible_or_possible": true,
+      "notes": "Singing/dancing ensemble; retain source-matched audio if used.",
+      "preview_seconds": [
+        49
+      ]
+    },
+    {
+      "id": 14,
+      "src_in": 49.44,
+      "src_out": 51.36,
+      "tag": "instrument",
+      "mouth_visible_or_possible": false,
+      "notes": "Hands/instrument view, head cropped out in source; mouth-free b-roll candidate.",
+      "preview_seconds": [
+        50,
+        51
+      ]
+    },
+    {
+      "id": 15,
+      "src_in": 51.36,
+      "src_out": 55.6,
+      "tag": "singer-closeup",
+      "mouth_visible_or_possible": true,
+      "notes": "Visible singer mouth: audio must remain locked to this source time.",
+      "preview_seconds": [
+        52,
+        53,
+        54,
+        55
+      ]
+    },
+    {
+      "id": 16,
+      "src_in": 55.6,
+      "src_out": 58.0,
+      "tag": "group-singing",
+      "mouth_visible_or_possible": true,
+      "notes": "Singing/dancing ensemble; retain source-matched audio if used.",
+      "preview_seconds": [
+        56,
+        57
+      ]
+    },
+    {
+      "id": 17,
+      "src_in": 58.0,
+      "src_out": 60.04,
+      "tag": "singer-closeup",
+      "mouth_visible_or_possible": true,
+      "notes": "Visible singer mouth: audio must remain locked to this source time.",
+      "preview_seconds": [
+        58,
+        59,
+        60
+      ]
+    },
+    {
+      "id": 18,
+      "src_in": 60.04,
+      "src_out": 62.0,
+      "tag": "group-singing",
+      "mouth_visible_or_possible": true,
+      "notes": "Singing/dancing ensemble; retain source-matched audio if used.",
+      "preview_seconds": [
+        61
+      ]
+    },
+    {
+      "id": 19,
+      "src_in": 62.0,
+      "src_out": 64.72,
+      "tag": "singer-closeup",
+      "mouth_visible_or_possible": true,
+      "notes": "Visible singer mouth: audio must remain locked to this source time.",
+      "preview_seconds": [
+        62,
+        63,
+        64
+      ]
+    },
+    {
+      "id": 20,
+      "src_in": 64.72,
+      "src_out": 67.28,
+      "tag": "group-singing",
+      "mouth_visible_or_possible": true,
+      "notes": "Singing/dancing ensemble; retain source-matched audio if used.",
+      "preview_seconds": [
+        65,
+        66,
+        67
+      ]
+    },
+    {
+      "id": 21,
+      "src_in": 67.28,
+      "src_out": 68.84,
+      "tag": "instrument",
+      "mouth_visible_or_possible": true,
+      "notes": "Instrument performer with visible mouth: treat as sync, or crop mouth completely out.",
+      "preview_seconds": [
+        68
+      ]
+    },
+    {
+      "id": 22,
+      "src_in": 68.84,
+      "src_out": 71.12,
+      "tag": "singer-closeup",
+      "mouth_visible_or_possible": true,
+      "notes": "Visible singer mouth: audio must remain locked to this source time.",
+      "preview_seconds": [
+        69,
+        70,
+        71
+      ]
+    },
+    {
+      "id": 23,
+      "src_in": 71.12,
+      "src_out": 73.28,
+      "tag": "singer-closeup",
+      "mouth_visible_or_possible": true,
+      "notes": "Visible singer mouth: audio must remain locked to this source time.",
+      "preview_seconds": [
+        72,
+        73
+      ]
+    },
+    {
+      "id": 24,
+      "src_in": 73.28,
+      "src_out": 75.76,
+      "tag": "singer-closeup",
+      "mouth_visible_or_possible": true,
+      "notes": "Visible singer mouth: audio must remain locked to this source time.",
+      "preview_seconds": [
+        74,
+        75
+      ]
+    },
+    {
+      "id": 25,
+      "src_in": 75.76,
+      "src_out": 77.68,
+      "tag": "singer-closeup",
+      "mouth_visible_or_possible": true,
+      "notes": "Visible singer mouth: audio must remain locked to this source time.",
+      "preview_seconds": [
+        76,
+        77
+      ]
+    },
+    {
+      "id": 26,
+      "src_in": 77.68,
+      "src_out": 80.32,
+      "tag": "singer-closeup",
+      "mouth_visible_or_possible": true,
+      "notes": "Visible singer mouth: audio must remain locked to this source time.",
+      "preview_seconds": [
+        78,
+        79,
+        80
+      ]
+    },
+    {
+      "id": 27,
+      "src_in": 80.32,
+      "src_out": 83.08,
+      "tag": "group-singing",
+      "mouth_visible_or_possible": true,
+      "notes": "Singing/dancing ensemble; retain source-matched audio if used.",
+      "preview_seconds": [
+        81,
+        82,
+        83
+      ]
+    },
+    {
+      "id": 28,
+      "src_in": 83.08,
+      "src_out": 84.6,
+      "tag": "group-singing",
+      "mouth_visible_or_possible": true,
+      "notes": "Singing/dancing ensemble; retain source-matched audio if used.",
+      "preview_seconds": [
+        84
+      ]
+    },
+    {
+      "id": 29,
+      "src_in": 84.6,
+      "src_out": 87.12,
+      "tag": "instrument",
+      "mouth_visible_or_possible": true,
+      "notes": "Instrument performer with visible mouth: treat as sync, or crop mouth completely out.",
+      "preview_seconds": [
+        85,
+        86,
+        87
+      ]
+    },
+    {
+      "id": 30,
+      "src_in": 87.12,
+      "src_out": 89.12,
+      "tag": "group-singing",
+      "mouth_visible_or_possible": true,
+      "notes": "Singing/dancing ensemble; retain source-matched audio if used.",
+      "preview_seconds": [
+        88,
+        89
+      ]
+    },
+    {
+      "id": 31,
+      "src_in": 89.12,
+      "src_out": 91.16,
+      "tag": "singer-closeup",
+      "mouth_visible_or_possible": true,
+      "notes": "Visible singer mouth: audio must remain locked to this source time.",
+      "preview_seconds": [
+        90,
+        91
+      ]
+    },
+    {
+      "id": 32,
+      "src_in": 91.16,
+      "src_out": 93.0,
+      "tag": "group-singing",
+      "mouth_visible_or_possible": true,
+      "notes": "Singing/dancing ensemble; retain source-matched audio if used.",
+      "preview_seconds": [
+        92
+      ]
+    },
+    {
+      "id": 33,
+      "src_in": 93.0,
+      "src_out": 95.72,
+      "tag": "singer-closeup",
+      "mouth_visible_or_possible": true,
+      "notes": "Visible singer mouth: audio must remain locked to this source time.",
+      "preview_seconds": [
+        93,
+        94,
+        95
+      ]
+    },
+    {
+      "id": 34,
+      "src_in": 95.72,
+      "src_out": 97.68,
+      "tag": "singer-closeup",
+      "mouth_visible_or_possible": true,
+      "notes": "Visible singer mouth: audio must remain locked to this source time.",
+      "preview_seconds": [
+        96,
+        97
+      ]
+    },
+    {
+      "id": 35,
+      "src_in": 97.68,
+      "src_out": 99.68,
+      "tag": "group-singing",
+      "mouth_visible_or_possible": true,
+      "notes": "Singing/dancing ensemble; retain source-matched audio if used.",
+      "preview_seconds": [
+        98,
+        99
+      ]
+    },
+    {
+      "id": 36,
+      "src_in": 99.68,
+      "src_out": 101.68,
+      "tag": "group-singing",
+      "mouth_visible_or_possible": true,
+      "notes": "Singing/dancing ensemble; retain source-matched audio if used.",
+      "preview_seconds": [
+        100,
+        101
+      ]
+    },
+    {
+      "id": 37,
+      "src_in": 101.68,
+      "src_out": 103.44,
+      "tag": "singer-closeup",
+      "mouth_visible_or_possible": true,
+      "notes": "Visible singer mouth: audio must remain locked to this source time.",
+      "preview_seconds": [
+        102,
+        103
+      ]
+    },
+    {
+      "id": 38,
+      "src_in": 103.44,
+      "src_out": 104.52,
+      "tag": "group-singing",
+      "mouth_visible_or_possible": true,
+      "notes": "Singing/dancing ensemble; retain source-matched audio if used.",
+      "preview_seconds": [
+        104
+      ]
+    },
+    {
+      "id": 39,
+      "src_in": 104.52,
+      "src_out": 106.72,
+      "tag": "group-singing",
+      "mouth_visible_or_possible": true,
+      "notes": "Singing/dancing ensemble; retain source-matched audio if used.",
+      "preview_seconds": [
+        105,
+        106
+      ]
+    },
+    {
+      "id": 40,
+      "src_in": 106.72,
+      "src_out": 108.84,
+      "tag": "group-singing",
+      "mouth_visible_or_possible": true,
+      "notes": "Singing/dancing ensemble; retain source-matched audio if used.",
+      "preview_seconds": [
+        107,
+        108
+      ]
+    },
+    {
+      "id": 41,
+      "src_in": 108.84,
+      "src_out": 111.0,
+      "tag": "group-singing",
+      "mouth_visible_or_possible": true,
+      "notes": "Singing/dancing ensemble; retain source-matched audio if used.",
+      "preview_seconds": [
+        109,
+        110
+      ]
+    },
+    {
+      "id": 42,
+      "src_in": 111.0,
+      "src_out": 113.16,
+      "tag": "singer-closeup",
+      "mouth_visible_or_possible": true,
+      "notes": "Visible singer mouth: audio must remain locked to this source time.",
+      "preview_seconds": [
+        111,
+        112,
+        113
+      ]
+    },
+    {
+      "id": 43,
+      "src_in": 113.16,
+      "src_out": 114.68,
+      "tag": "singer-closeup",
+      "mouth_visible_or_possible": true,
+      "notes": "Visible singer mouth: audio must remain locked to this source time.",
+      "preview_seconds": [
+        114
+      ]
+    },
+    {
+      "id": 44,
+      "src_in": 114.68,
+      "src_out": 117.24,
+      "tag": "group-singing",
+      "mouth_visible_or_possible": true,
+      "notes": "Singing/dancing ensemble; retain source-matched audio if used.",
+      "preview_seconds": [
+        115,
+        116,
+        117
+      ]
+    },
+    {
+      "id": 45,
+      "src_in": 117.24,
+      "src_out": 119.32,
+      "tag": "group-singing",
+      "mouth_visible_or_possible": true,
+      "notes": "Singing/dancing ensemble; retain source-matched audio if used.",
+      "preview_seconds": [
+        118,
+        119
+      ]
+    },
+    {
+      "id": 46,
+      "src_in": 119.32,
+      "src_out": 121.56,
+      "tag": "singer-closeup",
+      "mouth_visible_or_possible": true,
+      "notes": "Visible singer mouth: audio must remain locked to this source time.",
+      "preview_seconds": [
+        120,
+        121
+      ]
+    },
+    {
+      "id": 47,
+      "src_in": 121.56,
+      "src_out": 123.72,
+      "tag": "group-singing",
+      "mouth_visible_or_possible": true,
+      "notes": "Singing/dancing ensemble; retain source-matched audio if used.",
+      "preview_seconds": [
+        122,
+        123
+      ]
+    },
+    {
+      "id": 48,
+      "src_in": 123.72,
+      "src_out": 126.16,
+      "tag": "singer-closeup",
+      "mouth_visible_or_possible": true,
+      "notes": "Visible singer mouth: audio must remain locked to this source time.",
+      "preview_seconds": [
+        124,
+        125,
+        126
+      ]
+    },
+    {
+      "id": 49,
+      "src_in": 126.16,
+      "src_out": 128.2,
+      "tag": "instrument",
+      "mouth_visible_or_possible": true,
+      "notes": "Instrument performer with visible mouth: treat as sync, or crop mouth completely out.",
+      "preview_seconds": [
+        127,
+        128
+      ]
+    },
+    {
+      "id": 50,
+      "src_in": 128.2,
+      "src_out": 130.04,
+      "tag": "instrument",
+      "mouth_visible_or_possible": false,
+      "notes": "Hands/instrument view, head cropped out in source; mouth-free b-roll candidate.",
+      "preview_seconds": [
+        129,
+        130
+      ]
+    },
+    {
+      "id": 51,
+      "src_in": 130.04,
+      "src_out": 132.24,
+      "tag": "singer-closeup",
+      "mouth_visible_or_possible": true,
+      "notes": "Visible singer mouth: audio must remain locked to this source time.",
+      "preview_seconds": [
+        131,
+        132
+      ]
+    },
+    {
+      "id": 52,
+      "src_in": 132.24,
+      "src_out": 134.44,
+      "tag": "group-singing",
+      "mouth_visible_or_possible": true,
+      "notes": "Singing/dancing ensemble; retain source-matched audio if used.",
+      "preview_seconds": [
+        133,
+        134
+      ]
+    },
+    {
+      "id": 53,
+      "src_in": 134.44,
+      "src_out": 136.88,
+      "tag": "instrument",
+      "mouth_visible_or_possible": false,
+      "notes": "Hands/instrument view, head cropped out in source; mouth-free b-roll candidate.",
+      "preview_seconds": [
+        135,
+        136
+      ]
+    },
+    {
+      "id": 54,
+      "src_in": 136.88,
+      "src_out": 138.72,
+      "tag": "instrument",
+      "mouth_visible_or_possible": false,
+      "notes": "Hands/instrument view, head cropped out in source; mouth-free b-roll candidate.",
+      "preview_seconds": [
+        137,
+        138
+      ]
+    },
+    {
+      "id": 55,
+      "src_in": 138.72,
+      "src_out": 140.84,
+      "tag": "group-singing",
+      "mouth_visible_or_possible": true,
+      "notes": "Singing/dancing ensemble; retain source-matched audio if used.",
+      "preview_seconds": [
+        139,
+        140
+      ]
+    },
+    {
+      "id": 56,
+      "src_in": 140.84,
+      "src_out": 143.08,
+      "tag": "instrument",
+      "mouth_visible_or_possible": false,
+      "notes": "Hands/instrument view, head cropped out in source; mouth-free b-roll candidate.",
+      "preview_seconds": [
+        141,
+        142,
+        143
+      ]
+    },
+    {
+      "id": 57,
+      "src_in": 143.08,
+      "src_out": 145.36,
+      "tag": "singer-closeup",
+      "mouth_visible_or_possible": true,
+      "notes": "Visible singer mouth: audio must remain locked to this source time.",
+      "preview_seconds": [
+        144,
+        145
+      ]
+    },
+    {
+      "id": 58,
+      "src_in": 145.36,
+      "src_out": 147.44,
+      "tag": "group-singing",
+      "mouth_visible_or_possible": true,
+      "notes": "Singing/dancing ensemble; retain source-matched audio if used.",
+      "preview_seconds": [
+        146,
+        147
+      ]
+    },
+    {
+      "id": 59,
+      "src_in": 147.44,
+      "src_out": 149.64,
+      "tag": "singer-closeup",
+      "mouth_visible_or_possible": true,
+      "notes": "Visible singer mouth: audio must remain locked to this source time.",
+      "preview_seconds": [
+        148,
+        149
+      ]
+    },
+    {
+      "id": 60,
+      "src_in": 149.64,
+      "src_out": 151.2,
+      "tag": "singer-closeup",
+      "mouth_visible_or_possible": true,
+      "notes": "Visible singer mouth: audio must remain locked to this source time.",
+      "preview_seconds": [
+        150,
+        151
+      ]
+    },
+    {
+      "id": 61,
+      "src_in": 151.2,
+      "src_out": 153.72,
+      "tag": "group-singing",
+      "mouth_visible_or_possible": true,
+      "notes": "Singing/dancing ensemble; retain source-matched audio if used.",
+      "preview_seconds": [
+        152,
+        153
+      ]
+    },
+    {
+      "id": 62,
+      "src_in": 153.72,
+      "src_out": 156.16,
+      "tag": "singer-closeup",
+      "mouth_visible_or_possible": true,
+      "notes": "Visible singer mouth: audio must remain locked to this source time.",
+      "preview_seconds": [
+        154,
+        155,
+        156
+      ]
+    },
+    {
+      "id": 63,
+      "src_in": 156.16,
+      "src_out": 158.08,
+      "tag": "singer-closeup",
+      "mouth_visible_or_possible": true,
+      "notes": "Visible singer mouth: audio must remain locked to this source time.",
+      "preview_seconds": [
+        157,
+        158
+      ]
+    },
+    {
+      "id": 64,
+      "src_in": 158.08,
+      "src_out": 160.52,
+      "tag": "singer-closeup",
+      "mouth_visible_or_possible": true,
+      "notes": "Visible singer mouth: audio must remain locked to this source time.",
+      "preview_seconds": [
+        159,
+        160
+      ]
+    },
+    {
+      "id": 65,
+      "src_in": 160.52,
+      "src_out": 162.52,
+      "tag": "group-singing",
+      "mouth_visible_or_possible": true,
+      "notes": "Singing/dancing ensemble; retain source-matched audio if used.",
+      "preview_seconds": [
+        161,
+        162
+      ]
+    },
+    {
+      "id": 66,
+      "src_in": 162.52,
+      "src_out": 165.04,
+      "tag": "singer-closeup",
+      "mouth_visible_or_possible": true,
+      "notes": "Visible singer mouth: audio must remain locked to this source time.",
+      "preview_seconds": [
+        163,
+        164,
+        165
+      ]
+    },
+    {
+      "id": 67,
+      "src_in": 165.04,
+      "src_out": 167.04,
+      "tag": "group-singing",
+      "mouth_visible_or_possible": true,
+      "notes": "Singing/dancing ensemble; retain source-matched audio if used.",
+      "preview_seconds": [
+        166,
+        167
+      ]
+    },
+    {
+      "id": 68,
+      "src_in": 167.04,
+      "src_out": 169.76,
+      "tag": "singer-closeup",
+      "mouth_visible_or_possible": true,
+      "notes": "Visible singer mouth: audio must remain locked to this source time.",
+      "preview_seconds": [
+        168,
+        169
+      ]
+    },
+    {
+      "id": 69,
+      "src_in": 169.76,
+      "src_out": 171.4,
+      "tag": "group-singing",
+      "mouth_visible_or_possible": true,
+      "notes": "Singing/dancing ensemble; retain source-matched audio if used.",
+      "preview_seconds": [
+        170,
+        171
+      ]
+    },
+    {
+      "id": 70,
+      "src_in": 171.4,
+      "src_out": 173.96,
+      "tag": "singer-closeup",
+      "mouth_visible_or_possible": true,
+      "notes": "Visible singer mouth: audio must remain locked to this source time.",
+      "preview_seconds": [
+        172,
+        173
+      ]
+    },
+    {
+      "id": 71,
+      "src_in": 173.96,
+      "src_out": 176.6,
+      "tag": "group-singing",
+      "mouth_visible_or_possible": true,
+      "notes": "Singing/dancing ensemble; retain source-matched audio if used.",
+      "preview_seconds": [
+        174,
+        175,
+        176
+      ]
+    },
+    {
+      "id": 72,
+      "src_in": 176.6,
+      "src_out": 178.56,
+      "tag": "singer-closeup",
+      "mouth_visible_or_possible": true,
+      "notes": "Visible singer mouth: audio must remain locked to this source time.",
+      "preview_seconds": [
+        177,
+        178
+      ]
+    },
+    {
+      "id": 73,
+      "src_in": 178.56,
+      "src_out": 180.92,
+      "tag": "group-singing",
+      "mouth_visible_or_possible": true,
+      "notes": "Singing/dancing ensemble; retain source-matched audio if used.",
+      "preview_seconds": [
+        179,
+        180
+      ]
+    },
+    {
+      "id": 74,
+      "src_in": 180.92,
+      "src_out": 184.96,
+      "tag": "group-singing",
+      "mouth_visible_or_possible": true,
+      "notes": "Singing/dancing ensemble; retain source-matched audio if used.",
+      "preview_seconds": [
+        181,
+        182,
+        183,
+        184
+      ]
+    },
+    {
+      "id": 75,
+      "src_in": 184.96,
+      "src_out": 187.0,
+      "tag": "singer-closeup",
+      "mouth_visible_or_possible": true,
+      "notes": "Visible singer mouth: audio must remain locked to this source time.",
+      "preview_seconds": [
+        185,
+        186
+      ]
+    },
+    {
+      "id": 76,
+      "src_in": 187.0,
+      "src_out": 189.24,
+      "tag": "group-singing",
+      "mouth_visible_or_possible": true,
+      "notes": "Singing/dancing ensemble; retain source-matched audio if used.",
+      "preview_seconds": [
+        187,
+        188,
+        189
+      ]
+    },
+    {
+      "id": 77,
+      "src_in": 189.24,
+      "src_out": 191.6,
+      "tag": "group-singing",
+      "mouth_visible_or_possible": true,
+      "notes": "Singing/dancing ensemble; retain source-matched audio if used.",
+      "preview_seconds": [
+        190,
+        191
+      ]
+    },
+    {
+      "id": 78,
+      "src_in": 191.6,
+      "src_out": 193.56,
+      "tag": "group-singing",
+      "mouth_visible_or_possible": true,
+      "notes": "Singing/dancing ensemble; retain source-matched audio if used.",
+      "preview_seconds": [
+        192,
+        193
+      ]
+    },
+    {
+      "id": 79,
+      "src_in": 193.56,
+      "src_out": 195.84,
+      "tag": "singer-closeup",
+      "mouth_visible_or_possible": true,
+      "notes": "Visible singer mouth: audio must remain locked to this source time.",
+      "preview_seconds": [
+        194,
+        195
+      ]
+    },
+    {
+      "id": 80,
+      "src_in": 195.84,
+      "src_out": 198.24,
+      "tag": "instrument",
+      "mouth_visible_or_possible": true,
+      "notes": "Instrument performer with visible mouth: treat as sync, or crop mouth completely out.",
+      "preview_seconds": [
+        196,
+        197,
+        198
+      ]
+    },
+    {
+      "id": 81,
+      "src_in": 198.24,
+      "src_out": 200.52,
+      "tag": "group-singing",
+      "mouth_visible_or_possible": true,
+      "notes": "Singing/dancing ensemble; retain source-matched audio if used.",
+      "preview_seconds": [
+        199,
+        200
+      ]
+    },
+    {
+      "id": 82,
+      "src_in": 200.52,
+      "src_out": 202.8,
+      "tag": "group-singing",
+      "mouth_visible_or_possible": true,
+      "notes": "Singing/dancing ensemble; retain source-matched audio if used.",
+      "preview_seconds": [
+        201,
+        202
+      ]
+    },
+    {
+      "id": 83,
+      "src_in": 202.8,
+      "src_out": 204.6,
+      "tag": "singer-closeup",
+      "mouth_visible_or_possible": true,
+      "notes": "Visible singer mouth: audio must remain locked to this source time.",
+      "preview_seconds": [
+        203,
+        204
+      ]
+    },
+    {
+      "id": 84,
+      "src_in": 204.6,
+      "src_out": 206.88,
+      "tag": "singer-closeup",
+      "mouth_visible_or_possible": true,
+      "notes": "Visible singer mouth: audio must remain locked to this source time.",
+      "preview_seconds": [
+        205,
+        206
+      ]
+    },
+    {
+      "id": 85,
+      "src_in": 206.88,
+      "src_out": 208.72,
+      "tag": "group-singing",
+      "mouth_visible_or_possible": true,
+      "notes": "Singing/dancing ensemble; retain source-matched audio if used.",
+      "preview_seconds": [
+        207,
+        208
+      ]
+    },
+    {
+      "id": 86,
+      "src_in": 208.72,
+      "src_out": 211.04,
+      "tag": "instrument",
+      "mouth_visible_or_possible": true,
+      "notes": "Instrument performer with visible mouth: treat as sync, or crop mouth completely out.",
+      "preview_seconds": [
+        209,
+        210,
+        211
+      ]
+    },
+    {
+      "id": 87,
+      "src_in": 211.04,
+      "src_out": 213.24,
+      "tag": "group-singing",
+      "mouth_visible_or_possible": true,
+      "notes": "Singing/dancing ensemble; retain source-matched audio if used.",
+      "preview_seconds": [
+        212,
+        213
+      ]
+    },
+    {
+      "id": 88,
+      "src_in": 213.24,
+      "src_out": 215.48,
+      "tag": "singer-closeup",
+      "mouth_visible_or_possible": true,
+      "notes": "Visible singer mouth: audio must remain locked to this source time.",
+      "preview_seconds": [
+        214,
+        215
+      ]
+    },
+    {
+      "id": 89,
+      "src_in": 215.48,
+      "src_out": 217.56,
+      "tag": "group-singing",
+      "mouth_visible_or_possible": true,
+      "notes": "Singing/dancing ensemble; retain source-matched audio if used.",
+      "preview_seconds": [
+        216,
+        217
+      ]
+    },
+    {
+      "id": 90,
+      "src_in": 217.56,
+      "src_out": 219.6,
+      "tag": "instrument",
+      "mouth_visible_or_possible": true,
+      "notes": "Instrument performer with visible mouth: treat as sync, or crop mouth completely out.",
+      "preview_seconds": [
+        218,
+        219
+      ]
+    },
+    {
+      "id": 91,
+      "src_in": 219.6,
+      "src_out": 222.04,
+      "tag": "instrument",
+      "mouth_visible_or_possible": false,
+      "notes": "Hands/instrument view, head cropped out in source; mouth-free b-roll candidate.",
+      "preview_seconds": [
+        220,
+        221,
+        222
+      ]
+    },
+    {
+      "id": 92,
+      "src_in": 222.04,
+      "src_out": 224.08,
+      "tag": "group-singing",
+      "mouth_visible_or_possible": true,
+      "notes": "Singing/dancing ensemble; retain source-matched audio if used.",
+      "preview_seconds": [
+        223,
+        224
+      ]
+    },
+    {
+      "id": 93,
+      "src_in": 224.08,
+      "src_out": 226.04,
+      "tag": "group-singing",
+      "mouth_visible_or_possible": true,
+      "notes": "Singing/dancing ensemble; retain source-matched audio if used.",
+      "preview_seconds": [
+        225,
+        226
+      ]
+    },
+    {
+      "id": 94,
+      "src_in": 226.04,
+      "src_out": 228.2,
+      "tag": "instrument",
+      "mouth_visible_or_possible": false,
+      "notes": "Hands/instrument view, head cropped out in source; mouth-free b-roll candidate.",
+      "preview_seconds": [
+        227,
+        228
+      ]
+    },
+    {
+      "id": 95,
+      "src_in": 228.2,
+      "src_out": 231.0,
+      "tag": "instrument",
+      "mouth_visible_or_possible": false,
+      "notes": "Hands/instrument view, head cropped out in source; mouth-free b-roll candidate.",
+      "preview_seconds": [
+        229,
+        230
+      ]
+    },
+    {
+      "id": 96,
+      "src_in": 231.0,
+      "src_out": 233.16,
+      "tag": "singer-closeup",
+      "mouth_visible_or_possible": true,
+      "notes": "Visible singer mouth: audio must remain locked to this source time.",
+      "preview_seconds": [
+        231,
+        232,
+        233
+      ]
+    },
+    {
+      "id": 97,
+      "src_in": 233.16,
+      "src_out": 235.24,
+      "tag": "group-singing",
+      "mouth_visible_or_possible": true,
+      "notes": "Singing/dancing ensemble; retain source-matched audio if used.",
+      "preview_seconds": [
+        234,
+        235
+      ]
+    },
+    {
+      "id": 98,
+      "src_in": 235.24,
+      "src_out": 238.96,
+      "tag": "instrument",
+      "mouth_visible_or_possible": true,
+      "notes": "Keyboard view changing to keyboardist face near the end: re-inspect before b-roll use.",
+      "preview_seconds": [
+        236,
+        237,
+        238
+      ]
+    },
+    {
+      "id": 99,
+      "src_in": 238.96,
+      "src_out": 242.64,
+      "tag": "group-singing",
+      "mouth_visible_or_possible": true,
+      "notes": "Singing/dancing ensemble; retain source-matched audio if used.",
+      "preview_seconds": [
+        239,
+        240,
+        241,
+        242
+      ]
+    },
+    {
+      "id": 100,
+      "src_in": 242.64,
+      "src_out": 245.28,
+      "tag": "singer-closeup",
+      "mouth_visible_or_possible": true,
+      "notes": "Visible singer mouth: audio must remain locked to this source time.",
+      "preview_seconds": [
+        243,
+        244,
+        245
+      ]
+    },
+    {
+      "id": 101,
+      "src_in": 245.28,
+      "src_out": 247.64,
+      "tag": "group-singing",
+      "mouth_visible_or_possible": true,
+      "notes": "Singing/dancing ensemble; retain source-matched audio if used.",
+      "preview_seconds": [
+        246,
+        247
+      ]
+    },
+    {
+      "id": 102,
+      "src_in": 247.64,
+      "src_out": 249.92,
+      "tag": "singer-closeup",
+      "mouth_visible_or_possible": true,
+      "notes": "Visible singer mouth: audio must remain locked to this source time.",
+      "preview_seconds": [
+        248,
+        249
+      ]
+    },
+    {
+      "id": 103,
+      "src_in": 249.92,
+      "src_out": 251.92,
+      "tag": "singer-closeup",
+      "mouth_visible_or_possible": true,
+      "notes": "Visible singer mouth: audio must remain locked to this source time.",
+      "preview_seconds": [
+        250,
+        251
+      ]
+    },
+    {
+      "id": 104,
+      "src_in": 251.92,
+      "src_out": 254.2,
+      "tag": "singer-closeup",
+      "mouth_visible_or_possible": true,
+      "notes": "Visible singer mouth: audio must remain locked to this source time.",
+      "preview_seconds": [
+        252,
+        253,
+        254
+      ]
+    },
+    {
+      "id": 105,
+      "src_in": 254.2,
+      "src_out": 256.44,
+      "tag": "group-singing",
+      "mouth_visible_or_possible": true,
+      "notes": "Singing/dancing ensemble; retain source-matched audio if used.",
+      "preview_seconds": [
+        255,
+        256
+      ]
+    },
+    {
+      "id": 106,
+      "src_in": 256.44,
+      "src_out": 260.68,
+      "tag": "singer-closeup",
+      "mouth_visible_or_possible": true,
+      "notes": "Visible singer mouth: audio must remain locked to this source time.",
+      "preview_seconds": [
+        257,
+        258,
+        259,
+        260
+      ]
+    },
+    {
+      "id": 107,
+      "src_in": 260.68,
+      "src_out": 262.84,
+      "tag": "singer-closeup",
+      "mouth_visible_or_possible": true,
+      "notes": "Visible singer mouth: audio must remain locked to this source time.",
+      "preview_seconds": [
+        261,
+        262
+      ]
+    },
+    {
+      "id": 108,
+      "src_in": 262.84,
+      "src_out": 264.96,
+      "tag": "singer-closeup",
+      "mouth_visible_or_possible": true,
+      "notes": "Visible singer mouth: audio must remain locked to this source time.",
+      "preview_seconds": [
+        263,
+        264
+      ]
+    },
+    {
+      "id": 109,
+      "src_in": 264.96,
+      "src_out": 268.04,
+      "tag": "singer-closeup",
+      "mouth_visible_or_possible": true,
+      "notes": "Visible singer mouth: audio must remain locked to this source time.",
+      "preview_seconds": [
+        265,
+        266,
+        267,
+        268
+      ]
+    },
+    {
+      "id": 110,
+      "src_in": 268.04,
+      "src_out": 270.68,
+      "tag": "group-singing",
+      "mouth_visible_or_possible": true,
+      "notes": "Singing/dancing ensemble; retain source-matched audio if used.",
+      "preview_seconds": [
+        269,
+        270
+      ]
+    },
+    {
+      "id": 111,
+      "src_in": 270.68,
+      "src_out": 274.6,
+      "tag": "group-singing",
+      "mouth_visible_or_possible": true,
+      "notes": "Singing/dancing ensemble; retain source-matched audio if used.",
+      "preview_seconds": [
+        271,
+        272,
+        273,
+        274
+      ]
+    },
+    {
+      "id": 112,
+      "src_in": 274.6,
+      "src_out": 276.64,
+      "tag": "singer-closeup",
+      "mouth_visible_or_possible": true,
+      "notes": "Visible singer mouth: audio must remain locked to this source time.",
+      "preview_seconds": [
+        275,
+        276
+      ]
+    },
+    {
+      "id": 113,
+      "src_in": 276.64,
+      "src_out": 278.88,
+      "tag": "group-singing",
+      "mouth_visible_or_possible": true,
+      "notes": "Singing/dancing ensemble; retain source-matched audio if used.",
+      "preview_seconds": [
+        277,
+        278
+      ]
+    },
+    {
+      "id": 114,
+      "src_in": 278.88,
+      "src_out": 283.16,
+      "tag": "group-singing",
+      "mouth_visible_or_possible": true,
+      "notes": "Singing/dancing ensemble; retain source-matched audio if used.",
+      "preview_seconds": [
+        279,
+        280,
+        281,
+        282,
+        283
+      ]
+    },
+    {
+      "id": 115,
+      "src_in": 283.16,
+      "src_out": 285.36,
+      "tag": "singer-closeup",
+      "mouth_visible_or_possible": true,
+      "notes": "Visible singer mouth: audio must remain locked to this source time.",
+      "preview_seconds": [
+        284,
+        285
+      ]
+    },
+    {
+      "id": 116,
+      "src_in": 285.36,
+      "src_out": 287.48,
+      "tag": "group-singing",
+      "mouth_visible_or_possible": true,
+      "notes": "Singing/dancing ensemble; retain source-matched audio if used.",
+      "preview_seconds": [
+        286,
+        287
+      ]
+    },
+    {
+      "id": 117,
+      "src_in": 287.48,
+      "src_out": 289.72,
+      "tag": "singer-closeup",
+      "mouth_visible_or_possible": true,
+      "notes": "Visible singer mouth: audio must remain locked to this source time.",
+      "preview_seconds": [
+        288,
+        289
+      ]
+    },
+    {
+      "id": 118,
+      "src_in": 289.72,
+      "src_out": 291.04,
+      "tag": "instrument",
+      "mouth_visible_or_possible": true,
+      "notes": "Instrument performer with visible mouth: treat as sync, or crop mouth completely out.",
+      "preview_seconds": [
+        290,
+        291
+      ]
+    },
+    {
+      "id": 119,
+      "src_in": 291.04,
+      "src_out": 292.4,
+      "tag": "instrument",
+      "mouth_visible_or_possible": true,
+      "notes": "Instrument performer with visible mouth: treat as sync, or crop mouth completely out.",
+      "preview_seconds": [
+        292
+      ]
+    },
+    {
+      "id": 120,
+      "src_in": 292.4,
+      "src_out": 294.32,
+      "tag": "singer-closeup",
+      "mouth_visible_or_possible": true,
+      "notes": "Visible singer mouth: audio must remain locked to this source time.",
+      "preview_seconds": [
+        293,
+        294
+      ]
+    },
+    {
+      "id": 121,
+      "src_in": 294.32,
+      "src_out": 296.36,
+      "tag": "group-singing",
+      "mouth_visible_or_possible": true,
+      "notes": "Singing/dancing ensemble; retain source-matched audio if used.",
+      "preview_seconds": [
+        295,
+        296
+      ]
+    },
+    {
+      "id": 122,
+      "src_in": 296.36,
+      "src_out": 300.76,
+      "tag": "group-singing",
+      "mouth_visible_or_possible": true,
+      "notes": "Singing/dancing ensemble; retain source-matched audio if used.",
+      "preview_seconds": [
+        297,
+        298,
+        299,
+        300
+      ]
+    },
+    {
+      "id": 123,
+      "src_in": 300.76,
+      "src_out": 302.52,
+      "tag": "singer-closeup",
+      "mouth_visible_or_possible": true,
+      "notes": "Visible singer mouth: audio must remain locked to this source time.",
+      "preview_seconds": [
+        301,
+        302
+      ]
+    },
+    {
+      "id": 124,
+      "src_in": 302.52,
+      "src_out": 305.0,
+      "tag": "singer-closeup",
+      "mouth_visible_or_possible": true,
+      "notes": "Visible singer mouth: audio must remain locked to this source time.",
+      "preview_seconds": [
+        303,
+        304
+      ]
+    },
+    {
+      "id": 125,
+      "src_in": 305.0,
+      "src_out": 307.08,
+      "tag": "group-singing",
+      "mouth_visible_or_possible": true,
+      "notes": "Singing/dancing ensemble; retain source-matched audio if used.",
+      "preview_seconds": [
+        305,
+        306,
+        307
+      ]
+    },
+    {
+      "id": 126,
+      "src_in": 307.08,
+      "src_out": 309.24,
+      "tag": "singer-closeup",
+      "mouth_visible_or_possible": true,
+      "notes": "Visible singer mouth: audio must remain locked to this source time.",
+      "preview_seconds": [
+        308,
+        309
+      ]
+    },
+    {
+      "id": 127,
+      "src_in": 309.24,
+      "src_out": 311.04,
+      "tag": "group-singing",
+      "mouth_visible_or_possible": true,
+      "notes": "Singing/dancing ensemble; retain source-matched audio if used.",
+      "preview_seconds": [
+        310,
+        311
+      ]
+    },
+    {
+      "id": 128,
+      "src_in": 311.04,
+      "src_out": 312.88,
+      "tag": "instrument",
+      "mouth_visible_or_possible": true,
+      "notes": "Instrument performer with visible mouth: treat as sync, or crop mouth completely out.",
+      "preview_seconds": [
+        312
+      ]
+    },
+    {
+      "id": 129,
+      "src_in": 312.88,
+      "src_out": 314.8,
+      "tag": "singer-closeup",
+      "mouth_visible_or_possible": true,
+      "notes": "Visible singer mouth: audio must remain locked to this source time.",
+      "preview_seconds": [
+        313,
+        314
+      ]
+    },
+    {
+      "id": 130,
+      "src_in": 314.8,
+      "src_out": 326.28,
+      "tag": "instrument",
+      "mouth_visible_or_possible": true,
+      "notes": "Instrument performer with visible mouth: treat as sync, or crop mouth completely out.",
+      "preview_seconds": [
+        315,
+        316,
+        317,
+        318,
+        319,
+        320,
+        321,
+        322,
+        323,
+        324,
+        325,
+        326
+      ]
+    },
+    {
+      "id": 131,
+      "src_in": 326.28,
+      "src_out": 330.68,
+      "tag": "crowd-wide",
+      "mouth_visible_or_possible": true,
+      "notes": "Dancing circle; visible faces mean source-matched audio is the conservative choice.",
+      "preview_seconds": [
+        327,
+        328,
+        329,
+        330
+      ]
+    },
+    {
+      "id": 132,
+      "src_in": 330.68,
+      "src_out": 339.48,
+      "tag": "singer-closeup",
+      "mouth_visible_or_possible": true,
+      "notes": "Visible singer mouth: audio must remain locked to this source time.",
+      "preview_seconds": [
+        331,
+        332,
+        333,
+        334,
+        335,
+        336,
+        337,
+        338,
+        339
+      ]
+    },
+    {
+      "id": 133,
+      "src_in": 339.48,
+      "src_out": 343.72,
+      "tag": "crowd-wide",
+      "mouth_visible_or_possible": true,
+      "notes": "Dancing circle; visible faces mean source-matched audio is the conservative choice.",
+      "preview_seconds": [
+        340,
+        341,
+        342,
+        343
+      ]
+    },
+    {
+      "id": 134,
+      "src_in": 343.72,
+      "src_out": 347.08,
+      "tag": "group-singing",
+      "mouth_visible_or_possible": true,
+      "notes": "Singing/dancing ensemble; retain source-matched audio if used.",
+      "preview_seconds": [
+        344,
+        345,
+        346,
+        347
+      ]
+    },
+    {
+      "id": 135,
+      "src_in": 347.08,
+      "src_out": 350.4,
+      "tag": "crowd-wide",
+      "mouth_visible_or_possible": true,
+      "notes": "Dancing circle; visible faces mean source-matched audio is the conservative choice.",
+      "preview_seconds": [
+        348,
+        349,
+        350
+      ]
+    },
+    {
+      "id": 136,
+      "src_in": 350.4,
+      "src_out": 352.68,
+      "tag": "group-singing",
+      "mouth_visible_or_possible": true,
+      "notes": "Singing/dancing ensemble; retain source-matched audio if used.",
+      "preview_seconds": [
+        351,
+        352
+      ]
+    },
+    {
+      "id": 137,
+      "src_in": 352.68,
+      "src_out": 356.72,
+      "tag": "group-singing",
+      "mouth_visible_or_possible": true,
+      "notes": "Singing/dancing ensemble; retain source-matched audio if used.",
+      "preview_seconds": [
+        353,
+        354,
+        355,
+        356
+      ]
+    },
+    {
+      "id": 138,
+      "src_in": 356.72,
+      "src_out": 368.756009,
+      "tag": "text-or-credits",
+      "mouth_visible_or_possible": false,
+      "notes": "Excluded from edits. Credit frames masked on shareable review sheets.",
+      "preview_seconds": [
+        357,
+        358,
+        359,
+        360,
+        361,
+        362,
+        363,
+        364,
+        365,
+        366,
+        367,
+        368
+      ]
+    }
+  ],
+  "frames": [
+    {
+      "source_seconds": 0,
+      "sheet": "source-log-1.jpg",
+      "tile": 0,
+      "shot_id": 1
+    },
+    {
+      "source_seconds": 1,
+      "sheet": "source-log-1.jpg",
+      "tile": 1,
+      "shot_id": 1
+    },
+    {
+      "source_seconds": 2,
+      "sheet": "source-log-1.jpg",
+      "tile": 2,
+      "shot_id": 1
+    },
+    {
+      "source_seconds": 3,
+      "sheet": "source-log-1.jpg",
+      "tile": 3,
+      "shot_id": 1
+    },
+    {
+      "source_seconds": 4,
+      "sheet": "source-log-1.jpg",
+      "tile": 4,
+      "shot_id": 1
+    },
+    {
+      "source_seconds": 5,
+      "sheet": "source-log-1.jpg",
+      "tile": 5,
+      "shot_id": 1
+    },
+    {
+      "source_seconds": 6,
+      "sheet": "source-log-1.jpg",
+      "tile": 6,
+      "shot_id": 1
+    },
+    {
+      "source_seconds": 7,
+      "sheet": "source-log-1.jpg",
+      "tile": 7,
+      "shot_id": 1
+    },
+    {
+      "source_seconds": 8,
+      "sheet": "source-log-1.jpg",
+      "tile": 8,
+      "shot_id": 1
+    },
+    {
+      "source_seconds": 9,
+      "sheet": "source-log-1.jpg",
+      "tile": 9,
+      "shot_id": 2
+    },
+    {
+      "source_seconds": 10,
+      "sheet": "source-log-1.jpg",
+      "tile": 10,
+      "shot_id": 2
+    },
+    {
+      "source_seconds": 11,
+      "sheet": "source-log-1.jpg",
+      "tile": 11,
+      "shot_id": 2
+    },
+    {
+      "source_seconds": 12,
+      "sheet": "source-log-1.jpg",
+      "tile": 12,
+      "shot_id": 3
+    },
+    {
+      "source_seconds": 13,
+      "sheet": "source-log-1.jpg",
+      "tile": 13,
+      "shot_id": 3
+    },
+    {
+      "source_seconds": 14,
+      "sheet": "source-log-1.jpg",
+      "tile": 14,
+      "shot_id": 3
+    },
+    {
+      "source_seconds": 15,
+      "sheet": "source-log-1.jpg",
+      "tile": 15,
+      "shot_id": 4
+    },
+    {
+      "source_seconds": 16,
+      "sheet": "source-log-1.jpg",
+      "tile": 16,
+      "shot_id": 4
+    },
+    {
+      "source_seconds": 17,
+      "sheet": "source-log-1.jpg",
+      "tile": 17,
+      "shot_id": 4
+    },
+    {
+      "source_seconds": 18,
+      "sheet": "source-log-1.jpg",
+      "tile": 18,
+      "shot_id": 4
+    },
+    {
+      "source_seconds": 19,
+      "sheet": "source-log-1.jpg",
+      "tile": 19,
+      "shot_id": 4
+    },
+    {
+      "source_seconds": 20,
+      "sheet": "source-log-1.jpg",
+      "tile": 20,
+      "shot_id": 4
+    },
+    {
+      "source_seconds": 21,
+      "sheet": "source-log-1.jpg",
+      "tile": 21,
+      "shot_id": 4
+    },
+    {
+      "source_seconds": 22,
+      "sheet": "source-log-1.jpg",
+      "tile": 22,
+      "shot_id": 5
+    },
+    {
+      "source_seconds": 23,
+      "sheet": "source-log-1.jpg",
+      "tile": 23,
+      "shot_id": 5
+    },
+    {
+      "source_seconds": 24,
+      "sheet": "source-log-1.jpg",
+      "tile": 24,
+      "shot_id": 5
+    },
+    {
+      "source_seconds": 25,
+      "sheet": "source-log-1.jpg",
+      "tile": 25,
+      "shot_id": 6
+    },
+    {
+      "source_seconds": 26,
+      "sheet": "source-log-1.jpg",
+      "tile": 26,
+      "shot_id": 6
+    },
+    {
+      "source_seconds": 27,
+      "sheet": "source-log-1.jpg",
+      "tile": 27,
+      "shot_id": 6
+    },
+    {
+      "source_seconds": 28,
+      "sheet": "source-log-1.jpg",
+      "tile": 28,
+      "shot_id": 7
+    },
+    {
+      "source_seconds": 29,
+      "sheet": "source-log-1.jpg",
+      "tile": 29,
+      "shot_id": 7
+    },
+    {
+      "source_seconds": 30,
+      "sheet": "source-log-1.jpg",
+      "tile": 30,
+      "shot_id": 7
+    },
+    {
+      "source_seconds": 31,
+      "sheet": "source-log-1.jpg",
+      "tile": 31,
+      "shot_id": 7
+    },
+    {
+      "source_seconds": 32,
+      "sheet": "source-log-1.jpg",
+      "tile": 32,
+      "shot_id": 7
+    },
+    {
+      "source_seconds": 33,
+      "sheet": "source-log-1.jpg",
+      "tile": 33,
+      "shot_id": 7
+    },
+    {
+      "source_seconds": 34,
+      "sheet": "source-log-1.jpg",
+      "tile": 34,
+      "shot_id": 8
+    },
+    {
+      "source_seconds": 35,
+      "sheet": "source-log-1.jpg",
+      "tile": 35,
+      "shot_id": 8
+    },
+    {
+      "source_seconds": 36,
+      "sheet": "source-log-1.jpg",
+      "tile": 36,
+      "shot_id": 8
+    },
+    {
+      "source_seconds": 37,
+      "sheet": "source-log-1.jpg",
+      "tile": 37,
+      "shot_id": 8
+    },
+    {
+      "source_seconds": 38,
+      "sheet": "source-log-1.jpg",
+      "tile": 38,
+      "shot_id": 8
+    },
+    {
+      "source_seconds": 39,
+      "sheet": "source-log-1.jpg",
+      "tile": 39,
+      "shot_id": 9
+    },
+    {
+      "source_seconds": 40,
+      "sheet": "source-log-1.jpg",
+      "tile": 40,
+      "shot_id": 9
+    },
+    {
+      "source_seconds": 41,
+      "sheet": "source-log-1.jpg",
+      "tile": 41,
+      "shot_id": 10
+    },
+    {
+      "source_seconds": 42,
+      "sheet": "source-log-1.jpg",
+      "tile": 42,
+      "shot_id": 10
+    },
+    {
+      "source_seconds": 43,
+      "sheet": "source-log-1.jpg",
+      "tile": 43,
+      "shot_id": 11
+    },
+    {
+      "source_seconds": 44,
+      "sheet": "source-log-1.jpg",
+      "tile": 44,
+      "shot_id": 11
+    },
+    {
+      "source_seconds": 45,
+      "sheet": "source-log-1.jpg",
+      "tile": 45,
+      "shot_id": 11
+    },
+    {
+      "source_seconds": 46,
+      "sheet": "source-log-1.jpg",
+      "tile": 46,
+      "shot_id": 11
+    },
+    {
+      "source_seconds": 47,
+      "sheet": "source-log-1.jpg",
+      "tile": 47,
+      "shot_id": 12
+    },
+    {
+      "source_seconds": 48,
+      "sheet": "source-log-1.jpg",
+      "tile": 48,
+      "shot_id": 12
+    },
+    {
+      "source_seconds": 49,
+      "sheet": "source-log-1.jpg",
+      "tile": 49,
+      "shot_id": 13
+    },
+    {
+      "source_seconds": 50,
+      "sheet": "source-log-1.jpg",
+      "tile": 50,
+      "shot_id": 14
+    },
+    {
+      "source_seconds": 51,
+      "sheet": "source-log-1.jpg",
+      "tile": 51,
+      "shot_id": 14
+    },
+    {
+      "source_seconds": 52,
+      "sheet": "source-log-1.jpg",
+      "tile": 52,
+      "shot_id": 15
+    },
+    {
+      "source_seconds": 53,
+      "sheet": "source-log-1.jpg",
+      "tile": 53,
+      "shot_id": 15
+    },
+    {
+      "source_seconds": 54,
+      "sheet": "source-log-1.jpg",
+      "tile": 54,
+      "shot_id": 15
+    },
+    {
+      "source_seconds": 55,
+      "sheet": "source-log-1.jpg",
+      "tile": 55,
+      "shot_id": 15
+    },
+    {
+      "source_seconds": 56,
+      "sheet": "source-log-1.jpg",
+      "tile": 56,
+      "shot_id": 16
+    },
+    {
+      "source_seconds": 57,
+      "sheet": "source-log-1.jpg",
+      "tile": 57,
+      "shot_id": 16
+    },
+    {
+      "source_seconds": 58,
+      "sheet": "source-log-1.jpg",
+      "tile": 58,
+      "shot_id": 17
+    },
+    {
+      "source_seconds": 59,
+      "sheet": "source-log-1.jpg",
+      "tile": 59,
+      "shot_id": 17
+    },
+    {
+      "source_seconds": 60,
+      "sheet": "source-log-2.jpg",
+      "tile": 0,
+      "shot_id": 17
+    },
+    {
+      "source_seconds": 61,
+      "sheet": "source-log-2.jpg",
+      "tile": 1,
+      "shot_id": 18
+    },
+    {
+      "source_seconds": 62,
+      "sheet": "source-log-2.jpg",
+      "tile": 2,
+      "shot_id": 19
+    },
+    {
+      "source_seconds": 63,
+      "sheet": "source-log-2.jpg",
+      "tile": 3,
+      "shot_id": 19
+    },
+    {
+      "source_seconds": 64,
+      "sheet": "source-log-2.jpg",
+      "tile": 4,
+      "shot_id": 19
+    },
+    {
+      "source_seconds": 65,
+      "sheet": "source-log-2.jpg",
+      "tile": 5,
+      "shot_id": 20
+    },
+    {
+      "source_seconds": 66,
+      "sheet": "source-log-2.jpg",
+      "tile": 6,
+      "shot_id": 20
+    },
+    {
+      "source_seconds": 67,
+      "sheet": "source-log-2.jpg",
+      "tile": 7,
+      "shot_id": 20
+    },
+    {
+      "source_seconds": 68,
+      "sheet": "source-log-2.jpg",
+      "tile": 8,
+      "shot_id": 21
+    },
+    {
+      "source_seconds": 69,
+      "sheet": "source-log-2.jpg",
+      "tile": 9,
+      "shot_id": 22
+    },
+    {
+      "source_seconds": 70,
+      "sheet": "source-log-2.jpg",
+      "tile": 10,
+      "shot_id": 22
+    },
+    {
+      "source_seconds": 71,
+      "sheet": "source-log-2.jpg",
+      "tile": 11,
+      "shot_id": 22
+    },
+    {
+      "source_seconds": 72,
+      "sheet": "source-log-2.jpg",
+      "tile": 12,
+      "shot_id": 23
+    },
+    {
+      "source_seconds": 73,
+      "sheet": "source-log-2.jpg",
+      "tile": 13,
+      "shot_id": 23
+    },
+    {
+      "source_seconds": 74,
+      "sheet": "source-log-2.jpg",
+      "tile": 14,
+      "shot_id": 24
+    },
+    {
+      "source_seconds": 75,
+      "sheet": "source-log-2.jpg",
+      "tile": 15,
+      "shot_id": 24
+    },
+    {
+      "source_seconds": 76,
+      "sheet": "source-log-2.jpg",
+      "tile": 16,
+      "shot_id": 25
+    },
+    {
+      "source_seconds": 77,
+      "sheet": "source-log-2.jpg",
+      "tile": 17,
+      "shot_id": 25
+    },
+    {
+      "source_seconds": 78,
+      "sheet": "source-log-2.jpg",
+      "tile": 18,
+      "shot_id": 26
+    },
+    {
+      "source_seconds": 79,
+      "sheet": "source-log-2.jpg",
+      "tile": 19,
+      "shot_id": 26
+    },
+    {
+      "source_seconds": 80,
+      "sheet": "source-log-2.jpg",
+      "tile": 20,
+      "shot_id": 26
+    },
+    {
+      "source_seconds": 81,
+      "sheet": "source-log-2.jpg",
+      "tile": 21,
+      "shot_id": 27
+    },
+    {
+      "source_seconds": 82,
+      "sheet": "source-log-2.jpg",
+      "tile": 22,
+      "shot_id": 27
+    },
+    {
+      "source_seconds": 83,
+      "sheet": "source-log-2.jpg",
+      "tile": 23,
+      "shot_id": 27
+    },
+    {
+      "source_seconds": 84,
+      "sheet": "source-log-2.jpg",
+      "tile": 24,
+      "shot_id": 28
+    },
+    {
+      "source_seconds": 85,
+      "sheet": "source-log-2.jpg",
+      "tile": 25,
+      "shot_id": 29
+    },
+    {
+      "source_seconds": 86,
+      "sheet": "source-log-2.jpg",
+      "tile": 26,
+      "shot_id": 29
+    },
+    {
+      "source_seconds": 87,
+      "sheet": "source-log-2.jpg",
+      "tile": 27,
+      "shot_id": 29
+    },
+    {
+      "source_seconds": 88,
+      "sheet": "source-log-2.jpg",
+      "tile": 28,
+      "shot_id": 30
+    },
+    {
+      "source_seconds": 89,
+      "sheet": "source-log-2.jpg",
+      "tile": 29,
+      "shot_id": 30
+    },
+    {
+      "source_seconds": 90,
+      "sheet": "source-log-2.jpg",
+      "tile": 30,
+      "shot_id": 31
+    },
+    {
+      "source_seconds": 91,
+      "sheet": "source-log-2.jpg",
+      "tile": 31,
+      "shot_id": 31
+    },
+    {
+      "source_seconds": 92,
+      "sheet": "source-log-2.jpg",
+      "tile": 32,
+      "shot_id": 32
+    },
+    {
+      "source_seconds": 93,
+      "sheet": "source-log-2.jpg",
+      "tile": 33,
+      "shot_id": 33
+    },
+    {
+      "source_seconds": 94,
+      "sheet": "source-log-2.jpg",
+      "tile": 34,
+      "shot_id": 33
+    },
+    {
+      "source_seconds": 95,
+      "sheet": "source-log-2.jpg",
+      "tile": 35,
+      "shot_id": 33
+    },
+    {
+      "source_seconds": 96,
+      "sheet": "source-log-2.jpg",
+      "tile": 36,
+      "shot_id": 34
+    },
+    {
+      "source_seconds": 97,
+      "sheet": "source-log-2.jpg",
+      "tile": 37,
+      "shot_id": 34
+    },
+    {
+      "source_seconds": 98,
+      "sheet": "source-log-2.jpg",
+      "tile": 38,
+      "shot_id": 35
+    },
+    {
+      "source_seconds": 99,
+      "sheet": "source-log-2.jpg",
+      "tile": 39,
+      "shot_id": 35
+    },
+    {
+      "source_seconds": 100,
+      "sheet": "source-log-2.jpg",
+      "tile": 40,
+      "shot_id": 36
+    },
+    {
+      "source_seconds": 101,
+      "sheet": "source-log-2.jpg",
+      "tile": 41,
+      "shot_id": 36
+    },
+    {
+      "source_seconds": 102,
+      "sheet": "source-log-2.jpg",
+      "tile": 42,
+      "shot_id": 37
+    },
+    {
+      "source_seconds": 103,
+      "sheet": "source-log-2.jpg",
+      "tile": 43,
+      "shot_id": 37
+    },
+    {
+      "source_seconds": 104,
+      "sheet": "source-log-2.jpg",
+      "tile": 44,
+      "shot_id": 38
+    },
+    {
+      "source_seconds": 105,
+      "sheet": "source-log-2.jpg",
+      "tile": 45,
+      "shot_id": 39
+    },
+    {
+      "source_seconds": 106,
+      "sheet": "source-log-2.jpg",
+      "tile": 46,
+      "shot_id": 39
+    },
+    {
+      "source_seconds": 107,
+      "sheet": "source-log-2.jpg",
+      "tile": 47,
+      "shot_id": 40
+    },
+    {
+      "source_seconds": 108,
+      "sheet": "source-log-2.jpg",
+      "tile": 48,
+      "shot_id": 40
+    },
+    {
+      "source_seconds": 109,
+      "sheet": "source-log-2.jpg",
+      "tile": 49,
+      "shot_id": 41
+    },
+    {
+      "source_seconds": 110,
+      "sheet": "source-log-2.jpg",
+      "tile": 50,
+      "shot_id": 41
+    },
+    {
+      "source_seconds": 111,
+      "sheet": "source-log-2.jpg",
+      "tile": 51,
+      "shot_id": 42
+    },
+    {
+      "source_seconds": 112,
+      "sheet": "source-log-2.jpg",
+      "tile": 52,
+      "shot_id": 42
+    },
+    {
+      "source_seconds": 113,
+      "sheet": "source-log-2.jpg",
+      "tile": 53,
+      "shot_id": 42
+    },
+    {
+      "source_seconds": 114,
+      "sheet": "source-log-2.jpg",
+      "tile": 54,
+      "shot_id": 43
+    },
+    {
+      "source_seconds": 115,
+      "sheet": "source-log-2.jpg",
+      "tile": 55,
+      "shot_id": 44
+    },
+    {
+      "source_seconds": 116,
+      "sheet": "source-log-2.jpg",
+      "tile": 56,
+      "shot_id": 44
+    },
+    {
+      "source_seconds": 117,
+      "sheet": "source-log-2.jpg",
+      "tile": 57,
+      "shot_id": 44
+    },
+    {
+      "source_seconds": 118,
+      "sheet": "source-log-2.jpg",
+      "tile": 58,
+      "shot_id": 45
+    },
+    {
+      "source_seconds": 119,
+      "sheet": "source-log-2.jpg",
+      "tile": 59,
+      "shot_id": 45
+    },
+    {
+      "source_seconds": 120,
+      "sheet": "source-log-3.jpg",
+      "tile": 0,
+      "shot_id": 46
+    },
+    {
+      "source_seconds": 121,
+      "sheet": "source-log-3.jpg",
+      "tile": 1,
+      "shot_id": 46
+    },
+    {
+      "source_seconds": 122,
+      "sheet": "source-log-3.jpg",
+      "tile": 2,
+      "shot_id": 47
+    },
+    {
+      "source_seconds": 123,
+      "sheet": "source-log-3.jpg",
+      "tile": 3,
+      "shot_id": 47
+    },
+    {
+      "source_seconds": 124,
+      "sheet": "source-log-3.jpg",
+      "tile": 4,
+      "shot_id": 48
+    },
+    {
+      "source_seconds": 125,
+      "sheet": "source-log-3.jpg",
+      "tile": 5,
+      "shot_id": 48
+    },
+    {
+      "source_seconds": 126,
+      "sheet": "source-log-3.jpg",
+      "tile": 6,
+      "shot_id": 48
+    },
+    {
+      "source_seconds": 127,
+      "sheet": "source-log-3.jpg",
+      "tile": 7,
+      "shot_id": 49
+    },
+    {
+      "source_seconds": 128,
+      "sheet": "source-log-3.jpg",
+      "tile": 8,
+      "shot_id": 49
+    },
+    {
+      "source_seconds": 129,
+      "sheet": "source-log-3.jpg",
+      "tile": 9,
+      "shot_id": 50
+    },
+    {
+      "source_seconds": 130,
+      "sheet": "source-log-3.jpg",
+      "tile": 10,
+      "shot_id": 50
+    },
+    {
+      "source_seconds": 131,
+      "sheet": "source-log-3.jpg",
+      "tile": 11,
+      "shot_id": 51
+    },
+    {
+      "source_seconds": 132,
+      "sheet": "source-log-3.jpg",
+      "tile": 12,
+      "shot_id": 51
+    },
+    {
+      "source_seconds": 133,
+      "sheet": "source-log-3.jpg",
+      "tile": 13,
+      "shot_id": 52
+    },
+    {
+      "source_seconds": 134,
+      "sheet": "source-log-3.jpg",
+      "tile": 14,
+      "shot_id": 52
+    },
+    {
+      "source_seconds": 135,
+      "sheet": "source-log-3.jpg",
+      "tile": 15,
+      "shot_id": 53
+    },
+    {
+      "source_seconds": 136,
+      "sheet": "source-log-3.jpg",
+      "tile": 16,
+      "shot_id": 53
+    },
+    {
+      "source_seconds": 137,
+      "sheet": "source-log-3.jpg",
+      "tile": 17,
+      "shot_id": 54
+    },
+    {
+      "source_seconds": 138,
+      "sheet": "source-log-3.jpg",
+      "tile": 18,
+      "shot_id": 54
+    },
+    {
+      "source_seconds": 139,
+      "sheet": "source-log-3.jpg",
+      "tile": 19,
+      "shot_id": 55
+    },
+    {
+      "source_seconds": 140,
+      "sheet": "source-log-3.jpg",
+      "tile": 20,
+      "shot_id": 55
+    },
+    {
+      "source_seconds": 141,
+      "sheet": "source-log-3.jpg",
+      "tile": 21,
+      "shot_id": 56
+    },
+    {
+      "source_seconds": 142,
+      "sheet": "source-log-3.jpg",
+      "tile": 22,
+      "shot_id": 56
+    },
+    {
+      "source_seconds": 143,
+      "sheet": "source-log-3.jpg",
+      "tile": 23,
+      "shot_id": 56
+    },
+    {
+      "source_seconds": 144,
+      "sheet": "source-log-3.jpg",
+      "tile": 24,
+      "shot_id": 57
+    },
+    {
+      "source_seconds": 145,
+      "sheet": "source-log-3.jpg",
+      "tile": 25,
+      "shot_id": 57
+    },
+    {
+      "source_seconds": 146,
+      "sheet": "source-log-3.jpg",
+      "tile": 26,
+      "shot_id": 58
+    },
+    {
+      "source_seconds": 147,
+      "sheet": "source-log-3.jpg",
+      "tile": 27,
+      "shot_id": 58
+    },
+    {
+      "source_seconds": 148,
+      "sheet": "source-log-3.jpg",
+      "tile": 28,
+      "shot_id": 59
+    },
+    {
+      "source_seconds": 149,
+      "sheet": "source-log-3.jpg",
+      "tile": 29,
+      "shot_id": 59
+    },
+    {
+      "source_seconds": 150,
+      "sheet": "source-log-3.jpg",
+      "tile": 30,
+      "shot_id": 60
+    },
+    {
+      "source_seconds": 151,
+      "sheet": "source-log-3.jpg",
+      "tile": 31,
+      "shot_id": 60
+    },
+    {
+      "source_seconds": 152,
+      "sheet": "source-log-3.jpg",
+      "tile": 32,
+      "shot_id": 61
+    },
+    {
+      "source_seconds": 153,
+      "sheet": "source-log-3.jpg",
+      "tile": 33,
+      "shot_id": 61
+    },
+    {
+      "source_seconds": 154,
+      "sheet": "source-log-3.jpg",
+      "tile": 34,
+      "shot_id": 62
+    },
+    {
+      "source_seconds": 155,
+      "sheet": "source-log-3.jpg",
+      "tile": 35,
+      "shot_id": 62
+    },
+    {
+      "source_seconds": 156,
+      "sheet": "source-log-3.jpg",
+      "tile": 36,
+      "shot_id": 62
+    },
+    {
+      "source_seconds": 157,
+      "sheet": "source-log-3.jpg",
+      "tile": 37,
+      "shot_id": 63
+    },
+    {
+      "source_seconds": 158,
+      "sheet": "source-log-3.jpg",
+      "tile": 38,
+      "shot_id": 63
+    },
+    {
+      "source_seconds": 159,
+      "sheet": "source-log-3.jpg",
+      "tile": 39,
+      "shot_id": 64
+    },
+    {
+      "source_seconds": 160,
+      "sheet": "source-log-3.jpg",
+      "tile": 40,
+      "shot_id": 64
+    },
+    {
+      "source_seconds": 161,
+      "sheet": "source-log-3.jpg",
+      "tile": 41,
+      "shot_id": 65
+    },
+    {
+      "source_seconds": 162,
+      "sheet": "source-log-3.jpg",
+      "tile": 42,
+      "shot_id": 65
+    },
+    {
+      "source_seconds": 163,
+      "sheet": "source-log-3.jpg",
+      "tile": 43,
+      "shot_id": 66
+    },
+    {
+      "source_seconds": 164,
+      "sheet": "source-log-3.jpg",
+      "tile": 44,
+      "shot_id": 66
+    },
+    {
+      "source_seconds": 165,
+      "sheet": "source-log-3.jpg",
+      "tile": 45,
+      "shot_id": 66
+    },
+    {
+      "source_seconds": 166,
+      "sheet": "source-log-3.jpg",
+      "tile": 46,
+      "shot_id": 67
+    },
+    {
+      "source_seconds": 167,
+      "sheet": "source-log-3.jpg",
+      "tile": 47,
+      "shot_id": 67
+    },
+    {
+      "source_seconds": 168,
+      "sheet": "source-log-3.jpg",
+      "tile": 48,
+      "shot_id": 68
+    },
+    {
+      "source_seconds": 169,
+      "sheet": "source-log-3.jpg",
+      "tile": 49,
+      "shot_id": 68
+    },
+    {
+      "source_seconds": 170,
+      "sheet": "source-log-3.jpg",
+      "tile": 50,
+      "shot_id": 69
+    },
+    {
+      "source_seconds": 171,
+      "sheet": "source-log-3.jpg",
+      "tile": 51,
+      "shot_id": 69
+    },
+    {
+      "source_seconds": 172,
+      "sheet": "source-log-3.jpg",
+      "tile": 52,
+      "shot_id": 70
+    },
+    {
+      "source_seconds": 173,
+      "sheet": "source-log-3.jpg",
+      "tile": 53,
+      "shot_id": 70
+    },
+    {
+      "source_seconds": 174,
+      "sheet": "source-log-3.jpg",
+      "tile": 54,
+      "shot_id": 71
+    },
+    {
+      "source_seconds": 175,
+      "sheet": "source-log-3.jpg",
+      "tile": 55,
+      "shot_id": 71
+    },
+    {
+      "source_seconds": 176,
+      "sheet": "source-log-3.jpg",
+      "tile": 56,
+      "shot_id": 71
+    },
+    {
+      "source_seconds": 177,
+      "sheet": "source-log-3.jpg",
+      "tile": 57,
+      "shot_id": 72
+    },
+    {
+      "source_seconds": 178,
+      "sheet": "source-log-3.jpg",
+      "tile": 58,
+      "shot_id": 72
+    },
+    {
+      "source_seconds": 179,
+      "sheet": "source-log-3.jpg",
+      "tile": 59,
+      "shot_id": 73
+    },
+    {
+      "source_seconds": 180,
+      "sheet": "source-log-4.jpg",
+      "tile": 0,
+      "shot_id": 73
+    },
+    {
+      "source_seconds": 181,
+      "sheet": "source-log-4.jpg",
+      "tile": 1,
+      "shot_id": 74
+    },
+    {
+      "source_seconds": 182,
+      "sheet": "source-log-4.jpg",
+      "tile": 2,
+      "shot_id": 74
+    },
+    {
+      "source_seconds": 183,
+      "sheet": "source-log-4.jpg",
+      "tile": 3,
+      "shot_id": 74
+    },
+    {
+      "source_seconds": 184,
+      "sheet": "source-log-4.jpg",
+      "tile": 4,
+      "shot_id": 74
+    },
+    {
+      "source_seconds": 185,
+      "sheet": "source-log-4.jpg",
+      "tile": 5,
+      "shot_id": 75
+    },
+    {
+      "source_seconds": 186,
+      "sheet": "source-log-4.jpg",
+      "tile": 6,
+      "shot_id": 75
+    },
+    {
+      "source_seconds": 187,
+      "sheet": "source-log-4.jpg",
+      "tile": 7,
+      "shot_id": 76
+    },
+    {
+      "source_seconds": 188,
+      "sheet": "source-log-4.jpg",
+      "tile": 8,
+      "shot_id": 76
+    },
+    {
+      "source_seconds": 189,
+      "sheet": "source-log-4.jpg",
+      "tile": 9,
+      "shot_id": 76
+    },
+    {
+      "source_seconds": 190,
+      "sheet": "source-log-4.jpg",
+      "tile": 10,
+      "shot_id": 77
+    },
+    {
+      "source_seconds": 191,
+      "sheet": "source-log-4.jpg",
+      "tile": 11,
+      "shot_id": 77
+    },
+    {
+      "source_seconds": 192,
+      "sheet": "source-log-4.jpg",
+      "tile": 12,
+      "shot_id": 78
+    },
+    {
+      "source_seconds": 193,
+      "sheet": "source-log-4.jpg",
+      "tile": 13,
+      "shot_id": 78
+    },
+    {
+      "source_seconds": 194,
+      "sheet": "source-log-4.jpg",
+      "tile": 14,
+      "shot_id": 79
+    },
+    {
+      "source_seconds": 195,
+      "sheet": "source-log-4.jpg",
+      "tile": 15,
+      "shot_id": 79
+    },
+    {
+      "source_seconds": 196,
+      "sheet": "source-log-4.jpg",
+      "tile": 16,
+      "shot_id": 80
+    },
+    {
+      "source_seconds": 197,
+      "sheet": "source-log-4.jpg",
+      "tile": 17,
+      "shot_id": 80
+    },
+    {
+      "source_seconds": 198,
+      "sheet": "source-log-4.jpg",
+      "tile": 18,
+      "shot_id": 80
+    },
+    {
+      "source_seconds": 199,
+      "sheet": "source-log-4.jpg",
+      "tile": 19,
+      "shot_id": 81
+    },
+    {
+      "source_seconds": 200,
+      "sheet": "source-log-4.jpg",
+      "tile": 20,
+      "shot_id": 81
+    },
+    {
+      "source_seconds": 201,
+      "sheet": "source-log-4.jpg",
+      "tile": 21,
+      "shot_id": 82
+    },
+    {
+      "source_seconds": 202,
+      "sheet": "source-log-4.jpg",
+      "tile": 22,
+      "shot_id": 82
+    },
+    {
+      "source_seconds": 203,
+      "sheet": "source-log-4.jpg",
+      "tile": 23,
+      "shot_id": 83
+    },
+    {
+      "source_seconds": 204,
+      "sheet": "source-log-4.jpg",
+      "tile": 24,
+      "shot_id": 83
+    },
+    {
+      "source_seconds": 205,
+      "sheet": "source-log-4.jpg",
+      "tile": 25,
+      "shot_id": 84
+    },
+    {
+      "source_seconds": 206,
+      "sheet": "source-log-4.jpg",
+      "tile": 26,
+      "shot_id": 84
+    },
+    {
+      "source_seconds": 207,
+      "sheet": "source-log-4.jpg",
+      "tile": 27,
+      "shot_id": 85
+    },
+    {
+      "source_seconds": 208,
+      "sheet": "source-log-4.jpg",
+      "tile": 28,
+      "shot_id": 85
+    },
+    {
+      "source_seconds": 209,
+      "sheet": "source-log-4.jpg",
+      "tile": 29,
+      "shot_id": 86
+    },
+    {
+      "source_seconds": 210,
+      "sheet": "source-log-4.jpg",
+      "tile": 30,
+      "shot_id": 86
+    },
+    {
+      "source_seconds": 211,
+      "sheet": "source-log-4.jpg",
+      "tile": 31,
+      "shot_id": 86
+    },
+    {
+      "source_seconds": 212,
+      "sheet": "source-log-4.jpg",
+      "tile": 32,
+      "shot_id": 87
+    },
+    {
+      "source_seconds": 213,
+      "sheet": "source-log-4.jpg",
+      "tile": 33,
+      "shot_id": 87
+    },
+    {
+      "source_seconds": 214,
+      "sheet": "source-log-4.jpg",
+      "tile": 34,
+      "shot_id": 88
+    },
+    {
+      "source_seconds": 215,
+      "sheet": "source-log-4.jpg",
+      "tile": 35,
+      "shot_id": 88
+    },
+    {
+      "source_seconds": 216,
+      "sheet": "source-log-4.jpg",
+      "tile": 36,
+      "shot_id": 89
+    },
+    {
+      "source_seconds": 217,
+      "sheet": "source-log-4.jpg",
+      "tile": 37,
+      "shot_id": 89
+    },
+    {
+      "source_seconds": 218,
+      "sheet": "source-log-4.jpg",
+      "tile": 38,
+      "shot_id": 90
+    },
+    {
+      "source_seconds": 219,
+      "sheet": "source-log-4.jpg",
+      "tile": 39,
+      "shot_id": 90
+    },
+    {
+      "source_seconds": 220,
+      "sheet": "source-log-4.jpg",
+      "tile": 40,
+      "shot_id": 91
+    },
+    {
+      "source_seconds": 221,
+      "sheet": "source-log-4.jpg",
+      "tile": 41,
+      "shot_id": 91
+    },
+    {
+      "source_seconds": 222,
+      "sheet": "source-log-4.jpg",
+      "tile": 42,
+      "shot_id": 91
+    },
+    {
+      "source_seconds": 223,
+      "sheet": "source-log-4.jpg",
+      "tile": 43,
+      "shot_id": 92
+    },
+    {
+      "source_seconds": 224,
+      "sheet": "source-log-4.jpg",
+      "tile": 44,
+      "shot_id": 92
+    },
+    {
+      "source_seconds": 225,
+      "sheet": "source-log-4.jpg",
+      "tile": 45,
+      "shot_id": 93
+    },
+    {
+      "source_seconds": 226,
+      "sheet": "source-log-4.jpg",
+      "tile": 46,
+      "shot_id": 93
+    },
+    {
+      "source_seconds": 227,
+      "sheet": "source-log-4.jpg",
+      "tile": 47,
+      "shot_id": 94
+    },
+    {
+      "source_seconds": 228,
+      "sheet": "source-log-4.jpg",
+      "tile": 48,
+      "shot_id": 94
+    },
+    {
+      "source_seconds": 229,
+      "sheet": "source-log-4.jpg",
+      "tile": 49,
+      "shot_id": 95
+    },
+    {
+      "source_seconds": 230,
+      "sheet": "source-log-4.jpg",
+      "tile": 50,
+      "shot_id": 95
+    },
+    {
+      "source_seconds": 231,
+      "sheet": "source-log-4.jpg",
+      "tile": 51,
+      "shot_id": 96
+    },
+    {
+      "source_seconds": 232,
+      "sheet": "source-log-4.jpg",
+      "tile": 52,
+      "shot_id": 96
+    },
+    {
+      "source_seconds": 233,
+      "sheet": "source-log-4.jpg",
+      "tile": 53,
+      "shot_id": 96
+    },
+    {
+      "source_seconds": 234,
+      "sheet": "source-log-4.jpg",
+      "tile": 54,
+      "shot_id": 97
+    },
+    {
+      "source_seconds": 235,
+      "sheet": "source-log-4.jpg",
+      "tile": 55,
+      "shot_id": 97
+    },
+    {
+      "source_seconds": 236,
+      "sheet": "source-log-4.jpg",
+      "tile": 56,
+      "shot_id": 98
+    },
+    {
+      "source_seconds": 237,
+      "sheet": "source-log-4.jpg",
+      "tile": 57,
+      "shot_id": 98
+    },
+    {
+      "source_seconds": 238,
+      "sheet": "source-log-4.jpg",
+      "tile": 58,
+      "shot_id": 98
+    },
+    {
+      "source_seconds": 239,
+      "sheet": "source-log-4.jpg",
+      "tile": 59,
+      "shot_id": 99
+    },
+    {
+      "source_seconds": 240,
+      "sheet": "source-log-5.jpg",
+      "tile": 0,
+      "shot_id": 99
+    },
+    {
+      "source_seconds": 241,
+      "sheet": "source-log-5.jpg",
+      "tile": 1,
+      "shot_id": 99
+    },
+    {
+      "source_seconds": 242,
+      "sheet": "source-log-5.jpg",
+      "tile": 2,
+      "shot_id": 99
+    },
+    {
+      "source_seconds": 243,
+      "sheet": "source-log-5.jpg",
+      "tile": 3,
+      "shot_id": 100
+    },
+    {
+      "source_seconds": 244,
+      "sheet": "source-log-5.jpg",
+      "tile": 4,
+      "shot_id": 100
+    },
+    {
+      "source_seconds": 245,
+      "sheet": "source-log-5.jpg",
+      "tile": 5,
+      "shot_id": 100
+    },
+    {
+      "source_seconds": 246,
+      "sheet": "source-log-5.jpg",
+      "tile": 6,
+      "shot_id": 101
+    },
+    {
+      "source_seconds": 247,
+      "sheet": "source-log-5.jpg",
+      "tile": 7,
+      "shot_id": 101
+    },
+    {
+      "source_seconds": 248,
+      "sheet": "source-log-5.jpg",
+      "tile": 8,
+      "shot_id": 102
+    },
+    {
+      "source_seconds": 249,
+      "sheet": "source-log-5.jpg",
+      "tile": 9,
+      "shot_id": 102
+    },
+    {
+      "source_seconds": 250,
+      "sheet": "source-log-5.jpg",
+      "tile": 10,
+      "shot_id": 103
+    },
+    {
+      "source_seconds": 251,
+      "sheet": "source-log-5.jpg",
+      "tile": 11,
+      "shot_id": 103
+    },
+    {
+      "source_seconds": 252,
+      "sheet": "source-log-5.jpg",
+      "tile": 12,
+      "shot_id": 104
+    },
+    {
+      "source_seconds": 253,
+      "sheet": "source-log-5.jpg",
+      "tile": 13,
+      "shot_id": 104
+    },
+    {
+      "source_seconds": 254,
+      "sheet": "source-log-5.jpg",
+      "tile": 14,
+      "shot_id": 104
+    },
+    {
+      "source_seconds": 255,
+      "sheet": "source-log-5.jpg",
+      "tile": 15,
+      "shot_id": 105
+    },
+    {
+      "source_seconds": 256,
+      "sheet": "source-log-5.jpg",
+      "tile": 16,
+      "shot_id": 105
+    },
+    {
+      "source_seconds": 257,
+      "sheet": "source-log-5.jpg",
+      "tile": 17,
+      "shot_id": 106
+    },
+    {
+      "source_seconds": 258,
+      "sheet": "source-log-5.jpg",
+      "tile": 18,
+      "shot_id": 106
+    },
+    {
+      "source_seconds": 259,
+      "sheet": "source-log-5.jpg",
+      "tile": 19,
+      "shot_id": 106
+    },
+    {
+      "source_seconds": 260,
+      "sheet": "source-log-5.jpg",
+      "tile": 20,
+      "shot_id": 106
+    },
+    {
+      "source_seconds": 261,
+      "sheet": "source-log-5.jpg",
+      "tile": 21,
+      "shot_id": 107
+    },
+    {
+      "source_seconds": 262,
+      "sheet": "source-log-5.jpg",
+      "tile": 22,
+      "shot_id": 107
+    },
+    {
+      "source_seconds": 263,
+      "sheet": "source-log-5.jpg",
+      "tile": 23,
+      "shot_id": 108
+    },
+    {
+      "source_seconds": 264,
+      "sheet": "source-log-5.jpg",
+      "tile": 24,
+      "shot_id": 108
+    },
+    {
+      "source_seconds": 265,
+      "sheet": "source-log-5.jpg",
+      "tile": 25,
+      "shot_id": 109
+    },
+    {
+      "source_seconds": 266,
+      "sheet": "source-log-5.jpg",
+      "tile": 26,
+      "shot_id": 109
+    },
+    {
+      "source_seconds": 267,
+      "sheet": "source-log-5.jpg",
+      "tile": 27,
+      "shot_id": 109
+    },
+    {
+      "source_seconds": 268,
+      "sheet": "source-log-5.jpg",
+      "tile": 28,
+      "shot_id": 109
+    },
+    {
+      "source_seconds": 269,
+      "sheet": "source-log-5.jpg",
+      "tile": 29,
+      "shot_id": 110
+    },
+    {
+      "source_seconds": 270,
+      "sheet": "source-log-5.jpg",
+      "tile": 30,
+      "shot_id": 110
+    },
+    {
+      "source_seconds": 271,
+      "sheet": "source-log-5.jpg",
+      "tile": 31,
+      "shot_id": 111
+    },
+    {
+      "source_seconds": 272,
+      "sheet": "source-log-5.jpg",
+      "tile": 32,
+      "shot_id": 111
+    },
+    {
+      "source_seconds": 273,
+      "sheet": "source-log-5.jpg",
+      "tile": 33,
+      "shot_id": 111
+    },
+    {
+      "source_seconds": 274,
+      "sheet": "source-log-5.jpg",
+      "tile": 34,
+      "shot_id": 111
+    },
+    {
+      "source_seconds": 275,
+      "sheet": "source-log-5.jpg",
+      "tile": 35,
+      "shot_id": 112
+    },
+    {
+      "source_seconds": 276,
+      "sheet": "source-log-5.jpg",
+      "tile": 36,
+      "shot_id": 112
+    },
+    {
+      "source_seconds": 277,
+      "sheet": "source-log-5.jpg",
+      "tile": 37,
+      "shot_id": 113
+    },
+    {
+      "source_seconds": 278,
+      "sheet": "source-log-5.jpg",
+      "tile": 38,
+      "shot_id": 113
+    },
+    {
+      "source_seconds": 279,
+      "sheet": "source-log-5.jpg",
+      "tile": 39,
+      "shot_id": 114
+    },
+    {
+      "source_seconds": 280,
+      "sheet": "source-log-5.jpg",
+      "tile": 40,
+      "shot_id": 114
+    },
+    {
+      "source_seconds": 281,
+      "sheet": "source-log-5.jpg",
+      "tile": 41,
+      "shot_id": 114
+    },
+    {
+      "source_seconds": 282,
+      "sheet": "source-log-5.jpg",
+      "tile": 42,
+      "shot_id": 114
+    },
+    {
+      "source_seconds": 283,
+      "sheet": "source-log-5.jpg",
+      "tile": 43,
+      "shot_id": 114
+    },
+    {
+      "source_seconds": 284,
+      "sheet": "source-log-5.jpg",
+      "tile": 44,
+      "shot_id": 115
+    },
+    {
+      "source_seconds": 285,
+      "sheet": "source-log-5.jpg",
+      "tile": 45,
+      "shot_id": 115
+    },
+    {
+      "source_seconds": 286,
+      "sheet": "source-log-5.jpg",
+      "tile": 46,
+      "shot_id": 116
+    },
+    {
+      "source_seconds": 287,
+      "sheet": "source-log-5.jpg",
+      "tile": 47,
+      "shot_id": 116
+    },
+    {
+      "source_seconds": 288,
+      "sheet": "source-log-5.jpg",
+      "tile": 48,
+      "shot_id": 117
+    },
+    {
+      "source_seconds": 289,
+      "sheet": "source-log-5.jpg",
+      "tile": 49,
+      "shot_id": 117
+    },
+    {
+      "source_seconds": 290,
+      "sheet": "source-log-5.jpg",
+      "tile": 50,
+      "shot_id": 118
+    },
+    {
+      "source_seconds": 291,
+      "sheet": "source-log-5.jpg",
+      "tile": 51,
+      "shot_id": 118
+    },
+    {
+      "source_seconds": 292,
+      "sheet": "source-log-5.jpg",
+      "tile": 52,
+      "shot_id": 119
+    },
+    {
+      "source_seconds": 293,
+      "sheet": "source-log-5.jpg",
+      "tile": 53,
+      "shot_id": 120
+    },
+    {
+      "source_seconds": 294,
+      "sheet": "source-log-5.jpg",
+      "tile": 54,
+      "shot_id": 120
+    },
+    {
+      "source_seconds": 295,
+      "sheet": "source-log-5.jpg",
+      "tile": 55,
+      "shot_id": 121
+    },
+    {
+      "source_seconds": 296,
+      "sheet": "source-log-5.jpg",
+      "tile": 56,
+      "shot_id": 121
+    },
+    {
+      "source_seconds": 297,
+      "sheet": "source-log-5.jpg",
+      "tile": 57,
+      "shot_id": 122
+    },
+    {
+      "source_seconds": 298,
+      "sheet": "source-log-5.jpg",
+      "tile": 58,
+      "shot_id": 122
+    },
+    {
+      "source_seconds": 299,
+      "sheet": "source-log-5.jpg",
+      "tile": 59,
+      "shot_id": 122
+    },
+    {
+      "source_seconds": 300,
+      "sheet": "source-log-6.jpg",
+      "tile": 0,
+      "shot_id": 122
+    },
+    {
+      "source_seconds": 301,
+      "sheet": "source-log-6.jpg",
+      "tile": 1,
+      "shot_id": 123
+    },
+    {
+      "source_seconds": 302,
+      "sheet": "source-log-6.jpg",
+      "tile": 2,
+      "shot_id": 123
+    },
+    {
+      "source_seconds": 303,
+      "sheet": "source-log-6.jpg",
+      "tile": 3,
+      "shot_id": 124
+    },
+    {
+      "source_seconds": 304,
+      "sheet": "source-log-6.jpg",
+      "tile": 4,
+      "shot_id": 124
+    },
+    {
+      "source_seconds": 305,
+      "sheet": "source-log-6.jpg",
+      "tile": 5,
+      "shot_id": 125
+    },
+    {
+      "source_seconds": 306,
+      "sheet": "source-log-6.jpg",
+      "tile": 6,
+      "shot_id": 125
+    },
+    {
+      "source_seconds": 307,
+      "sheet": "source-log-6.jpg",
+      "tile": 7,
+      "shot_id": 125
+    },
+    {
+      "source_seconds": 308,
+      "sheet": "source-log-6.jpg",
+      "tile": 8,
+      "shot_id": 126
+    },
+    {
+      "source_seconds": 309,
+      "sheet": "source-log-6.jpg",
+      "tile": 9,
+      "shot_id": 126
+    },
+    {
+      "source_seconds": 310,
+      "sheet": "source-log-6.jpg",
+      "tile": 10,
+      "shot_id": 127
+    },
+    {
+      "source_seconds": 311,
+      "sheet": "source-log-6.jpg",
+      "tile": 11,
+      "shot_id": 127
+    },
+    {
+      "source_seconds": 312,
+      "sheet": "source-log-6.jpg",
+      "tile": 12,
+      "shot_id": 128
+    },
+    {
+      "source_seconds": 313,
+      "sheet": "source-log-6.jpg",
+      "tile": 13,
+      "shot_id": 129
+    },
+    {
+      "source_seconds": 314,
+      "sheet": "source-log-6.jpg",
+      "tile": 14,
+      "shot_id": 129
+    },
+    {
+      "source_seconds": 315,
+      "sheet": "source-log-6.jpg",
+      "tile": 15,
+      "shot_id": 130
+    },
+    {
+      "source_seconds": 316,
+      "sheet": "source-log-6.jpg",
+      "tile": 16,
+      "shot_id": 130
+    },
+    {
+      "source_seconds": 317,
+      "sheet": "source-log-6.jpg",
+      "tile": 17,
+      "shot_id": 130
+    },
+    {
+      "source_seconds": 318,
+      "sheet": "source-log-6.jpg",
+      "tile": 18,
+      "shot_id": 130
+    },
+    {
+      "source_seconds": 319,
+      "sheet": "source-log-6.jpg",
+      "tile": 19,
+      "shot_id": 130
+    },
+    {
+      "source_seconds": 320,
+      "sheet": "source-log-6.jpg",
+      "tile": 20,
+      "shot_id": 130
+    },
+    {
+      "source_seconds": 321,
+      "sheet": "source-log-6.jpg",
+      "tile": 21,
+      "shot_id": 130
+    },
+    {
+      "source_seconds": 322,
+      "sheet": "source-log-6.jpg",
+      "tile": 22,
+      "shot_id": 130
+    },
+    {
+      "source_seconds": 323,
+      "sheet": "source-log-6.jpg",
+      "tile": 23,
+      "shot_id": 130
+    },
+    {
+      "source_seconds": 324,
+      "sheet": "source-log-6.jpg",
+      "tile": 24,
+      "shot_id": 130
+    },
+    {
+      "source_seconds": 325,
+      "sheet": "source-log-6.jpg",
+      "tile": 25,
+      "shot_id": 130
+    },
+    {
+      "source_seconds": 326,
+      "sheet": "source-log-6.jpg",
+      "tile": 26,
+      "shot_id": 130
+    },
+    {
+      "source_seconds": 327,
+      "sheet": "source-log-6.jpg",
+      "tile": 27,
+      "shot_id": 131
+    },
+    {
+      "source_seconds": 328,
+      "sheet": "source-log-6.jpg",
+      "tile": 28,
+      "shot_id": 131
+    },
+    {
+      "source_seconds": 329,
+      "sheet": "source-log-6.jpg",
+      "tile": 29,
+      "shot_id": 131
+    },
+    {
+      "source_seconds": 330,
+      "sheet": "source-log-6.jpg",
+      "tile": 30,
+      "shot_id": 131
+    },
+    {
+      "source_seconds": 331,
+      "sheet": "source-log-6.jpg",
+      "tile": 31,
+      "shot_id": 132
+    },
+    {
+      "source_seconds": 332,
+      "sheet": "source-log-6.jpg",
+      "tile": 32,
+      "shot_id": 132
+    },
+    {
+      "source_seconds": 333,
+      "sheet": "source-log-6.jpg",
+      "tile": 33,
+      "shot_id": 132
+    },
+    {
+      "source_seconds": 334,
+      "sheet": "source-log-6.jpg",
+      "tile": 34,
+      "shot_id": 132
+    },
+    {
+      "source_seconds": 335,
+      "sheet": "source-log-6.jpg",
+      "tile": 35,
+      "shot_id": 132
+    },
+    {
+      "source_seconds": 336,
+      "sheet": "source-log-6.jpg",
+      "tile": 36,
+      "shot_id": 132
+    },
+    {
+      "source_seconds": 337,
+      "sheet": "source-log-6.jpg",
+      "tile": 37,
+      "shot_id": 132
+    },
+    {
+      "source_seconds": 338,
+      "sheet": "source-log-6.jpg",
+      "tile": 38,
+      "shot_id": 132
+    },
+    {
+      "source_seconds": 339,
+      "sheet": "source-log-6.jpg",
+      "tile": 39,
+      "shot_id": 132
+    },
+    {
+      "source_seconds": 340,
+      "sheet": "source-log-6.jpg",
+      "tile": 40,
+      "shot_id": 133
+    },
+    {
+      "source_seconds": 341,
+      "sheet": "source-log-6.jpg",
+      "tile": 41,
+      "shot_id": 133
+    },
+    {
+      "source_seconds": 342,
+      "sheet": "source-log-6.jpg",
+      "tile": 42,
+      "shot_id": 133
+    },
+    {
+      "source_seconds": 343,
+      "sheet": "source-log-6.jpg",
+      "tile": 43,
+      "shot_id": 133
+    },
+    {
+      "source_seconds": 344,
+      "sheet": "source-log-6.jpg",
+      "tile": 44,
+      "shot_id": 134
+    },
+    {
+      "source_seconds": 345,
+      "sheet": "source-log-6.jpg",
+      "tile": 45,
+      "shot_id": 134
+    },
+    {
+      "source_seconds": 346,
+      "sheet": "source-log-6.jpg",
+      "tile": 46,
+      "shot_id": 134
+    },
+    {
+      "source_seconds": 347,
+      "sheet": "source-log-6.jpg",
+      "tile": 47,
+      "shot_id": 134
+    },
+    {
+      "source_seconds": 348,
+      "sheet": "source-log-6.jpg",
+      "tile": 48,
+      "shot_id": 135
+    },
+    {
+      "source_seconds": 349,
+      "sheet": "source-log-6.jpg",
+      "tile": 49,
+      "shot_id": 135
+    },
+    {
+      "source_seconds": 350,
+      "sheet": "source-log-6.jpg",
+      "tile": 50,
+      "shot_id": 135
+    },
+    {
+      "source_seconds": 351,
+      "sheet": "source-log-6.jpg",
+      "tile": 51,
+      "shot_id": 136
+    },
+    {
+      "source_seconds": 352,
+      "sheet": "source-log-6.jpg",
+      "tile": 52,
+      "shot_id": 136
+    },
+    {
+      "source_seconds": 353,
+      "sheet": "source-log-6.jpg",
+      "tile": 53,
+      "shot_id": 137
+    },
+    {
+      "source_seconds": 354,
+      "sheet": "source-log-6.jpg",
+      "tile": 54,
+      "shot_id": 137
+    },
+    {
+      "source_seconds": 355,
+      "sheet": "source-log-6.jpg",
+      "tile": 55,
+      "shot_id": 137
+    },
+    {
+      "source_seconds": 356,
+      "sheet": "source-log-6.jpg",
+      "tile": 56,
+      "shot_id": 137
+    },
+    {
+      "source_seconds": 357,
+      "sheet": "source-log-6.jpg",
+      "tile": 57,
+      "shot_id": 138
+    },
+    {
+      "source_seconds": 358,
+      "sheet": "source-log-6.jpg",
+      "tile": 58,
+      "shot_id": 138
+    },
+    {
+      "source_seconds": 359,
+      "sheet": "source-log-6.jpg",
+      "tile": 59,
+      "shot_id": 138
+    },
+    {
+      "source_seconds": 360,
+      "sheet": "source-log-7.jpg",
+      "tile": 0,
+      "shot_id": 138
+    },
+    {
+      "source_seconds": 361,
+      "sheet": "source-log-7.jpg",
+      "tile": 1,
+      "shot_id": 138
+    },
+    {
+      "source_seconds": 362,
+      "sheet": "source-log-7.jpg",
+      "tile": 2,
+      "shot_id": 138
+    },
+    {
+      "source_seconds": 363,
+      "sheet": "source-log-7.jpg",
+      "tile": 3,
+      "shot_id": 138
+    },
+    {
+      "source_seconds": 364,
+      "sheet": "source-log-7.jpg",
+      "tile": 4,
+      "shot_id": 138
+    },
+    {
+      "source_seconds": 365,
+      "sheet": "source-log-7.jpg",
+      "tile": 5,
+      "shot_id": 138
+    },
+    {
+      "source_seconds": 366,
+      "sheet": "source-log-7.jpg",
+      "tile": 6,
+      "shot_id": 138
+    },
+    {
+      "source_seconds": 367,
+      "sheet": "source-log-7.jpg",
+      "tile": 7,
+      "shot_id": 138
+    },
+    {
+      "source_seconds": 368,
+      "sheet": "source-log-7.jpg",
+      "tile": 8,
+      "shot_id": 138
+    }
+  ],
+  "reservation": "Trailer 1 video ranges are reserved in ../render-plan.json. Do not reuse them in Trailers 2–4 except the chorus allowance."
+}

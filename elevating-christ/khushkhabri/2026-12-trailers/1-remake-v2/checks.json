@@ -1,0 +1,47 @@
+{
+  "passed": true,
+  "duration": 31.333333,
+  "frames": 940,
+  "width": 1080,
+  "height": 1920,
+  "fps": 30,
+  "integrated_lufs": -14.28,
+  "true_peak_dbtp": -1.55,
+  "sync_shots": 7,
+  "sync_source_equality": true,
+  "unsafe_broll_count": 0,
+  "black_intervals": 0,
+  "continuous_audio_sections": 2,
+  "audio_loops": 0,
+  "exported_audio_alignment": [
+    {
+      "output_seconds": 11.5,
+      "source_seconds": 52.5,
+      "lag_ms": 0.0,
+      "correlation": 0.997078421698203
+    },
+    {
+      "output_seconds": 17.5,
+      "source_seconds": 58.5,
+      "lag_ms": 0.0,
+      "correlation": 0.9993035599689871
+    },
+    {
+      "output_seconds": 23.5,
+      "source_seconds": 64.5,
+      "lag_ms": 0.0,
+      "correlation": 0.9979365656766758
+    },
+    {
+      "output_seconds": 29,
+      "source_seconds": 138.16666666666666,
+      "lag_ms": 0.0,
+      "correlation": 0.9957913188409885
+    }
+  ],
+  "negative_sync_regression_passed": true,
+  "negative_narration_overlap_regression_passed": true,
+  "lyric_reference": "Original burned lyric animation, inspected at 4 fps; not an independent listening review.",
+  "source_sha256": "d80fe06e2d1fa7c712fc5819054ffe4a09835ef08845f3c66d41cb28a42fb191",
+  "output_sha256": "5a56a1332e21f5a1d60330fb7d40f4f85585468e9f25dbadcf537e08095901d9"
+}
