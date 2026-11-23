@@ -1,0 +1,1 @@
+PASS trailer-1-remake: 15 shots, 11 sync, 31.33s, -14.29 LUFS (verify_film.py, re-rendered by Claude from remake_film.py @3e32049)
