@@ -1,0 +1,208 @@
+{
+ "language": "hi",
+ "segments": [
+  {
+   "start": 0.0,
+   "end": 6.44,
+   "text": " भ्रभू ने ठैरा या ठेल, उस Gods have突ured the people from all over the world",
+   "words": [
+    {
+     "start": 0.0,
+     "end": 0.56,
+     "word": " भ्रभू"
+    },
+    {
+     "start": 0.56,
+     "end": 0.88,
+     "word": " ने"
+    },
+    {
+     "start": 0.88,
+     "end": 1.66,
+     "word": " ठैरा"
+    },
+    {
+     "start": 1.66,
+     "end": 2.26,
+     "word": " या"
+    },
+    {
+     "start": 2.26,
+     "end": 3.18,
+     "word": " ठेल,"
+    },
+    {
+     "start": 3.18,
+     "end": 3.5,
+     "word": " उस"
+    },
+    {
+     "start": 3.5,
+     "end": 4.02,
+     "word": " Gods"
+    },
+    {
+     "start": 4.02,
+     "end": 4.1,
+     "word": " have突ured"
+    },
+    {
+     "start": 4.1,
+     "end": 4.1,
+     "word": " the"
+    },
+    {
+     "start": 4.1,
+     "end": 4.32,
+     "word": " people"
+    },
+    {
+     "start": 4.32,
+     "end": 5.98,
+     "word": " from"
+    },
+    {
+     "start": 5.98,
+     "end": 5.98,
+     "word": " all"
+    },
+    {
+     "start": 5.98,
+     "end": 5.98,
+     "word": " over"
+    },
+    {
+     "start": 5.98,
+     "end": 6.44,
+     "word": " the"
+    },
+    {
+     "start": 6.44,
+     "end": 6.44,
+     "word": " world"
+    }
+   ]
+  },
+  {
+   "start": 6.44,
+   "end": 10.16,
+   "text": " उसलो प्लहूग plan, कान जिर स्झता होंगे एक्ऊचनत ஆणक.",
+   "words": [
+    {
+     "start": 6.44,
+     "end": 7.14,
+     "word": " उसलो"
+    },
+    {
+     "start": 7.14,
+     "end": 7.72,
+     "word": " प्लहूग"
+    },
+    {
+     "start": 7.72,
+     "end": 8.98,
+     "word": " plan,"
+    },
+    {
+     "start": 8.98,
+     "end": 10.08,
+     "word": " कान"
+    },
+    {
+     "start": 10.08,
+     "end": 10.16,
+     "word": " जिर"
+    },
+    {
+     "start": 10.16,
+     "end": 10.16,
+     "word": " स्झता"
+    },
+    {
+     "start": 10.16,
+     "end": 10.16,
+     "word": " होंगे"
+    },
+    {
+     "start": 10.16,
+     "end": 10.16,
+     "word": " एक्ऊचनत"
+    },
+    {
+     "start": 10.16,
+     "end": 10.16,
+     "word": " ஆणक."
+    }
+   ]
+  },
+  {
+   "start": 10.16,
+   "end": 13.12,
+   "text": " शिन्जी बाग उगइं तैरा यCS ...",
+   "words": [
+    {
+     "start": 10.16,
+     "end": 10.32,
+     "word": " शिन्जी"
+    },
+    {
+     "start": 10.32,
+     "end": 10.78,
+     "word": " बाग"
+    },
+    {
+     "start": 10.78,
+     "end": 12.6,
+     "word": " उगइं"
+    },
+    {
+     "start": 12.6,
+     "end": 13.12,
+     "word": " तैरा"
+    },
+    {
+     "start": 13.12,
+     "end": 13.12,
+     "word": " यCS"
+    },
+    {
+     "start": 13.12,
+     "end": 13.12,
+     "word": " ..."
+    }
+   ]
+  },
+  {
+   "start": 13.12,
+   "end": 16.68,
+   "text": " ब्रबू ने खेरा आगे �obia...",
+   "words": [
+    {
+     "start": 13.12,
+     "end": 13.68,
+     "word": " ब्रबू"
+    },
+    {
+     "start": 13.68,
+     "end": 13.98,
+     "word": " ने"
+    },
+    {
+     "start": 13.98,
+     "end": 14.84,
+     "word": " खेरा"
+    },
+    {
+     "start": 14.84,
+     "end": 15.86,
+     "word": " आगे"
+    },
+    {
+     "start": 15.86,
+     "end": 16.68,
+     "word": " �obia..."
+    }
+   ]
+  }
+ ]
+}
