@@ -41,6 +41,12 @@ class ContentSafety(unittest.TestCase):
         with self.assertRaises(ec.ContentError):
             ec.job_slides({'slides': [{'hi': 'आशा', 'en': 123}]})
 
+    def test_dashboard_slide_text_supports_both_languages_without_workflow_edits(self):
+        slides = ec.job_slides({'slideText': '1) HI: आशा\nEN: Hope\nLABEL: ADVENT | 2) सेव करें'})
+        self.assertEqual(slides[0][1]['en'], 'Hope')
+        self.assertEqual(slides[0][1]['label'], 'ADVENT')
+        self.assertEqual(slides[1][1]['text'], 'सेव करें')
+
     def test_verse_commentary_cannot_be_silently_dropped(self):
         with self.assertRaises(ec.ContentError):
             ec.job_slides({'slides': [{'hi': 'भूमिका: “वचन” — यूहन्ना 3:16', 'en': 'Commentary and verse'}]})

@@ -134,7 +134,17 @@ def parse_slide(s):
 def job_slides(job):
     """Legacy Slide Text remains supported; structured slides keep bilingual text unambiguous."""
     if 'slides' not in job:
-        return [(text, parse_slide(text)) for text in split_slides(job.get('slideText', ''))]
+        result = []
+        for text in split_slides(job.get('slideText', '')):
+            if text.startswith('HI: '):
+                match = re.fullmatch(r'HI: (.*?)\nEN: (.*?)(?:\nLABEL: (.*))?', text, re.S)
+                if not match:
+                    raise ContentError('Bilingual Slide Text needs HI: and EN: on separate lines.')
+                hi, en, label = match.groups()
+                result.extend(job_slides({'slides': [{'hi': hi, 'en': en, 'label': label or ''}]}))
+            else:
+                result.append((text, parse_slide(text)))
+        return result
     if not isinstance(job['slides'], list):
         raise ContentError('slides must be an array of {hi, en, label} objects.')
     result = []

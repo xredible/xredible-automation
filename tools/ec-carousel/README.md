@@ -14,6 +14,10 @@ The existing `slideText` job format remains compatible. For bilingual content, p
 ]}
 ```
 
+The existing dashboard/workflow can also pass bilingual copy through its ordinary `slideText` field, without a
+workflow edit. Each numbered slide uses `HI: Hindi copy`, a newline, `EN: English copy`, and optionally another newline
+with `LABEL: pill label`; separate slides with the existing ` | ` delimiter. Unmarked legacy slides are unchanged.
+
 Hindi is navy; English is smaller soft grey after a short gold rule. A supplied `label` becomes a navy/gold pill.
 The last bilingual slide has a white CTA card. Quoted Hindi verses use the existing O.V. check before **any** image
 is drawn, with English beneath the verse card. Put verse commentary on separate slides so nothing is omitted.
