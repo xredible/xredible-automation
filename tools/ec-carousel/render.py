@@ -131,6 +131,27 @@ def parse_slide(s):
             'check': (m.group(1), m.group(2), m.group(3), m.group(4), m.group(5))}
 
 
+def job_slides(job):
+    """Legacy Slide Text remains supported; structured slides keep bilingual text unambiguous."""
+    if 'slides' not in job:
+        return [(text, parse_slide(text)) for text in split_slides(job.get('slideText', ''))]
+    if not isinstance(job['slides'], list):
+        raise ContentError('slides must be an array of {hi, en, label} objects.')
+    result = []
+    for slide in job['slides']:
+        if not isinstance(slide, dict) or not isinstance(slide.get('hi'), str) or not slide['hi'].strip():
+            raise ContentError('Every bilingual slide needs nonempty Hindi text in hi.')
+        for key in ('en', 'label'):
+            if key in slide and not isinstance(slide[key], str):
+                raise ContentError(f'Slide {key} must be text.')
+        parsed = parse_slide(slide['hi'])
+        if parsed['kind'] == 'verse' and (parsed['head'] or parsed['note']):
+            raise ContentError('Put bilingual verse commentary on separate slides; keep hi to the quoted verse and reference.')
+        parsed.update(en=slide.get('en', ''), label=slide.get('label', ''), bilingual=True)
+        result.append((slide['hi'], parsed))
+    return result
+
+
 # ---------- drawing ----------
 
 class Fonts:
@@ -143,7 +164,10 @@ class Fonts:
                 800: '800ExtraBold/Baloo2_800ExtraBold'}[weight]
         k = (size, weight)
         if k not in self.cache:
-            self.cache[k] = ImageFont.truetype(os.path.join(self.d, name + '.ttf'), size)
+            path = os.path.join(self.d, name + '.ttf')
+            if not os.path.exists(path):
+                path = os.path.join(self.d, os.path.basename(name) + '.ttf')
+            self.cache[k] = ImageFont.truetype(path, size)
         return self.cache[k]
 
 
@@ -182,9 +206,9 @@ def badge(size):
 
 def wrap(d, text, font, maxw):
     lines, cur = [], ''
-    for w in text.split(' '):
+    for w in text.split():
         t = (cur + ' ' + w).strip()
-        if d.textlength(t, font=font) <= maxw or not cur:
+        if line_width(d, t, font) <= maxw or not cur:
             cur = t
         else:
             lines.append(cur); cur = w
@@ -195,6 +219,7 @@ def wrap(d, text, font, maxw):
 
 def balanced(d, text, font, maxw):
     """Same number of lines as a greedy wrap, but evened out so no line is a lone word."""
+    text = ' '.join(text.split())
     lines = wrap(d, text, font, maxw)
     if len(lines) < 2:
         return lines
@@ -212,10 +237,24 @@ def block(d, text, font, maxw, lh=1.25):
     return balanced(d, text, font, maxw), int(font.size * lh)
 
 
-def ctext(d, y, text, font, fill, maxw=940, lh=1.25):
+def line_width(d, text, font):
+    return sum(d.textlength(part, font=font) for part in text.split('🙏')) + text.count('🙏') * font.size
+
+
+def ctext(d, y, text, font, fill, maxw=940, lh=1.25, canvas=None):
     lines, step = block(d, text, font, maxw, lh)
     for ln in lines:
-        d.text(((W - d.textlength(ln, font=font)) / 2, y), ln, font=font, fill=fill); y += step
+        x = (W - line_width(d, ln, font)) / 2
+        parts = ln.split('🙏')
+        for index, part in enumerate(parts):
+            d.text((x, y), part, font=font, fill=fill); x += d.textlength(part, font=font)
+            if index < len(parts) - 1:
+                if canvas is None:
+                    raise ContentError('Folded-hands emoji needs a bilingual slide canvas.')
+                icon = Image.open(os.path.join(HERE, 'assets', 'folded-hands.png')).convert('RGBA')
+                icon = icon.resize((font.size, font.size), Image.Resampling.LANCZOS)
+                canvas.paste(icon, (round(x), round(y + font.size * .2)), icon); x += font.size
+        y += step
     return y
 
 
@@ -236,9 +275,23 @@ def card(im, box, outline=GOLD):
 
 
 def footer(im, B):
-    d = ImageDraw.Draw(im); b = badge(110); im.paste(b, (60, H - 160), b)
-    d.text((190, H - 140), 'Elevating CHRIST', font=B(44, 800), fill=NAVY)
-    d.text((190, H - 92), 'www.elevatingchrist.com', font=B(30, 500), fill=SOFT)
+    lockup = Image.open(os.path.join(HERE, 'assets', 'ElevatingCHRIST-lockup-horizontal-transparent.png')).convert('RGBA')
+    lockup.thumbnail((600, 112), Image.Resampling.LANCZOS)
+    x0, y0 = 54, H - 196
+    alpha = lockup.getchannel('A').point(lambda value: int(value * .55))
+    shadow = Image.new('RGBA', lockup.size, NAVY + (0,)); shadow.putalpha(alpha)
+    pad = Image.new('RGBA', (lockup.width + 40, lockup.height + 40))
+    pad.alpha_composite(shadow, (20, 22)); pad = pad.filter(ImageFilter.GaussianBlur(5))
+    base = im.convert('RGBA'); base.alpha_composite(pad, (x0 - 20, y0 - 20)); base.alpha_composite(lockup, (x0, y0))
+    im.paste(base.convert('RGB'))
+    ImageDraw.Draw(im).text((x0 + int(lockup.height * 1017 / 1024) + 18, y0 + lockup.height + 2),
+                           'www.elevatingchrist.com', font=B(28, 500), fill=SOFT)
+
+
+def cover_logo(im):
+    logo = Image.open(os.path.join(HERE, 'assets', 'ElevatingCHRIST-logo-transparent.png')).convert('RGBA')
+    logo.thumbnail((200, 200), Image.Resampling.LANCZOS)
+    im.paste(logo, ((W - logo.width) // 2, 150), logo)
 
 
 def tag(d, y, txt, B):
@@ -264,7 +317,7 @@ def draw_verse_card(im, y, f, lines, step, ref, B):
 
 def cover(text, B, seed):
     im = heaven(seed); d = ImageDraw.Draw(im)
-    b = badge(200); im.paste(b, ((W - 200) // 2, 150), b)
+    cover_logo(im)
     if ' बनाम ' in text or ' vs ' in text.lower():
         a, c = re.split(r'\s+(?:बनाम|vs\.?|VS\.?)\s+', text, maxsplit=1)
         fa = fit(d, a, B, [108, 96, 84], 800, 980, 2); fc = fit(d, c, B, [108, 96, 84], 800, 980, 2)
@@ -332,6 +385,68 @@ def text_slide(text, B, seed, last):
     return im
 
 
+def bilingual_slide(p, B, seed, first=False, last=False):
+    """Final light house style: pill, Hindi, gold rule, English, canonical footer."""
+    im = heaven(seed); d = ImageDraw.Draw(im)
+    label, en = p.get('label', ''), p.get('en', '')
+    label_h = 110 if label else 0
+    if label and d.textlength(label, font=B(40, 800)) > 970:
+        raise ContentError('Pill label is too long.')
+    if p['kind'] == 'verse':
+        chosen = None
+        for hi_size in (56, 52, 48, 44, 40, 36):
+            for en_size in (40, 38, 36, 34):
+                fh, fe = B(hi_size, 600), B(en_size, 600)
+                hl, hs = block(d, p['quote'], fh, 800, 1.4)
+                el, es = block(d, en, fe, 880, 1.25) if en else ([], 0)
+                card_h = len(hl) * hs + 140
+                total = label_h + card_h + (44 + len(el) * es if en else 0)
+                if total <= 980:
+                    chosen = fh, fe, hl, hs, total
+                    break
+            if chosen:
+                break
+        if not chosen:
+            raise ContentError('Bilingual verse is too long for a legible slide.')
+        fh, fe, hl, hs, total = chosen
+        y = max(70, (H - 220 - total) // 2)
+        if label:
+            tag(d, y, label, B); y += label_h
+        y = draw_verse_card(im, y, fh, hl, hs, p['ref'], B); d = ImageDraw.Draw(im)
+        if en:
+            d.line((460, y + 17, 620, y + 17), fill=GOLD, width=5)
+            y = ctext(d, y + 44, en, fe, SOFT, 880, 1.25, canvas=im)
+    else:
+        hi = p['text']
+        primary, accent = hi.split('\n', 1) if first and '\n' in hi else (hi, '')
+        fh = fit(d, primary, B, [100, 88, 80, 72, 64] if first else [84, 76, 68, 62], 800, 920, 4)
+        fa = B(58, 700) if accent else None
+        fe = fit(d, en, B, [46, 42, 38, 34], 600, 880, 4) if en else None
+        hl, hs = block(d, primary, fh, 920, 1.22)
+        al, astep = block(d, accent, fa, 920, 1.22) if accent else ([], 0)
+        el, es = block(d, en, fe, 880, 1.25) if en else ([], 0)
+        total = label_h + len(hl) * hs + (16 + len(al) * astep if accent else 0) + (44 + len(el) * es if en else 0)
+        y = max(420 if first else 140, (H - 220 - total) // 2)
+        if y + total > H - 236:
+            raise ContentError('Bilingual copy overlaps the footer; shorten the supplied copy.')
+        if first:
+            cover_logo(im)
+        if label:
+            tag(d, y, label, B); y += label_h
+        if last:
+            card(im, (65, y - 28, W - 65, y + total - label_h + 28)); d = ImageDraw.Draw(im)
+        y = ctext(d, y, primary, fh, NAVY, 920, 1.22, canvas=im)
+        if accent:
+            y = ctext(d, y + 16, accent, fa, GOLD, 920, 1.22, canvas=im)
+        if en:
+            d.line((460, y + 14, 620, y + 14), fill=GOLD, width=5)
+            y = ctext(d, y + 44, en, fe, SOFT, 880, 1.25, canvas=im)
+    if y > H - 236:
+        raise ContentError('Bilingual copy overlaps the footer.')
+    footer(im, B)
+    return im
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--job', required=True); ap.add_argument('--out', required=True); ap.add_argument('--fonts', required=True)
@@ -342,19 +457,21 @@ def main():
     code = 1
     try:
         job = json.load(open(a.job, encoding='utf-8'))
-        slides = split_slides(job.get('slideText', ''))
+        slides = job_slides(job)
         if len(slides) < 2:
             raise ContentError('The row has no planned Slide Text (need "1) … | 2) …").')
         if len(slides) > 10:
             raise ContentError('Instagram allows at most 10 slides; the Slide Text has more.')
-        parsed = [parse_slide(s) for s in slides]
+        parsed = [p for _, p in slides]
         for p in parsed:  # check every verse before drawing anything
             if p['kind'] == 'verse':
                 result['verses'].append(check_verse(*p['check'], a.ov_dir, a.fetch))
         B = Fonts(a.fonts)
         seed = sum(map(ord, job.get('title', ''))) % 1000
-        for i, (raw, p) in enumerate(zip(slides, parsed)):
-            if i == 0 and p['kind'] == 'text':
+        for i, (raw, p) in enumerate(slides):
+            if p.get('bilingual'):
+                im = bilingual_slide(p, B, seed + i, i == 0, i == len(slides) - 1)
+            elif i == 0 and p['kind'] == 'text':
                 im = cover(raw, B, seed)
             elif p['kind'] == 'verse':
                 im = verse_slide(p, B, seed + i)
