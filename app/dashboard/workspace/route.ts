@@ -36,14 +36,6 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   const me = await currentUser();
   if (!me) return reply({ ok: false, error: "Signed out." }, 401);
-  if (me.role !== "admin")
-    return reply(
-      {
-        ok: false,
-        error: "Only the owner can change this business workspace.",
-      },
-      403,
-    );
   const origin = request.headers.get("origin");
   const host =
     request.headers.get("x-forwarded-host") || request.headers.get("host");
@@ -59,6 +51,16 @@ export async function POST(request: Request) {
   } catch {
     return reply({ ok: false, error: "Invalid request." }, 400);
   }
+  // Members (e.g. Sakshi) may only queue images for a draft: it changes no text
+  // and publishes nothing. Every other workspace change stays owner-only.
+  if (me.role !== "admin" && body?.op !== "make_images")
+    return reply(
+      {
+        ok: false,
+        error: "Only the owner can change this business workspace.",
+      },
+      403,
+    );
   if (
     !body ||
     !isWorkspace(String(body.biz)) ||
