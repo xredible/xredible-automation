@@ -36,6 +36,16 @@ test('printable badges require a real PDF response; both badge layouts fit',asyn
  await assert.rejects(verifyPrintable(job,async()=>new Response('missing',{status:404})),/could not be verified/);
  await withJob(job,async(file,out)=>{const reports=await render(file,out,{fetchPrintable:async()=>new Response('%PDF-1.7 fixture')});assert.ok(reports.find(r=>r.file==='pin.jpg').printableBadge);assert.ok(reports.find(r=>r.file==='ig-cover.jpg').printableBadge);assert.deepEqual(reports.filter(r=>r.template==='ig-step').map(r=>r.photoSources[0]),[1,2]);for(const step of reports.filter(r=>r.template==='ig-step'))assert.equal(step.text.find(t=>t.field==='body').fontSize,58);assert.ok(reports.find(r=>r.file==='pin.jpg').text.find(t=>t.field==='title').fontSize>=100);});
 });
+test('email-gated printables are accepted only with the matching file card on the same article',async()=>{
+ const pdf='https://nestoodle.com/wp-content/uploads/2026/11/Test-Printable.pdf';
+ const job={printableUrl:pdf,articleUrl:'https://nestoodle.com/test-post/'};
+ const token=Buffer.from('2026/11/Test-Printable.pdf').toString('base64url')+'.0123456789abcdef0123';
+ const card=(file)=>`<form class="nst-gate-form" method="post" action="https://nestoodle.com/wp-admin/admin-ajax.php?action=nestoodle_printable"><input type="hidden" name="file" value="${file}"><input type="email" name="email"></form>`;
+ const site=(html,loc='https://nestoodle.com/test-post/#free-printable')=>async(u)=>String(u).endsWith('.pdf')?new Response(null,{status:302,headers:{location:loc}}):new Response(html,{headers:{'content-type':'text/html'}});
+ assert.equal(await verifyPrintable(job,site(card(token))),'email-gated');
+ await assert.rejects(verifyPrintable(job,site(card(Buffer.from('2026/11/Other.pdf').toString('base64url')+'.0123456789abcdef0123'))),/file card not found/);
+ await assert.rejects(verifyPrintable(job,site(card(token),'https://nestoodle.com/other-post/#free-printable')),/does not lead to this article/);
+});
 test('pin-only mode uses one reviewed photo, fits long keyword-led titles, renders no social side effects',async()=>{
  const job=structuredClone(fixture);job.title='Thanksgiving Crafts for Kids with Toilet Paper Rolls: Creative Play Ideas';job.photos=job.photos.slice(0,1);job.steps=[];delete job.eyebrow;delete job.highlight;delete job.printableUrl;delete job.printableVerified;
  assert.throws(()=>validate(job));
