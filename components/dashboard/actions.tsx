@@ -151,6 +151,14 @@ export function RowActions({ item }: { item: QueueItem }) {
   const pin = /pinterest/i.test(item.platform)
   // Elevating CHRIST drafts planned as slides but still without pictures: render them from the Slide Text.
   const needsImages = ctx.biz === "elevating-christ" && s === "draft" && !item.isVideo && !(item.media && item.media.length) && !item.preview && /carousel|fb_post|post/i.test(`${item.format} ${item.postType}`)
+  // Nestoodle article rows (carousel / Facebook / pin) still without pictures: render them from the article's checked
+  // photos, or ask the image worker (Codex, Gemini backup) for photos first. Approving waits until they are there.
+  const nstNoPictures =
+    ctx.biz === "nestoodle" &&
+    ["draft", "failed"].includes(s) &&
+    !item.isVideo &&
+    /instagram|facebook|pinterest/i.test(item.platform) &&
+    (/carousel/i.test(`${item.format} ${item.postType}`) ? (item.slides || 0) < 2 : !item.preview && !(item.slides || 0))
 
   const setStatus = (to: "ready" | "paused" | "draft", msg: string) => {
     if (to === "ready" && past && s !== "failed" && !window.confirm(ctx.biz === "autopilot" ? "This post's time has already passed, so it will go out in about 15 minutes. Post it then?" : "This post's time has already passed, so it will go out at the next hourly check. Post it then?")) return
@@ -176,9 +184,20 @@ export function RowActions({ item }: { item: QueueItem }) {
           <Play className="h-3 w-3" /> Resume
         </button>
       ) : null}
-      {!locked && s === "failed" ? (
+      {!locked && s === "failed" && !nstNoPictures ? (
         <button type="button" disabled={busy} onClick={() => setStatus("ready", "Set to try again at the next hourly check")} className={btn}>
           <RotateCcw className="h-3 w-3" /> Retry
+        </button>
+      ) : null}
+      {!locked && nstNoPictures ? (
+        <button
+          type="button"
+          disabled={busy}
+          title="Make the Instagram, Facebook and Pinterest pictures from the article's checked photos. If the article has none yet, Codex makes them first (Gemini takes over when Codex is out). Nothing is posted."
+          onClick={() => ctx.run({ action: "make_images", rows: one }, "Making the pictures. They appear here in about 5 minutes, and Telegram tells you when they're ready")}
+          className={`${btn} border-[var(--brand)] text-[var(--brand)]`}
+        >
+          <ImagePlus className="h-3 w-3" /> Make images
         </button>
       ) : null}
       {!locked && needsImages ? (
@@ -192,7 +211,7 @@ export function RowActions({ item }: { item: QueueItem }) {
           <ImagePlus className="h-3 w-3" /> Make images
         </button>
       ) : null}
-      {!locked && !["ready", "scheduled", "paused", "failed"].includes(s) ? (
+      {!locked && !nstNoPictures && !["ready", "scheduled", "paused", "failed"].includes(s) ? (
         <button type="button" disabled={busy} onClick={() => setStatus("ready", pin ? "Approved. The pin will post at its time" : "Scheduled. It will post at its time")} className={btn}>
           <Play className="h-3 w-3" /> {pin ? "Approve" : "Schedule"}
         </button>
