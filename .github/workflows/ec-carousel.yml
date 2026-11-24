@@ -54,6 +54,8 @@ jobs:
           F="$RUNNER_TEMP/fonts/package"
           python3 tools/ec-carousel/render.py --job tools/ec-carousel/samples/plan-vs-gods-plan.json --out "$RUNNER_TEMP/ok" --fonts "$F" --ov-dir media/ref/hindi-bible --fetch
           test -f "$RUNNER_TEMP/ok/slide-6.jpg"
+          python3 -m unittest discover -s tools/ec-carousel -p 'test_*.py'
+          python3 tools/ec-carousel/render.py --job tools/ec-carousel/samples/bilingual-advent.json --out "$RUNNER_TEMP/bilingual" --fonts "$F" --ov-dir media/ref/hindi-bible --fetch
           set +e
           python3 tools/ec-carousel/render.py --job tools/ec-carousel/samples/wrong-verse.json --out "$RUNNER_TEMP/bad" --fonts "$F" --ov-dir media/ref/hindi-bible --fetch
           test $? -eq 2 || { echo "wrong verse was not rejected"; exit 1; }
