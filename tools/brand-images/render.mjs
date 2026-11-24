@@ -49,15 +49,39 @@ async function photoData(photo, base) {
  const root=await realpath(base), target=await realpath(path.resolve(base,photo.src));
  if(!target.startsWith(root+path.sep)) fail('Photo must be inside job directory');return dataUri(target);
 }
+// Printable PDFs are email-gated since 21 Nov: the PDF URL redirects to "<article>#free-printable", where a file card
+// (form.nst-gate-form) carries a signed token for that exact file. Accept that card (read-only, never submits the form).
+export function matchingGate(html,pdf){
+ const attr=(tag,name)=>tag.match(new RegExp(`\\b${name}=["']([^"']*)["']`,'i'))?.[1];
+ const relative=decodeURIComponent(new URL(pdf).pathname.slice('/wp-content/uploads/'.length));
+ const clean=String(html).replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi,'');
+ for(const match of clean.matchAll(/<form\b[^>]*>[\s\S]*?<\/form>/gi)){
+  const form=match[0],head=form.slice(0,form.indexOf('>')+1);
+  if(!String(attr(head,'class')).split(/\s+/).includes('nst-gate-form')||attr(head,'action')!=='https://nestoodle.com/wp-admin/admin-ajax.php?action=nestoodle_printable')continue;
+  const fields=new Map([...form.matchAll(/<input\b[^>]*>/gi)].map(m=>[attr(m[0],'name'),attr(m[0],'value')]));
+  const parts=String(fields.get('file')||'').split('.');
+  if(parts.length===2&&/^[a-f0-9]{20}$/.test(parts[1])&&Buffer.from(parts[0],'base64url').toString('utf8')===relative&&/<input\b[^>]*type=["']email["']/i.test(form))return true;
+ }
+ return false;
+}
 export async function verifyPrintable(job,fetcher=fetch){
  if(!job.printableUrl)return;
  const url=new URL(job.printableUrl);
  if(url.protocol!=='https:'||url.hostname!=='nestoodle.com'||url.username||url.password||url.port||url.hash)fail('Printable must be a public Nestoodle PDF');
- const response=await fetcher(url,{headers:{Range:'bytes=0-4'},redirect:'error',signal:AbortSignal.timeout(30000)});
+ const response=await fetcher(url,{headers:{Range:'bytes=0-4'},redirect:'manual',signal:AbortSignal.timeout(30000)});
+ if([301,302,303,307,308].includes(response.status)){
+  const article=new URL(job.articleUrl||'');article.search='';article.hash='';
+  const location=new URL(response.headers.get('location')||'',url);
+  if(article.origin!=='https://nestoodle.com'||location.href!==article.href+'#free-printable')fail('Printable redirect does not lead to this article');
+  const page=await fetcher(article,{redirect:'error',signal:AbortSignal.timeout(30000)});
+  if(!page.ok||!matchingGate(await page.text(),url.href))fail('Printable file card not found on the article');
+  return 'email-gated';
+ }
  if(!response.ok)fail('Printable PDF could not be verified');
  const reader=response.body.getReader();let bytes=Buffer.alloc(0);
  try{while(bytes.length<5){const part=await reader.read();if(part.done)break;bytes=Buffer.concat([bytes,Buffer.from(part.value)]);}}finally{await reader.cancel();}
  if(bytes.subarray(0,5).toString('ascii')!=='%PDF-')fail('Printable link did not return a PDF');
+ return 'direct';
 }
 export async function render(jobPath,outDir,options={}) {
  const job=validate(JSON.parse(await readFile(jobPath,'utf8')),options);
