@@ -1,0 +1,31 @@
+{
+  "item": "r2",
+  "duration_s": 52.534,
+  "video": {
+    "codec": "h264",
+    "width": 1080,
+    "height": 1920,
+    "fps": "30/1"
+  },
+  "audio": {
+    "codec": "aac",
+    "sample_rate": "48000",
+    "channels": 2,
+    "input_i_lufs": "-14.22",
+    "input_tp_db": "-1.39",
+    "input_lra": "7.30"
+  },
+  "captions": {
+    "count": 13,
+    "max_hi_lines": 2,
+    "max_en_lines": 2
+  },
+  "contact_sheet_frames": 53,
+  "sha256": {
+    "reel.mp4": "b459de8c585b0e40226cafe56ccd5ca1f64b3cbbc30cd8a806c2868fbfde6a5f",
+    "cover.jpg": "f6831ab8e31fa5b52b92423fcb389d66f1d83337d13b6d1e58571a38d6ef257c",
+    "cover-phone.jpg": "8de6f995f00ec3444c1bcecc23a3d46425ac1ecf4c22f458ff98df61934a4734",
+    "contact-sheet.jpg": "673df7ac9047f8af7fb49e8677a73942a109242ae939100051a5abb366fd98f7",
+    "review-timecodes.mp4": "3d44f612e484e53dc578473add7811cec60a6ad0575539e7a953e8cb1aaf3786"
+  }
+}

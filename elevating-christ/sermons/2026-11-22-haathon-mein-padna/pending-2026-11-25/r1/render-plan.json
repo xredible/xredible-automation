@@ -1,0 +1,150 @@
+{
+  "src": "/home/xredible/projects/xredible/media-worktree/elevating-christ/sermons/2026-11-22-haathon-mein-padna/clips/a-haath.mp4",
+  "segments": [
+    [
+      2.3,
+      7.24
+    ],
+    [
+      8.27,
+      15.41
+    ],
+    [
+      19.63,
+      26.64
+    ],
+    [
+      27.49,
+      29.6
+    ],
+    [
+      31.61,
+      35.3
+    ],
+    [
+      50.59,
+      53.26
+    ],
+    [
+      56.37,
+      62
+    ]
+  ],
+  "captions": [
+    [
+      0.25,
+      2.85,
+      "लेकिन जिस दिन आप परमेश्वर के हाथ में पड़ गए,",
+      "But the day you fall into God's hands,"
+    ],
+    [
+      2.85,
+      5.2,
+      "उससे भयानक बात कुछ नहीं हो सकती।",
+      "nothing could be more fearful."
+    ],
+    [
+      5.2,
+      6.32,
+      "दो चीज़ें हैं।",
+      "There are two things."
+    ],
+    [
+      6.32,
+      8.96,
+      "एक बात है परमेश्वर के हाथ में होना,",
+      "One is being in God's hand,"
+    ],
+    [
+      8.96,
+      12.34,
+      "और एक बात है परमेश्वर के हाथ में पड़ना।",
+      "the other is falling into God's hands."
+    ],
+    [
+      12.34,
+      14.92,
+      "इन दोनों चीज़ों में बहुत अंतर है।",
+      "There is a huge difference between the two."
+    ],
+    [
+      14.92,
+      19.35,
+      "जब आप परमेश्वर के हाथों में हो, तब आप सुरक्षित हो।",
+      "When you are in God's hands, you are safe."
+    ],
+    [
+      19.35,
+      21.47,
+      "तब आप प्रभु के बल के नीचे हो।",
+      "You are under the Lord's strength."
+    ],
+    [
+      21.47,
+      25.16,
+      "परमेश्वर कहता है, मैं तुझे अपने हाथ में लिए चलता हूँ।",
+      "God says, \"I carry you in My hand.\""
+    ],
+    [
+      25.16,
+      28.35,
+      "हर खतरे से परमेश्वर आपकी रक्षा करता है।",
+      "God protects you from every danger."
+    ],
+    [
+      28.35,
+      31.86,
+      "आपको और मुझे परमेश्वर के हाथों में रहना है।",
+      "You and I must stay in God's hands,"
+    ],
+    [
+      31.86,
+      33.16,
+      "परमेश्वर के हाथों में पड़ना नहीं है।",
+      "not fall into them."
+    ]
+  ],
+  "hook": [
+    "/home/xredible/work/ec-pending-reels-2026-11-25/r1/cards/hook.png",
+    0,
+    3.5
+  ],
+  "name": [
+    "/home/xredible/work/ec-pending-reels-2026-11-25/r1/cards/name.png",
+    0.5,
+    5.0
+  ],
+  "logo": "/home/xredible/work/ec-pending-reels-2026-11-25/r1/cards/logo.png",
+  "verse": [
+    "/home/xredible/work/ec-pending-reels-2026-11-25/r1/cards/verse.png",
+    4.5
+  ],
+  "end": "/home/xredible/work/ec-pending-reels-2026-11-25/r1/cards/end.png",
+  "end_dur": 2.5,
+  "out": "/home/xredible/work/ec-pending-reels-2026-11-25/r1/out/reel.mp4",
+  "layout": "blur",
+  "fg_crop_w": 1040,
+  "fg_crop_h": 690,
+  "fg_crop_y": 125,
+  "fg_cx": 0.5,
+  "fg_y": 480,
+  "bg_from_fg": true,
+  "bg_brightness": -0.28,
+  "cap_y": 1290,
+  "cap_size": 66,
+  "hi_font": "/home/xredible/projects/xredible/media-worktree/ref/fonts/ec-hindi/Baloo2_800ExtraBold.ttf",
+  "preset": "medium",
+  "confidence": [
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    0.95,
+    1.0,
+    1.0,
+    1.0,
+    1.0,
+    0.93
+  ]
+}
