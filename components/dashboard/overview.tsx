@@ -128,6 +128,9 @@ export function Overview({
             /ready|processing/i.test(x.status) &&
             /auto/i.test(x.mode)) ||
           (x.when &&
+            /proposed/i.test(x.status) &&
+            Date.parse(x.when) > now) ||
+          (x.when &&
             /draft/i.test(x.status) &&
             Date.parse(x.when) - now < 3 * 86400_000 &&
             Date.parse(x.when) > now),
@@ -248,7 +251,7 @@ export function Overview({
               Needs you
             </span>
           }
-          sub="Failed posts, overdue posts and drafts due within 3 days"
+          sub="Failed posts, overdue posts, drafts due within 3 days and posts Peter proposed"
         >
           {rangeNote("queue") ? (
             <p className="mb-2 text-xs text-[var(--muted)]">

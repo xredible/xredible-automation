@@ -211,12 +211,23 @@ export function RowActions({ item }: { item: QueueItem }) {
           <ImagePlus className="h-3 w-3" /> Make images
         </button>
       ) : null}
-      {!locked && !nstNoPictures && !["ready", "scheduled", "paused", "failed"].includes(s) ? (
+      {!locked && s === "proposed" ? (
+        <button
+          type="button"
+          disabled={busy}
+          title="Peter (the marketing manager) wrote this post. Approving puts it in the calendar as a Draft: pictures are made, and it posts at its time unless you pause it."
+          onClick={() => setStatus("draft", "Approved. It's in the calendar now; pictures are made and it posts at its time")}
+          className={`${btn} border-[var(--brand)] text-[var(--brand)]`}
+        >
+          <Check className="h-3 w-3" /> Approve
+        </button>
+      ) : null}
+      {!locked && !nstNoPictures && !["ready", "scheduled", "paused", "failed", "proposed"].includes(s) ? (
         <button type="button" disabled={busy} onClick={() => setStatus("ready", pin ? "Approved. The pin will post at its time" : "Scheduled. It will post at its time")} className={btn}>
           <Play className="h-3 w-3" /> {pin ? "Approve" : "Schedule"}
         </button>
       ) : null}
-      {!locked && s !== "draft" ? (
+      {!locked && s !== "draft" && s !== "proposed" ? (
         <button type="button" disabled={busy} onClick={() => setStatus("draft", "Moved to Draft")} className={btn}>
           <Undo2 className="h-3 w-3" /> Draft
         </button>

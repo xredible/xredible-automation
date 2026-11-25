@@ -22,13 +22,14 @@ export const STATUS_STYLE: Record<string, string> = {
   processing: "bg-amber-50 text-amber-800 ring-amber-600/25",
   paused: "bg-orange-50 text-orange-800 ring-orange-600/25",
   draft: "bg-slate-100 text-slate-600 ring-slate-500/20",
+  proposed: "bg-fuchsia-50 text-fuchsia-800 ring-fuchsia-600/25",
   "pending review": "bg-amber-50 text-amber-800 ring-amber-600/25",
   failed: "bg-red-50 text-red-700 ring-red-600/20",
 }
 
 export function StatusPill({ status }: { status: string }) {
   const s = (status || "blank").toLowerCase()
-  return <span className={`inline-flex rounded-full px-2 py-0.5 text-[11px] font-semibold ring-1 ring-inset ${STATUS_STYLE[s] ?? STATUS_STYLE.draft}`}>{status || "Blank"}</span>
+  return <span className={`inline-flex rounded-full px-2 py-0.5 text-[11px] font-semibold ring-1 ring-inset ${STATUS_STYLE[s] ?? STATUS_STYLE.draft}`}>{s === "proposed" ? "Proposed by Peter" : status || "Blank"}</span>
 }
 
 export function QueueRow({ item, showDate, actions = true }: { item: QueueItem; showDate?: boolean; actions?: boolean }) {
