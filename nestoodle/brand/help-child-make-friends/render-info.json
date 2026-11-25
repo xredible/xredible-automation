@@ -1,0 +1,303 @@
+{
+  "slug": "help-child-make-friends",
+  "articleUrl": "https://nestoodle.com/help-child-make-friends/",
+  "renderer": 1,
+  "approval": "template approved 2026-11-10; new article/social content remains subject to owner review",
+  "photos": [
+    {
+      "alt": "Floor cushions and matching play materials set out for a common-interests game.",
+      "review": {
+        "approved": true,
+        "score": 10,
+        "faceFree": true,
+        "problems": [],
+        "reviewer": "Codex visual + gemini-3.6-flash; review126177; evidence ops/content/nestoodle/image-queue/1033/native-reviews.json"
+      }
+    },
+    {
+      "alt": "Folded paper slips in a bowl ready for an emotion-charades game.",
+      "review": {
+        "approved": true,
+        "score": 10,
+        "faceFree": true,
+        "problems": [],
+        "reviewer": "Codex visual + gemini-3.6-flash; review126177; evidence ops/content/nestoodle/image-queue/1033/native-reviews.json"
+      }
+    },
+    {
+      "alt": "A quiet front porch and mailbox for practising everyday greetings.",
+      "review": {
+        "approved": true,
+        "score": 10,
+        "faceFree": true,
+        "problems": [],
+        "reviewer": "Codex visual + gemini-3.6-flash; review126177; evidence ops/content/nestoodle/image-queue/1033/native-reviews.json"
+      }
+    }
+  ],
+  "website": {
+    "featured": "featured-collage.webp",
+    "quality": 82,
+    "width": 1200,
+    "height": 800,
+    "encoder": "Chromium canvas image/webp quality0.82"
+  },
+  "outputs": [
+    {
+      "file": "pin.jpg",
+      "template": "pin",
+      "text": [
+        {
+          "field": "title",
+          "fontSize": 95,
+          "lines": 2
+        },
+        {
+          "field": "benefit",
+          "fontSize": 42,
+          "lines": 1
+        }
+      ],
+      "faces": [],
+      "size": [
+        1000,
+        1500
+      ],
+      "printableBadge": true,
+      "photoSources": [
+        0
+      ]
+    },
+    {
+      "file": "ig-cover.jpg",
+      "template": "ig-cover",
+      "text": [
+        {
+          "field": "title",
+          "fontSize": 100,
+          "lines": 2
+        },
+        {
+          "field": "navigation",
+          "fontSize": 38,
+          "lines": 1
+        }
+      ],
+      "faces": [],
+      "size": [
+        1080,
+        1350
+      ],
+      "printableBadge": true,
+      "photoSources": [
+        0
+      ]
+    },
+    {
+      "file": "ig-step-01.jpg",
+      "template": "ig-step",
+      "text": [
+        {
+          "field": "title",
+          "fontSize": 96,
+          "lines": 1
+        },
+        {
+          "field": "body",
+          "fontSize": 58,
+          "lines": 2
+        }
+      ],
+      "faces": [],
+      "size": [
+        1080,
+        1350
+      ],
+      "printableBadge": false,
+      "photoSources": [
+        1
+      ]
+    },
+    {
+      "file": "ig-step-02.jpg",
+      "template": "ig-step",
+      "text": [
+        {
+          "field": "title",
+          "fontSize": 96,
+          "lines": 1
+        },
+        {
+          "field": "body",
+          "fontSize": 58,
+          "lines": 2
+        }
+      ],
+      "faces": [],
+      "size": [
+        1080,
+        1350
+      ],
+      "printableBadge": false,
+      "photoSources": [
+        2
+      ]
+    },
+    {
+      "file": "ig-cta.jpg",
+      "template": "ig-cta",
+      "text": [
+        {
+          "field": "save",
+          "fontSize": 110,
+          "lines": 2
+        },
+        {
+          "field": "keyword",
+          "fontSize": 78,
+          "lines": 1
+        },
+        {
+          "field": "cta",
+          "fontSize": 48,
+          "lines": 1
+        }
+      ],
+      "faces": [],
+      "size": [
+        1080,
+        1350
+      ],
+      "printableBadge": false,
+      "photoSources": []
+    },
+    {
+      "file": "facebook.jpg",
+      "template": "ig-cover",
+      "text": [
+        {
+          "field": "title",
+          "fontSize": 100,
+          "lines": 2
+        },
+        {
+          "field": "navigation",
+          "fontSize": 38,
+          "lines": 1
+        }
+      ],
+      "faces": [],
+      "size": [
+        1080,
+        1350
+      ],
+      "printableBadge": true,
+      "photoSources": [
+        0
+      ]
+    },
+    {
+      "file": "og.jpg",
+      "template": "og",
+      "text": [
+        {
+          "field": "title",
+          "fontSize": 66,
+          "lines": 3
+        }
+      ],
+      "faces": [],
+      "size": [
+        1200,
+        630
+      ],
+      "printableBadge": false,
+      "photoSources": [
+        0
+      ]
+    },
+    {
+      "file": "story.jpg",
+      "template": "story",
+      "text": [
+        {
+          "field": "title",
+          "fontSize": 106,
+          "lines": 3
+        },
+        {
+          "field": "benefit",
+          "fontSize": 44,
+          "lines": 1
+        }
+      ],
+      "faces": [],
+      "size": [
+        1080,
+        1920
+      ],
+      "printableBadge": false,
+      "photoSources": [
+        0
+      ]
+    },
+    {
+      "file": "featured-collage.jpg",
+      "template": "featured-collage",
+      "text": [],
+      "faces": [],
+      "size": [
+        1200,
+        800
+      ],
+      "printableBadge": false,
+      "photoSources": [
+        0,
+        1
+      ]
+    },
+    {
+      "file": "article-photo-01.jpg",
+      "template": "article-photo",
+      "text": [],
+      "faces": [],
+      "size": [
+        1200,
+        800
+      ],
+      "printableBadge": false,
+      "photoSources": [
+        0
+      ]
+    },
+    {
+      "file": "article-photo-02.jpg",
+      "template": "article-photo",
+      "text": [],
+      "faces": [],
+      "size": [
+        1200,
+        800
+      ],
+      "printableBadge": false,
+      "photoSources": [
+        1
+      ]
+    },
+    {
+      "file": "article-photo-03.jpg",
+      "template": "article-photo",
+      "text": [],
+      "faces": [],
+      "size": [
+        1200,
+        800
+      ],
+      "printableBadge": false,
+      "photoSources": [
+        2
+      ]
+    }
+  ],
+  "jobId": "bi-help-child-make-friends-1795600545897"
+}
