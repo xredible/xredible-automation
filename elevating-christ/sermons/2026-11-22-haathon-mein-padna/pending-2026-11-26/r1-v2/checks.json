@@ -1,0 +1,34 @@
+{
+  "item": "r1-v2",
+  "duration_s": 96.867,
+  "duration_flag": "Exceeds 35-75s target intentionally per owner choice (combined 02:11-03:16 + 08:29-08:43 + 17:11-17:22 complete sentences without speeding up); fits IG/FB Reels & YT 3-min Shorts (<180s).",
+  "video": {
+    "codec": "h264",
+    "width": 1080,
+    "height": 1920,
+    "fps": "30/1"
+  },
+  "audio": {
+    "codec": "aac",
+    "sample_rate": "48000",
+    "channels": 2,
+    "input_i_lufs": "-14.21",
+    "input_tp_db": "-1.39",
+    "input_lra": "6.50"
+  },
+  "captions": {
+    "count": 37,
+    "max_hi_lines": 2,
+    "max_en_lines": 2
+  },
+  "contact_sheet_frames": 97,
+  "sha256": {
+    "reel.mp4": "5ed711e56928caa76c80b881daaaedfee5ad02e820d43582d280ac55dfc5c13d",
+    "cover.jpg": "a3a66876abb14b874551bbd4f75817377a595f130673f9f95ee7accb9b5c6040",
+    "cover-phone.jpg": "9c8f2fe5e828bec4c56508aa84fd6fbded413221b652155e3bbef0a7144a617f",
+    "contact-sheet.jpg": "952820d326ede7ee2a8a145dd7776bde9797a9895a10c65941278b7a547572cc",
+    "review-timecodes.mp4": "591a50c927334e6432ce633b583eeded9614c8c5a05931e8376482f0599e3841",
+    "captions.json": "90e65c593ef9fe3031d4edd881153824c4e28f74f28a1f74bed0e6abb0ec46c9",
+    "captions.ass": "7e079af7efd7beeaa159148916aec2dd8530bd9c62c415d7d77f76487ed2fd7c"
+  }
+}

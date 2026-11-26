@@ -1,0 +1,86 @@
+[Script Info]
+ScriptType: v4.00+
+PlayResX: 1080
+PlayResY: 1920
+
+[V4+ Styles]
+Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
+Style: HI,Baloo 2 ExtraBold,66,&H00FFFFFF,&H000000FF,&H001C1C1C,&H00000000,-1,0,0,0,100,100,0,0,1,6,0,2,60,60,460,1
+Style: EN,Baloo 2 ExtraBold,44,&H0060C8E8,&H000000FF,&H001C1C1C,&H00000000,0,0,0,0,100,100,0,0,1,5,0,2,60,60,360,1
+
+[Events]
+Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
+Dialogue: 0,0:00:00.20,0:00:01.75,HI,,0,0,0,,परमेश्वर का जो हाथ है,
+Dialogue: 0,0:00:00.20,0:00:01.75,EN,,0,0,0,,God's hand—
+Dialogue: 0,0:00:01.75,0:00:04.75,HI,,0,0,0,,जब आप उसके हाथ में हो, तब आप सुरक्षित हो।
+Dialogue: 0,0:00:01.75,0:00:04.75,EN,,0,0,0,,when you are in His hand, you are safe.
+Dialogue: 0,0:00:04.75,0:00:07.40,HI,,0,0,0,,लेकिन जिस दिन आप परमेश्वर के हाथ में पड़ गए,
+Dialogue: 0,0:00:04.75,0:00:07.40,EN,,0,0,0,,But the day you fall into God's hands,
+Dialogue: 0,0:00:07.40,0:00:09.55,HI,,0,0,0,,उससे भयानक बात कुछ नहीं हो सकती है।
+Dialogue: 0,0:00:07.40,0:00:09.55,EN,,0,0,0,,nothing could be more fearful.
+Dialogue: 0,0:00:09.55,0:00:11.75,HI,,0,0,0,,समझिएगा इस बात को, दो चीज़ें हैं।
+Dialogue: 0,0:00:09.55,0:00:11.75,EN,,0,0,0,,Understand this: there are two things.
+Dialogue: 0,0:00:12.05,0:00:14.55,HI,,0,0,0,,एक बात है परमेश्वर के हाथ में होना,
+Dialogue: 0,0:00:12.05,0:00:14.55,EN,,0,0,0,,One is being in God's hand,
+Dialogue: 0,0:00:14.80,0:00:17.25,HI,,0,0,0,,और एक बात है परमेश्वर के हाथ में पड़ना।
+Dialogue: 0,0:00:14.80,0:00:17.25,EN,,0,0,0,,and the other is falling into God's hands.
+Dialogue: 0,0:00:17.25,0:00:18.80,HI,,0,0,0,,मैंने क्या कहा?
+Dialogue: 0,0:00:17.25,0:00:18.80,EN,,0,0,0,,What did I say?
+Dialogue: 0,0:00:18.80,0:00:22.00,HI,,0,0,0,,परमेश्वर के हाथ में होना\Nऔर परमेश्वर के हाथ में पड़ना—
+Dialogue: 0,0:00:18.80,0:00:22.00,EN,,0,0,0,,Being in God's hand\Nand falling into God's hands—
+Dialogue: 0,0:00:22.05,0:00:24.00,HI,,0,0,0,,इन दोनों चीज़ों में बहुत अंतर है।
+Dialogue: 0,0:00:22.05,0:00:24.00,EN,,0,0,0,,there is a huge difference between the two.
+Dialogue: 0,0:00:24.05,0:00:28.30,HI,,0,0,0,,एक तरफ जब आप ये बोलते हैं\Nकि परमेश्वर के हाथों में रहना,
+Dialogue: 0,0:00:24.05,0:00:28.30,EN,,0,0,0,,On one hand, when you speak of\Nstaying in God's hands,
+Dialogue: 0,0:00:28.30,0:00:30.60,HI,,0,0,0,,तब आप सुरक्षित हो, तब आप महफ़ूज़ हो,
+Dialogue: 0,0:00:28.30,0:00:30.60,EN,,0,0,0,,then you are safe, then you are secure,
+Dialogue: 0,0:00:30.60,0:00:34.40,HI,,0,0,0,,तब आप प्रभु के बल के नीचे हो,\Nतब आप प्रभु की सामर्थ्य के नीचे हो।
+Dialogue: 0,0:00:30.60,0:00:34.40,EN,,0,0,0,,you are under the Lord's strength\Nand under His mighty power.
+Dialogue: 0,0:00:34.40,0:00:37.10,HI,,0,0,0,,और परमेश्वर कहता है, मैं तुझे\Nअपने हाथ में लिए चलता हूँ।
+Dialogue: 0,0:00:34.40,0:00:37.10,EN,,0,0,0,,And God says, "I carry you\Nin My hand."
+Dialogue: 0,0:00:37.10,0:00:38.20,HI,,0,0,0,,हालेलुयाह!
+Dialogue: 0,0:00:37.10,0:00:38.20,EN,,0,0,0,,Hallelujah!
+Dialogue: 0,0:00:38.30,0:00:40.30,HI,,0,0,0,,जब आप परमेश्वर के हाथों में हो,
+Dialogue: 0,0:00:38.30,0:00:40.30,EN,,0,0,0,,When you are in God's hands,
+Dialogue: 0,0:00:40.30,0:00:42.55,HI,,0,0,0,,तब आप सेफ हो, तब आप सुरक्षित हो।
+Dialogue: 0,0:00:40.30,0:00:42.55,EN,,0,0,0,,you are safe, you are protected.
+Dialogue: 0,0:00:42.75,0:00:45.20,HI,,0,0,0,,जब आप परमेश्वर के हाथों में हैं,
+Dialogue: 0,0:00:42.75,0:00:45.20,EN,,0,0,0,,When you are in God's hands,
+Dialogue: 0,0:00:45.20,0:00:47.40,HI,,0,0,0,,तब आपके चारों ओर\Nपरमेश्वर की सामर्थ्य
+Dialogue: 0,0:00:45.20,0:00:47.40,EN,,0,0,0,,then all around you\NGod's power
+Dialogue: 0,0:00:47.40,0:00:49.75,HI,,0,0,0,,एक घेरा बना कर चलती है।
+Dialogue: 0,0:00:47.40,0:00:49.75,EN,,0,0,0,,surrounds you like a shield.
+Dialogue: 0,0:00:49.80,0:00:52.00,HI,,0,0,0,,क्योंकि परमेश्वर आपको\Nअपनी हथेली में लेकर चल रहा है,
+Dialogue: 0,0:00:49.80,0:00:52.00,EN,,0,0,0,,Because God is carrying you\Nin His palm,
+Dialogue: 0,0:00:52.00,0:00:53.25,HI,,0,0,0,,आप सेफ हो।
+Dialogue: 0,0:00:52.00,0:00:53.25,EN,,0,0,0,,you are safe.
+Dialogue: 0,0:00:53.30,0:00:55.20,HI,,0,0,0,,हर खतरे से परमेश्वर\Nआपकी रक्षा करता है,
+Dialogue: 0,0:00:53.30,0:00:55.20,EN,,0,0,0,,From every danger\NGod protects you,
+Dialogue: 0,0:00:55.20,0:00:56.80,HI,,0,0,0,,परमेश्वर आपकी सुरक्षा करता है।
+Dialogue: 0,0:00:55.20,0:00:56.80,EN,,0,0,0,,God keeps you secure.
+Dialogue: 0,0:00:56.80,0:00:58.20,HI,,0,0,0,,वो अनुग्रह के कारण है।
+Dialogue: 0,0:00:56.80,0:00:58.20,EN,,0,0,0,,That is because of His grace.
+Dialogue: 0,0:00:58.20,0:01:02.40,HI,,0,0,0,,आपको और मुझे परमेश्वर के हाथों में रहना है,
+Dialogue: 0,0:00:58.20,0:01:02.40,EN,,0,0,0,,You and I must stay in God's hands,
+Dialogue: 0,0:01:02.40,0:01:05.05,HI,,0,0,0,,आपको और मुझे परमेश्वर के हाथों में\Nपड़ना नहीं है।
+Dialogue: 0,0:01:02.40,0:01:05.05,EN,,0,0,0,,you and I must not fall into God's hands.
+Dialogue: 0,0:01:05.15,0:01:07.25,HI,,0,0,0,,आपको ना तो वचन से कुछ फ़र्क़ पड़ रहा है,
+Dialogue: 0,0:01:05.15,0:01:07.25,EN,,0,0,0,,Neither does the Word make a difference to you,
+Dialogue: 0,0:01:07.25,0:01:09.45,HI,,0,0,0,,ना आपको पवित्र आत्मा कायल कर रहा है।
+Dialogue: 0,0:01:07.25,0:01:09.45,EN,,0,0,0,,nor is the Holy Spirit convicting you.
+Dialogue: 0,0:01:09.45,0:01:11.95,HI,,0,0,0,,आप सुन भी रहे हो,\Nलेकिन आप रिस्पांस नहीं कर रहे,
+Dialogue: 0,0:01:09.45,0:01:11.95,EN,,0,0,0,,You are listening,\Nyet you are not responding,
+Dialogue: 0,0:01:11.95,0:01:13.95,HI,,0,0,0,,आप प्रतिक्रिया नहीं दे रहे हो।
+Dialogue: 0,0:01:11.95,0:01:13.95,EN,,0,0,0,,you are not reacting.
+Dialogue: 0,0:01:13.95,0:01:16.30,HI,,0,0,0,,आपने अपने मन को कठोर करके रखा हुआ है।
+Dialogue: 0,0:01:13.95,0:01:16.30,EN,,0,0,0,,You have hardened your heart.
+Dialogue: 0,0:01:16.30,0:01:18.45,HI,,0,0,0,,एक दिन आप परमेश्वर के हाथों में पड़ने वाले हो।
+Dialogue: 0,0:01:16.30,0:01:18.45,EN,,0,0,0,,One day you are going to fall into God's hands.
+Dialogue: 0,0:01:18.50,0:01:22.65,HI,,0,0,0,,इसलिए मैंने कहा था थोड़ा सा सीरियस हो जाना आज,
+Dialogue: 0,0:01:18.50,0:01:22.65,EN,,0,0,0,,That is why I said, be serious today,
+Dialogue: 0,0:01:22.65,0:01:26.25,HI,,0,0,0,,क्योंकि परमेश्वर कुछ दे रहा है,\Nपरमेश्वर कुछ भेज रहा है,
+Dialogue: 0,0:01:22.65,0:01:26.25,EN,,0,0,0,,because God is giving something,\NGod is sending something,
+Dialogue: 0,0:01:26.25,0:01:27.80,HI,,0,0,0,,परमेश्वर आज झकझोरने वाला है,
+Dialogue: 0,0:01:26.25,0:01:27.80,EN,,0,0,0,,Today God is going to shake you,
+Dialogue: 0,0:01:27.80,0:01:29.68,HI,,0,0,0,,परमेश्वर आज बात करने वाला है।
+Dialogue: 0,0:01:27.80,0:01:29.68,EN,,0,0,0,,Today God is going to speak.
