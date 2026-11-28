@@ -1,31 +1,37 @@
 {
   "slug": "how-to-teach-kids-to-tie-shoes",
-  "articleUrl": "https://nestoodle.com/?p=1235",
+  "articleUrl": "https://nestoodle.com/how-to-teach-kids-to-tie-shoes/",
   "renderer": 1,
   "approval": "template approved 2026-11-10; new article/social content remains subject to owner review",
   "photos": [
     {
-      "alt": "A white sneaker laced with one red and one blue lace tied together in a bow.",
-      "review": {
-        "approved": true,
-        "faceFree": true,
-        "reviewer": "Claude visual + Gemini native 10 (17 Nov)"
-      }
-    },
-    {
       "alt": "A white kids' sneaker tied in a yellow bow with big floppy bunny-ear loops on a wooden table.",
       "review": {
         "approved": true,
+        "score": 10,
         "faceFree": true,
-        "reviewer": "Claude visual + Gemini native 10 (17 Nov)"
+        "problems": [],
+        "reviewer": "Claude visual + Gemini native10 (gemini-3.6-flash); 1235 v2 17Nov2026, save107561"
       }
     },
     {
-      "alt": "A white sneaker laced with wide yellow ribbon tied in a bow, beside a ribbon spool.",
+      "alt": "A navy kids' sneaker with one white lace loop and the other lace wrapped around it.",
       "review": {
         "approved": true,
+        "score": 10,
         "faceFree": true,
-        "reviewer": "Claude visual + Gemini native 10 (17 Nov)"
+        "problems": [],
+        "reviewer": "Claude visual + Gemini native10 (gemini-3.6-flash); 1235 v2 17Nov2026, save107561"
+      }
+    },
+    {
+      "alt": "A grey kids' sneaker with a small, neat black bow pulled snug.",
+      "review": {
+        "approved": true,
+        "score": 10,
+        "faceFree": true,
+        "problems": [],
+        "reviewer": "Claude visual + Gemini native10 (gemini-3.6-flash); 1235 v2 17Nov2026, save107561"
       }
     }
   ],
@@ -42,11 +48,6 @@
       "template": "pin",
       "text": [
         {
-          "field": "eyebrow",
-          "fontSize": 36,
-          "lines": 1
-        },
-        {
           "field": "title",
           "fontSize": 110,
           "lines": 2
@@ -62,7 +63,7 @@
         1000,
         1500
       ],
-      "printableBadge": false,
+      "printableBadge": true,
       "photoSources": [
         0
       ]
@@ -71,11 +72,6 @@
       "file": "ig-cover.jpg",
       "template": "ig-cover",
       "text": [
-        {
-          "field": "eyebrow",
-          "fontSize": 36,
-          "lines": 1
-        },
         {
           "field": "title",
           "fontSize": 100,
@@ -92,7 +88,7 @@
         1080,
         1350
       ],
-      "printableBadge": false,
+      "printableBadge": true,
       "photoSources": [
         0
       ]
@@ -104,7 +100,7 @@
         {
           "field": "title",
           "fontSize": 96,
-          "lines": 1
+          "lines": 2
         },
         {
           "field": "body",
@@ -129,12 +125,12 @@
         {
           "field": "title",
           "fontSize": 96,
-          "lines": 1
+          "lines": 2
         },
         {
           "field": "body",
           "fontSize": 58,
-          "lines": 1
+          "lines": 2
         }
       ],
       "faces": [],
@@ -180,11 +176,6 @@
       "template": "ig-cover",
       "text": [
         {
-          "field": "eyebrow",
-          "fontSize": 36,
-          "lines": 1
-        },
-        {
           "field": "title",
           "fontSize": 100,
           "lines": 2
@@ -200,7 +191,7 @@
         1080,
         1350
       ],
-      "printableBadge": false,
+      "printableBadge": true,
       "photoSources": [
         0
       ]
@@ -212,7 +203,7 @@
         {
           "field": "title",
           "fontSize": 66,
-          "lines": 3
+          "lines": 2
         }
       ],
       "faces": [],
@@ -229,11 +220,6 @@
       "file": "story.jpg",
       "template": "story",
       "text": [
-        {
-          "field": "eyebrow",
-          "fontSize": 36,
-          "lines": 1
-        },
         {
           "field": "title",
           "fontSize": 112,
@@ -312,5 +298,6 @@
         2
       ]
     }
-  ]
+  ],
+  "jobId": "bi-how-to-teach-kids-to-tie-shoes-1795880602967"
 }
